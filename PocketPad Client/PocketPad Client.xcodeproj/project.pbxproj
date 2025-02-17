@@ -1,0 +1,557 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXContainerItemProxy section */
+		6FE64C692D63C7F1001BB2CC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6FE64C502D63C7F0001BB2CC /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6FE64C572D63C7F0001BB2CC;
+			remoteInfo = "PocketPad Client";
+		};
+		6FE64C732D63C7F1001BB2CC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6FE64C502D63C7F0001BB2CC /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6FE64C572D63C7F0001BB2CC;
+			remoteInfo = "PocketPad Client";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		6FE64C582D63C7F0001BB2CC /* PocketPad Client.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "PocketPad Client.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		6FE64C682D63C7F1001BB2CC /* PocketPad ClientTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "PocketPad ClientTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		6FE64C722D63C7F1001BB2CC /* PocketPad ClientUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "PocketPad ClientUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		6FE64C5A2D63C7F0001BB2CC /* PocketPad Client */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "PocketPad Client";
+			sourceTree = "<group>";
+		};
+		6FE64C6B2D63C7F1001BB2CC /* PocketPad ClientTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "PocketPad ClientTests";
+			sourceTree = "<group>";
+		};
+		6FE64C752D63C7F1001BB2CC /* PocketPad ClientUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "PocketPad ClientUITests";
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		6FE64C552D63C7F0001BB2CC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6FE64C652D63C7F1001BB2CC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6FE64C6F2D63C7F1001BB2CC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		6FE64C4F2D63C7F0001BB2CC = {
+			isa = PBXGroup;
+			children = (
+				6FE64C5A2D63C7F0001BB2CC /* PocketPad Client */,
+				6FE64C6B2D63C7F1001BB2CC /* PocketPad ClientTests */,
+				6FE64C752D63C7F1001BB2CC /* PocketPad ClientUITests */,
+				6FE64C592D63C7F0001BB2CC /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		6FE64C592D63C7F0001BB2CC /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				6FE64C582D63C7F0001BB2CC /* PocketPad Client.app */,
+				6FE64C682D63C7F1001BB2CC /* PocketPad ClientTests.xctest */,
+				6FE64C722D63C7F1001BB2CC /* PocketPad ClientUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		6FE64C572D63C7F0001BB2CC /* PocketPad Client */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6FE64C7C2D63C7F1001BB2CC /* Build configuration list for PBXNativeTarget "PocketPad Client" */;
+			buildPhases = (
+				6FE64C542D63C7F0001BB2CC /* Sources */,
+				6FE64C552D63C7F0001BB2CC /* Frameworks */,
+				6FE64C562D63C7F0001BB2CC /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				6FE64C5A2D63C7F0001BB2CC /* PocketPad Client */,
+			);
+			name = "PocketPad Client";
+			packageProductDependencies = (
+			);
+			productName = "PocketPad Client";
+			productReference = 6FE64C582D63C7F0001BB2CC /* PocketPad Client.app */;
+			productType = "com.apple.product-type.application";
+		};
+		6FE64C672D63C7F1001BB2CC /* PocketPad ClientTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6FE64C7F2D63C7F1001BB2CC /* Build configuration list for PBXNativeTarget "PocketPad ClientTests" */;
+			buildPhases = (
+				6FE64C642D63C7F1001BB2CC /* Sources */,
+				6FE64C652D63C7F1001BB2CC /* Frameworks */,
+				6FE64C662D63C7F1001BB2CC /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				6FE64C6A2D63C7F1001BB2CC /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				6FE64C6B2D63C7F1001BB2CC /* PocketPad ClientTests */,
+			);
+			name = "PocketPad ClientTests";
+			packageProductDependencies = (
+			);
+			productName = "PocketPad ClientTests";
+			productReference = 6FE64C682D63C7F1001BB2CC /* PocketPad ClientTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		6FE64C712D63C7F1001BB2CC /* PocketPad ClientUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6FE64C822D63C7F1001BB2CC /* Build configuration list for PBXNativeTarget "PocketPad ClientUITests" */;
+			buildPhases = (
+				6FE64C6E2D63C7F1001BB2CC /* Sources */,
+				6FE64C6F2D63C7F1001BB2CC /* Frameworks */,
+				6FE64C702D63C7F1001BB2CC /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				6FE64C742D63C7F1001BB2CC /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				6FE64C752D63C7F1001BB2CC /* PocketPad ClientUITests */,
+			);
+			name = "PocketPad ClientUITests";
+			packageProductDependencies = (
+			);
+			productName = "PocketPad ClientUITests";
+			productReference = 6FE64C722D63C7F1001BB2CC /* PocketPad ClientUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		6FE64C502D63C7F0001BB2CC /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1620;
+				LastUpgradeCheck = 1620;
+				TargetAttributes = {
+					6FE64C572D63C7F0001BB2CC = {
+						CreatedOnToolsVersion = 16.2;
+					};
+					6FE64C672D63C7F1001BB2CC = {
+						CreatedOnToolsVersion = 16.2;
+						TestTargetID = 6FE64C572D63C7F0001BB2CC;
+					};
+					6FE64C712D63C7F1001BB2CC = {
+						CreatedOnToolsVersion = 16.2;
+						TestTargetID = 6FE64C572D63C7F0001BB2CC;
+					};
+				};
+			};
+			buildConfigurationList = 6FE64C532D63C7F0001BB2CC /* Build configuration list for PBXProject "PocketPad Client" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 6FE64C4F2D63C7F0001BB2CC;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 6FE64C592D63C7F0001BB2CC /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				6FE64C572D63C7F0001BB2CC /* PocketPad Client */,
+				6FE64C672D63C7F1001BB2CC /* PocketPad ClientTests */,
+				6FE64C712D63C7F1001BB2CC /* PocketPad ClientUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		6FE64C562D63C7F0001BB2CC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6FE64C662D63C7F1001BB2CC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6FE64C702D63C7F1001BB2CC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		6FE64C542D63C7F0001BB2CC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6FE64C642D63C7F1001BB2CC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6FE64C6E2D63C7F1001BB2CC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		6FE64C6A2D63C7F1001BB2CC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 6FE64C572D63C7F0001BB2CC /* PocketPad Client */;
+			targetProxy = 6FE64C692D63C7F1001BB2CC /* PBXContainerItemProxy */;
+		};
+		6FE64C742D63C7F1001BB2CC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 6FE64C572D63C7F0001BB2CC /* PocketPad Client */;
+			targetProxy = 6FE64C732D63C7F1001BB2CC /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		6FE64C7A2D63C7F1001BB2CC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		6FE64C7B2D63C7F1001BB2CC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		6FE64C7D2D63C7F1001BB2CC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"PocketPad Client/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.leemin.PocketPad-Client";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		6FE64C7E2D63C7F1001BB2CC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"PocketPad Client/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.leemin.PocketPad-Client";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		6FE64C802D63C7F1001BB2CC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.leemin.PocketPad-ClientTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PocketPad Client.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PocketPad Client";
+			};
+			name = Debug;
+		};
+		6FE64C812D63C7F1001BB2CC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.leemin.PocketPad-ClientTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PocketPad Client.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PocketPad Client";
+			};
+			name = Release;
+		};
+		6FE64C832D63C7F1001BB2CC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.leemin.PocketPad-ClientUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "PocketPad Client";
+			};
+			name = Debug;
+		};
+		6FE64C842D63C7F1001BB2CC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.leemin.PocketPad-ClientUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "PocketPad Client";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		6FE64C532D63C7F0001BB2CC /* Build configuration list for PBXProject "PocketPad Client" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6FE64C7A2D63C7F1001BB2CC /* Debug */,
+				6FE64C7B2D63C7F1001BB2CC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6FE64C7C2D63C7F1001BB2CC /* Build configuration list for PBXNativeTarget "PocketPad Client" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6FE64C7D2D63C7F1001BB2CC /* Debug */,
+				6FE64C7E2D63C7F1001BB2CC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6FE64C7F2D63C7F1001BB2CC /* Build configuration list for PBXNativeTarget "PocketPad ClientTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6FE64C802D63C7F1001BB2CC /* Debug */,
+				6FE64C812D63C7F1001BB2CC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6FE64C822D63C7F1001BB2CC /* Build configuration list for PBXNativeTarget "PocketPad ClientUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6FE64C832D63C7F1001BB2CC /* Debug */,
+				6FE64C842D63C7F1001BB2CC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 6FE64C502D63C7F0001BB2CC /* Project object */;
+}
