@@ -32,6 +32,20 @@ struct RegularButtonConfig: ButtonConfig {
     // TODO: Decide whether input will be a string or an int correlating to button id
     var input: String // the button it is bound to
     var turbo: Bool // whether or not it is a turbo tap
+    
+    // Object Initializer
+    init(
+        position: CGPoint, scale: CGFloat,
+         input: String, turbo: Bool = false
+    ) {
+        self.type = .regular
+        
+        self.position = position
+        self.scale = scale
+        
+        self.input = input
+        self.turbo = turbo
+    }
 }
 
 struct JoystickConfig: ButtonConfig {
@@ -43,6 +57,21 @@ struct JoystickConfig: ButtonConfig {
     var input: String // which joystick button it will correlate to
     var sensitivity: Double // the sensitivity of the controller
     var deadzone: Double // how far it needs to move before it starts accepting inputs
+    
+    // Object Initializer
+    init(
+        position: CGPoint, scale: CGFloat,
+        input: String, sensitivity: Double = 0.0, deadzone: Double = 0.0
+    ) {
+        self.type = .joystick
+        
+        self.position = position
+        self.scale = scale
+        
+        self.input = input
+        self.sensitivity = sensitivity
+        self.deadzone = deadzone
+    }
 }
 
 struct DPadConfig: ButtonConfig {
@@ -52,4 +81,17 @@ struct DPadConfig: ButtonConfig {
     var type: ButtonType
     
     var inputs: [String] // what the buttons of the dpad are
+    
+    // Object Initializer
+    init(
+        position: CGPoint, scale: CGFloat,
+        inputs: [String]
+    ) {
+        self.type = .dpad
+        
+        self.position = position
+        self.scale = scale
+        
+        self.inputs = inputs
+    }
 }
