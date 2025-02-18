@@ -22,8 +22,8 @@ protocol ButtonConfig: Codable {
     var type: ButtonType { get set } // what type of button it is
 }
 
-// MARK: Button Data Objects
-struct RegularButtonData: ButtonConfig {
+// MARK: Specific Button Config Objects
+struct RegularButtonConfig: ButtonConfig {
     // Protocol Properties
     var position: CGPoint
     var scale: CGFloat
@@ -34,7 +34,7 @@ struct RegularButtonData: ButtonConfig {
     var turbo: Bool // whether or not it is a turbo tap
 }
 
-struct JoystickData: ButtonConfig {
+struct JoystickConfig: ButtonConfig {
     // Protocol Properties
     var position: CGPoint
     var scale: CGFloat
@@ -45,7 +45,7 @@ struct JoystickData: ButtonConfig {
     var deadzone: Double // how far it needs to move before it starts accepting inputs
 }
 
-struct DPadData: ButtonConfig {
+struct DPadConfig: ButtonConfig {
     // Protocol Properties
     var position: CGPoint
     var scale: CGFloat
