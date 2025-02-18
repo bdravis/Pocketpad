@@ -11,10 +11,11 @@ struct RegularButtonView: View {
     var config: RegularButtonConfig
     
     var body: some View {
-        ZStack {
-            Rectangle()
-                .foregroundStyle(.green)
-            Text("Reg Btn")
+        Button(action: {
+            // TODO: Button action
+        }) {
+            Text(config.input)
         }
+        .buttonStyle(CircularButtonStyle()) // TODO: Fix the hitbox being a square
     }
 }
