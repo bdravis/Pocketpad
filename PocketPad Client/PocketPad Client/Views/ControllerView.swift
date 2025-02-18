@@ -13,7 +13,9 @@ let DEBUG_BUTTONS: [ButtonConfig] = [ // Example buttons
     JoystickConfig(position: CGPoint(x: 0, y: 400), scale: 1.0, input: "RightJoystick"),
     DPadConfig(
         position: CGPoint(x: 100, y: 0), scale: 1.0,
-        inputs: ["DPadUp", "DPadRight", "DPadDown", "DPadLeft"] // TODO: Figure out a better way to store these
+        inputs: [
+            .up: "DPadUp", .right: "DPadRight", .down: "DPadDown", .left: "DPadLeft"
+        ]
     )
 ]
 

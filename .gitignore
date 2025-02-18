@@ -77,3 +77,4 @@ CMakeLists.txt.user*
 *.dll
 *.exe
 .DS_Store
+/PocketPad Client/PocketPad Client.xcodeproj/project.xcworkspace/xcuserdata
