@@ -1,5 +1,5 @@
 .DS_Store
-/PocketPad/PocketPad.xcodeproj/project.xcworkspace
+/PocketPad Client/PocketPad Client.xcodeproj/xcuserdata
 .venv
 
 # QT Creator
@@ -76,4 +76,3 @@ CMakeLists.txt.user*
 # --------
 *.dll
 *.exe
-.DS_Store
