@@ -16,8 +16,13 @@ struct DPadButtonView: View {
         ZStack(alignment: .center) {
             // Background path
             Plus(thickness: DPAD_THICKNESS)
-                .fill(.gray)
+                .fill(Color(uiColor: .secondarySystemFill))
                 .stroke(.black, style: StrokeStyle(lineWidth: 3, lineCap: .square, lineJoin: .bevel))
+            
+            // Center Circle
+            Circle()
+                .stroke(.black, style: StrokeStyle(lineWidth: 1.5))
+                .frame(width: DPAD_THICKNESS - 8, height: DPAD_THICKNESS - 8)
             
             // Horizontal directional arrows
             HStack {
@@ -49,9 +54,9 @@ struct DirectionalArrow: View {
         }) {
             Triangle()
                 .rotation(.degrees(rotation))
-                .stroke(.black)
                 .aspectRatio(1.0, contentMode: .fit)
                 .padding(4)
         }
+        .buttonStyle(DPadButtonStyle())
     }
 }
