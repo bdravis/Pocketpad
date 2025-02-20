@@ -12,30 +12,20 @@ import SwiftUI
 struct BluetoothScannerView: View {
     @StateObject private var bluetoothManager = BluetoothManager.shared
     @State private var selectedDevice: CBPeripheral?
-    @State private var showingDeviceView = false
 
     var body: some View {
         NavigationStack {
             List(bluetoothManager.discoveredDevices, id: \.identifier) { device in
-                DeviceRow(device: device, selectedDevice: $selectedDevice, showingDeviceView: $showingDeviceView)
+                DeviceRow(device: device, selectedDevice: $selectedDevice)
             }
+            .navigationBarTitleDisplayMode(.inline)
             .navigationTitle("Available Devices")
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(bluetoothManager.isScanning ? "Stop" : "Scan") {
-                        if bluetoothManager.isScanning {
-                            bluetoothManager.stopScanning()
-                        } else {
-                            bluetoothManager.startScanning()
-                        }
-                    }
-                }
-            }
-            .navigationDestination(isPresented: $showingDeviceView) {
-                if let device = selectedDevice {
-                    BluetoothDataView(device: device)
-                }
-            }
+        }
+        .onAppear {
+            bluetoothManager.startScanning()
+        }
+        .onDisappear {
+            bluetoothManager.stopScanning()
         }
     }
 }
@@ -44,7 +34,6 @@ struct BluetoothScannerView: View {
 struct DeviceRow: View {
     let device: CBPeripheral
     @Binding var selectedDevice: CBPeripheral?
-    @Binding var showingDeviceView: Bool
     @StateObject private var bluetoothManager = BluetoothManager.shared
     
     var body: some View {
@@ -70,7 +59,7 @@ struct DeviceRow: View {
         }
         .onChange(of: bluetoothManager.connectedDevice) { newDevice in
             if newDevice == device {
-                showingDeviceView = true
+                bluetoothManager.stopScanning()
             }
         }
     }
@@ -107,13 +96,7 @@ struct DeviceRow: View {
                     }
                 }
                 .navigationTitle("Available Devices")
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button(isScanning ? "Stop" : "Scan") {
-                            isScanning.toggle()
-                        }
-                    }
-                }
+                .navigationBarTitleDisplayMode(.inline)
             }
         }
     }

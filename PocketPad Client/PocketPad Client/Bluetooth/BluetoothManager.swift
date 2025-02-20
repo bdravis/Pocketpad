@@ -44,6 +44,7 @@ class BluetoothManager: NSObject, ObservableObject {
     func stopScanning() {
         isScanning = false
         centralManager.stopScan()
+        discoveredDevices.removeAll()
     }
     
     func connect(to peripheral: CBPeripheral) {
@@ -60,6 +61,7 @@ class BluetoothManager: NSObject, ObservableObject {
             discoveredCharacteristics.removeAll()
             selectedService = nil
             isConnecting = false
+            connectedDevice = nil
         }
     }
     
