@@ -8,14 +8,23 @@
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var bluetoothManager = BluetoothManager.shared
+    
     var body: some View {
-        NavigationStack {
-            VStack {
-                NavigationLink(destination: ControllerView(buttons: DEBUG_BUTTONS)) {
-                    Text("Open Debug ControllerView")
+        NavigationView {
+            ZStack(alignment: .top) {
+                BluetoothScannerView()
+                
+                if bluetoothManager.connectedDevice == nil && bluetoothManager.isConnecting == false {
+                    BluetoothStatusView()
+                        .padding(.top, 8)
                 }
             }
-            .padding()
+        }
+        .onChange(of: bluetoothManager.connectedDevice) { device in
+            if device != nil {
+                bluetoothManager.stopScanning()
+            }
         }
     }
 }
