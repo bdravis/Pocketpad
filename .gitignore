@@ -1,6 +1,8 @@
 .DS_Store
-/PocketPad/PocketPad.xcodeproj/project.xcworkspace
+/PocketPad Client/PocketPad Client.xcodeproj/xcuserdata
 .venv
+
+venv/
 
 # QT Creator
 # This file is used to ignore files which are generated
@@ -76,4 +78,3 @@ CMakeLists.txt.user*
 # --------
 *.dll
 *.exe
-.DS_Store

@@ -9,9 +9,22 @@ import SwiftUI
 
 @main
 struct PocketPad_ClientApp: App {
+    @State private var isShowingSplash = true
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            if isShowingSplash {
+                LaunchScreen()
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            withAnimation {
+                                isShowingSplash = false
+                            }
+                        }
+                    }
+            } else {
+                ContentView()
+            }
         }
     }
 }
