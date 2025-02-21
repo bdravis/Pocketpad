@@ -2,6 +2,7 @@ import sys
 import logging
 import asyncio
 import threading
+import time
 from typing import Any, Dict, Union
 from constants import POCKETPAD_CHARACTERISTIC, POCKETPAD_SERVICE
 
@@ -26,6 +27,19 @@ if sys.platform in ["darwin", "win32"]:
 else:
     trigger = asyncio.Event()
 
+def reconstruct_timestamp(sent_ms):
+    """Reconstruct possible timestamps based on the last 5 digits."""
+    cur_ms = int(time.time() * 1000)
+    cur = cur_ms // 100000 * 100000 
+    
+    possible_times = [cur + sent_ms, cur - 100000 + sent_ms]
+
+    closest_time = min(possible_times, key=lambda ts: abs(ts - cur_ms))
+    
+    latency = cur_ms - closest_time
+    
+    return closest_time, latency
+
 
 def read_request(characteristic: BlessGATTCharacteristic, **kwargs) -> bytearray:
     logger.debug(f"Reading {characteristic.uuid} - {characteristic.value}")
@@ -34,10 +48,10 @@ def read_request(characteristic: BlessGATTCharacteristic, **kwargs) -> bytearray
 
 def write_request(characteristic: BlessGATTCharacteristic, value: Any, **kwargs):
     characteristic.value = value
-    logger.debug(f"Char value set to {characteristic.value}")
-    if characteristic.value == b"\x0f":
-        logger.debug("Nice")
-        trigger.set()
+    sent_time, latency = reconstruct_timestamp(int(characteristic.value))
+
+    print(f"Client Sent Time (Reconstructed): {sent_time} ms")
+    print(f"Estimated Latency: {latency} ms")
 
 
 async def run(loop):
@@ -47,13 +61,20 @@ async def run(loop):
     gatt: Dict = {
         POCKETPAD_SERVICE: {
             POCKETPAD_CHARACTERISTIC: {
-                "Properties": GATTCharacteristicProperties.read,
-                "Permissions": GATTAttributePermissions.readable,
-                "Value": bytearray(b"PocketPad"),
+                "Properties": (
+                    GATTCharacteristicProperties.read
+                    | GATTCharacteristicProperties.write_without_response
+                    | GATTCharacteristicProperties.indicate
+                ),
+                "Permissions": (
+                    GATTAttributePermissions.readable
+                    | GATTAttributePermissions.writeable
+                ),
+                "Value": None,
             }
         },
     }
-    my_service_name = "Testing"
+    my_service_name = "PocketPad"
     server = BlessServer(name=my_service_name, loop=loop)
     server.read_request_func = read_request
     server.write_request_func = write_request
