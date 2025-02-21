@@ -244,7 +244,7 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="pushButton">
+                  <widget class="QPushButton" name="bluetooth_button">
                    <property name="text">
                     <string>Bluetooth</string>
                    </property>
@@ -318,8 +318,8 @@
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>98</width>
-                   <height>28</height>
+                   <width>236</width>
+                   <height>143</height>
                   </rect>
                  </property>
                 </widget>

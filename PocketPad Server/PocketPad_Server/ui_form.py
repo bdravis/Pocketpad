@@ -138,10 +138,10 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_7.addWidget(self.network_button)
 
-        self.pushButton = QPushButton(self.connection_selection)
-        self.pushButton.setObjectName(u"pushButton")
+        self.bluetooth_button = QPushButton(self.connection_selection)
+        self.bluetooth_button.setObjectName(u"bluetooth_button")
 
-        self.verticalLayout_7.addWidget(self.pushButton)
+        self.verticalLayout_7.addWidget(self.bluetooth_button)
 
 
         self.verticalLayout_6.addWidget(self.connection_selection)
@@ -176,7 +176,7 @@ class Ui_MainWindow(object):
         self.controller_checkboxes.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 98, 28))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 236, 143))
         self.controller_checkboxes.setWidget(self.scrollAreaWidgetContents)
 
         self.verticalLayout_5.addWidget(self.controller_checkboxes)
@@ -335,7 +335,7 @@ class Ui_MainWindow(object):
         self.settings_label.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>Settings</p></body></html>", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:10pt; font-weight:700;\">Connection Type:</span></p></body></html>", None))
         self.network_button.setText(QCoreApplication.translate("MainWindow", u"Network", None))
-        self.pushButton.setText(QCoreApplication.translate("MainWindow", u"Bluetooth", None))
+        self.bluetooth_button.setText(QCoreApplication.translate("MainWindow", u"Bluetooth", None))
         self.latency_setting_box.setText(QCoreApplication.translate("MainWindow", u"Display Controller Latency", None))
         self.settings_selection.setTabText(self.settings_selection.indexOf(self.network_tab), QCoreApplication.translate("MainWindow", u"Networks", None))
         self.settings_selection.setTabText(self.settings_selection.indexOf(self.controller_tab), QCoreApplication.translate("MainWindow", u"Controllers", None))
