@@ -30,7 +30,7 @@ struct ContentView: View {
                     HStack {
                         if let device = bluetoothManager.connectedDevice {
                             if let name = device.name {
-                                Text("Connected to '\(device.name)'")
+                                Text("Connected to '\(name)'")
                                     .foregroundColor(.green)
                                     .bold()
                             } else {

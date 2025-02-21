@@ -1,13 +1,8 @@
-"""
-Example for a BLE 4.0 Server using a GATT dictionary of services and
-characteristics
-"""
 import sys
 import logging
 import asyncio
 import threading
 from typing import Any, Dict, Union
-
 from constants import POCKETPAD_CHARACTERISTIC, POCKETPAD_SERVICE
 
 from bless import (  # type: ignore
@@ -50,20 +45,6 @@ async def run(loop):
 
     # Instantiate the server
     gatt: Dict = {
-        "A07498CA-AD5B-474E-940D-16F1FBE7E8CD": {
-            "51FF12BB-3ED8-46E5-B4F9-D64E2FEC021B": {
-                "Properties": (
-                    GATTCharacteristicProperties.read
-                    | GATTCharacteristicProperties.write
-                    | GATTCharacteristicProperties.indicate
-                ),
-                "Permissions": (
-                    GATTAttributePermissions.readable
-                    | GATTAttributePermissions.writeable
-                ),
-                "Value": None,
-            }
-        },
         POCKETPAD_SERVICE: {
             POCKETPAD_CHARACTERISTIC: {
                 "Properties": GATTCharacteristicProperties.read,
@@ -72,31 +53,18 @@ async def run(loop):
             }
         },
     }
-    my_service_name = "PocketPadService"
+    my_service_name = "Testing"
     server = BlessServer(name=my_service_name, loop=loop)
     server.read_request_func = read_request
     server.write_request_func = write_request
 
     await server.add_gatt(gatt)
-    await server.start()
-    logger.debug(server.get_characteristic("51FF12BB-3ED8-46E5-B4F9-D64E2FEC021B"))
+    await server.start(prioritize_local_name=True)
     logger.debug("Advertising")
-    logger.info(
-        "Write '0xF' to the advertised characteristic: "
-        + "51FF12BB-3ED8-46E5-B4F9-D64E2FEC021B"
-    )
     if trigger.__module__ == "threading":
         trigger.wait()
     else:
         await trigger.wait()
-    await asyncio.sleep(2)
-    logger.debug("Updating")
-    server.get_characteristic("51FF12BB-3ED8-46E5-B4F9-D64E2FEC021B").value = bytearray(
-        b"i"
-    )
-    server.update_value(
-        "A07498CA-AD5B-474E-940D-16F1FBE7E8CD", "51FF12BB-3ED8-46E5-B4F9-D64E2FEC021B"
-    )
     await asyncio.sleep(5)
     await server.stop()
 
