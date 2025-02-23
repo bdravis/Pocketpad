@@ -157,6 +157,7 @@ class Ui_MainWindow(object):
         sizePolicy2.setVerticalStretch(0)
         sizePolicy2.setHeightForWidth(self.latency_setting_box.sizePolicy().hasHeightForWidth())
         self.latency_setting_box.setSizePolicy(sizePolicy2)
+        self.latency_setting_box.setChecked(True)
         self.latency_setting_box.setTristate(False)
 
         self.verticalLayout_6.addWidget(self.latency_setting_box)
