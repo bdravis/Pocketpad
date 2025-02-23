@@ -147,6 +147,9 @@ extension BluetoothManager: CBPeripheralDelegate {
         }
         
         for service in services {
+            if service.uuid == POCKETPAD_SERVICE {
+                self.selectedService = service
+            }
             peripheral.discoverCharacteristics(nil, for: service)
         }
     }

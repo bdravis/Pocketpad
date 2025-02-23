@@ -89,6 +89,16 @@ struct ContentView: View {
                 bluetoothManager.stopScanning()
             }
         }
+        .onAppear {
+            Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+                if let service = bluetoothManager.selectedService {
+                    if let char = bluetoothManager.discoveredCharacteristics.first(where: { $0.uuid == POCKETPAD_CHARACTERISTIC }) {
+                        let now = Int(Date().timeIntervalSinceReferenceDate * 1000) % 100000
+                        service.peripheral?.writeValue(String(now).data(using: .utf8)!, for: char, type: .withoutResponse)
+                    }
+                }
+            }
+        }
     }
 }
 
