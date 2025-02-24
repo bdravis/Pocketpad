@@ -28,6 +28,7 @@ class MainWindow(QMainWindow):
 
         #server.set_latency_callback(self.update_latency)
 
+        self.connected_players = []
         #server.set_connection_callback(self.update_player_connection)
 
         #server.set_connection_callback(self.update_controller_type)
@@ -94,8 +95,13 @@ class MainWindow(QMainWindow):
         else:
             print("Hide Latency")
     
-    def update_player_connection(self, player_id, controller_type, ):
+    def update_player_connection(self, connection, player_id, controller_type):
         print("Updating Player Connection")
+        if connection == "connect":
+            print("Connect")
+
+        elif connection == "disconnect":
+            print("Disconnect")
 
     def update_controller_type(self, player_id, controller_type):
         print("Updating Controller")
