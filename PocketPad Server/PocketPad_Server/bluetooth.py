@@ -1,10 +1,11 @@
 import sys
+import json
 import logging
 import asyncio
 import threading
 import time
 from typing import Any, Dict, Union
-from constants import POCKETPAD_CHARACTERISTIC, POCKETPAD_SERVICE
+from constants import POCKETPAD_CHARACTERISTIC, POCKETPAD_SERVICE, DPAD_DIRECTIONS
 
 from bless import (  # type: ignore
     BlessServer,
@@ -47,12 +48,33 @@ def read_request(characteristic: BlessGATTCharacteristic, **kwargs) -> bytearray
 
 
 def write_request(characteristic: BlessGATTCharacteristic, value: Any, **kwargs):
+
     characteristic.value = value
-    sent_time, latency = reconstruct_timestamp(int(characteristic.value))
 
-    print(f"Client Sent Time (Reconstructed): {sent_time} ms")
-    print(f"Estimated Latency: {latency} ms")
+    print(f"Raw value: {characteristic.value}")
+    
+    try: # change the logic once multiple characteristics are established
+        # raise ValueError("temp")
+        # will fail if the bytes do not represent integers
+        sent_time, latency = reconstruct_timestamp(int(characteristic.value))
 
+        print(f"Client Sent Time (Reconstructed): {sent_time} ms")
+        print(f"Estimated Latency: {latency} ms")
+    except ValueError:
+        # test if the bytes represents a D-Pad direction
+        # Note: this characteristic is only used for testing
+        # there will be a separate characteristic
+
+        data = characteristic.value.decode('utf-8')
+        data_string = json.loads(data) # unwrap extra quotes
+
+        if data_string in DPAD_DIRECTIONS:
+            print(f"Received D-Pad direction: {data_string}")
+        else:
+            raise Exception("Input format not recognized")
+
+    except Exception as e:
+        print(f"Error: {e}")
 
 async def run(loop):
     trigger.clear()
