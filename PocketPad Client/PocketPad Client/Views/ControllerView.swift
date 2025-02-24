@@ -9,7 +9,12 @@ import SwiftUI
 
 // MARK: Debug Button Configuration
 let DEBUG_BUTTONS: [ButtonConfig] = [ // Example buttons
-    RegularButtonConfig(position: CGPoint(x: 200, y: 200), scale: 1.0, input: "B"),
+    // Diamond of buttons
+    RegularButtonConfig(position: CGPoint(x: 300, y: 200), scale: 1.0, input: "X"),
+    RegularButtonConfig(position: CGPoint(x: 240, y: 260), scale: 1.0, input: "Y"),
+    RegularButtonConfig(position: CGPoint(x: 360, y: 260), scale: 1.0, input: "A"),
+    RegularButtonConfig(position: CGPoint(x: 300, y: 320), scale: 1.0, input: "B"),
+    
     JoystickConfig(position: CGPoint(x: 0, y: 400), scale: 1.0, input: "RightJoystick"),
     DPadConfig(
         position: CGPoint(x: 100, y: 0), scale: 1.0,
