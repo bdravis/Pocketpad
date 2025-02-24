@@ -2,6 +2,8 @@
 /PocketPad Client/PocketPad Client.xcodeproj/xcuserdata
 .venv
 
+venv/
+
 # QT Creator
 # This file is used to ignore files which are generated
 # ----------------------------------------------------------------------------
