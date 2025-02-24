@@ -1,7 +1,7 @@
 # This Python file uses the following encoding: utf-8
 import sys
 
-#import bluetooth
+from Server_Implementation import bluetooth
 
 from PySide6.QtWidgets import QApplication, QMainWindow, QListWidgetItem, QMessageBox
 
