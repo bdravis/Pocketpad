@@ -7,9 +7,11 @@
 
 import SwiftUI
 
+
 let DPAD_THICKNESS = DEFAULT_BUTTON_SIZE * 0.35 // thickness is 35% of the default button size
 
 struct DPadButtonView: View {
+    
     var config: DPadConfig
     
     var body: some View {
@@ -26,17 +28,17 @@ struct DPadButtonView: View {
             
             // Horizontal directional arrows
             HStack {
-                DirectionalArrow(rotation: -90, input: config.inputs[.left]) // left arrow
+                DirectionalArrow(rotation: -90, input: config.inputs[.left], direction: .left) // left arrow
                 Spacer()
-                DirectionalArrow(rotation: 90, input: config.inputs[.right]) // right arrow
+                DirectionalArrow(rotation: 90, input: config.inputs[.right], direction: .right) // right arrow
             }
             .frame(maxHeight: DPAD_THICKNESS)
             
             // Vertical directional arrows
             VStack {
-                DirectionalArrow(rotation: 0, input: config.inputs[.up]) // up arrow
+                DirectionalArrow(rotation: 0, input: config.inputs[.up], direction: .up) // up arrow
                 Spacer()
-                DirectionalArrow(rotation: 180, input: config.inputs[.down]) // down arrow
+                DirectionalArrow(rotation: 180, input: config.inputs[.down], direction: .down) // down arrow
             }
             .frame(maxWidth: DPAD_THICKNESS)
         }
@@ -45,12 +47,27 @@ struct DPadButtonView: View {
 
 // Style for the directional arrow on the D-Pad
 struct DirectionalArrow: View {
+    @StateObject private var bluetoothManager = BluetoothManager.shared
+    
     let rotation: Double
     let input: String? // input used for the button action
+    let direction: DPadDirection
     
     var body: some View {
         Button(action: {
             // TODO: Button action
+            if let service = bluetoothManager.selectedService {
+                if let char = bluetoothManager.discoveredCharacteristics.first(where: { $0.uuid == POCKETPAD_CHARACTERISTIC }) {
+                    let encoder = JSONEncoder()
+                    do {
+                        let data = try encoder.encode(direction)
+                        service.peripheral?.writeValue(data, for: char, type: .withResponse)
+                    } catch {
+                        print("Encoding error: DPad input")
+                    }
+                }
+            }
+            
         }) {
             Triangle()
                 .rotation(.degrees(rotation))

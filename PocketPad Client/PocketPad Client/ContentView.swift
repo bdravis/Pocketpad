@@ -77,6 +77,12 @@ struct ContentView: View {
                             .cornerRadius(25)
                         }
                     }
+                    
+                    HStack {
+                        NavigationLink(destination: ControllerView(buttons: DEBUG_BUTTONS)) {
+                            Text("Open Debug ControllerView")
+                        }
+                    }
                     .padding()
                     
                     Spacer()
