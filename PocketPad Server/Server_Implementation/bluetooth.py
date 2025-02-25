@@ -1,11 +1,12 @@
 import sys
-import json
 import logging
 import asyncio
 import threading
 import time
 from typing import Any, Dict, Union
-from constants import POCKETPAD_CHARACTERISTIC, POCKETPAD_SERVICE, DPAD_DIRECTIONS
+from constants import (POCKETPAD_SERVICE, LATENCY_CHARACTERISTIC, 
+                       CONNECTION_CHARACTERISTIC, PLAYER_ID_CHARACTERISTIC, 
+                       CONTROLLER_TYPE_CHARACTERISTIC, INPUT_CHARACTERISTIC)
 
 from bless import (  # type: ignore
     BlessServer,
@@ -48,33 +49,18 @@ def read_request(characteristic: BlessGATTCharacteristic, **kwargs) -> bytearray
 
 
 def write_request(characteristic: BlessGATTCharacteristic, value: Any, **kwargs):
-
     characteristic.value = value
 
-    print(f"Raw value: {characteristic.value}")
-    
-    try: # change the logic once multiple characteristics are established
-        # raise ValueError("temp")
-        # will fail if the bytes do not represent integers
+
+    if (characteristic.uuid.upper() == LATENCY_CHARACTERISTIC):
         sent_time, latency = reconstruct_timestamp(int(characteristic.value))
 
         print(f"Client Sent Time (Reconstructed): {sent_time} ms")
         print(f"Estimated Latency: {latency} ms")
-    except ValueError:
-        # test if the bytes represents a D-Pad direction
-        # Note: this characteristic is only used for testing
-        # there will be a separate characteristic
 
-        data = characteristic.value.decode('utf-8')
-        data_string = json.loads(data) # unwrap extra quotes
+    if (characteristic.uuid.upper() == PLAYER_ID_CHARACTERISTIC):
+        print(f"Player: {int(characteristic.value)}")
 
-        if data_string in DPAD_DIRECTIONS:
-            print(f"Received D-Pad direction: {data_string}")
-        else:
-            raise Exception("Input format not recognized")
-
-    except Exception as e:
-        print(f"Error: {e}")
 
 async def run(loop):
     trigger.clear()
@@ -82,7 +68,71 @@ async def run(loop):
     # Instantiate the server
     gatt: Dict = {
         POCKETPAD_SERVICE: {
-            POCKETPAD_CHARACTERISTIC: {
+
+            # Client writes time of pckage sent to LATENCY_CHARACTERISTIC
+            # This is used to calculate latency by comparing to time received
+
+            LATENCY_CHARACTERISTIC: {
+                "Properties": (
+                    GATTCharacteristicProperties.read
+                    | GATTCharacteristicProperties.write_without_response
+                    | GATTCharacteristicProperties.indicate
+                ),
+                "Permissions": (
+                    GATTAttributePermissions.readable
+                    | GATTAttributePermissions.writeable
+                ),
+                "Value": None,
+            },
+
+            # Store when client connects or disconnects
+
+            CONNECTION_CHARACTERISTIC: {
+                "Properties": (
+                    GATTCharacteristicProperties.read
+                    | GATTCharacteristicProperties.write_without_response
+                    | GATTCharacteristicProperties.indicate
+                ),
+                "Permissions": (
+                    GATTAttributePermissions.readable
+                    | GATTAttributePermissions.writeable
+                ),
+                "Value": None,
+            },
+
+            # Store an id to differentiate between connected players
+
+            PLAYER_ID_CHARACTERISTIC: {
+                "Properties": (
+                    GATTCharacteristicProperties.read
+                    | GATTCharacteristicProperties.write_without_response
+                    | GATTCharacteristicProperties.indicate
+                ),
+                "Permissions": (
+                    GATTAttributePermissions.readable
+                    | GATTAttributePermissions.writeable
+                ),
+                "Value": None,
+            },
+
+            # Store what type of controller the packet was sent from
+
+            CONTROLLER_TYPE_CHARACTERISTIC: {
+                "Properties": (
+                    GATTCharacteristicProperties.read
+                    | GATTCharacteristicProperties.write_without_response
+                    | GATTCharacteristicProperties.indicate
+                ),
+                "Permissions": (
+                    GATTAttributePermissions.readable
+                    | GATTAttributePermissions.writeable
+                ),
+                "Value": None,
+            },
+
+            # Store inputs sent from client (Implementation undecided)
+
+            INPUT_CHARACTERISTIC: { # UNUSED RIGHT NOW
                 "Properties": (
                     GATTCharacteristicProperties.read
                     | GATTCharacteristicProperties.write_without_response
