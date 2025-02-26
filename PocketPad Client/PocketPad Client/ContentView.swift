@@ -105,7 +105,7 @@ struct ContentView: View {
                     HStack {
                         Spacer()
                         Button(action: {
-                            withAnimation(.easeInOut) {
+                            withAnimation(.bouncy) {
                                 isShowingSettings = true
                             }
                         }) {
@@ -124,7 +124,14 @@ struct ContentView: View {
         }
         // Overlay the SettingsMenuView when isShowingSettings is true
         .overlay(
-            Group {
+            ZStack {
+                Rectangle()
+                    .foregroundStyle(.regularMaterial)
+                    .environment(\.colorScheme, .dark) // force dark mode style
+                    .opacity(isShowingSettings ? 0.6 : 0.0)
+                    .animation(.easeOut, value: isShowingSettings)
+                    .ignoresSafeArea()
+                    
                 if isShowingSettings {
                     SettingsMenuView(
                         isShowingSettings: $isShowingSettings,

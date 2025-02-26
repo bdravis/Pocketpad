@@ -75,7 +75,6 @@ struct SettingsMenuView: View {
                 y: geometry.size.height / 2
             )
         }
-        .animation(.easeInOut, value: isShowingSettings)
     }
     
     // MARK: - Header with Close Button
@@ -87,7 +86,7 @@ struct SettingsMenuView: View {
                 .padding(.leading, 16)
             Spacer()
             Button {
-                withAnimation(.easeInOut) {
+                withAnimation(.bouncy) {
                     isShowingSettings = false
                 }
             } label: {
@@ -119,13 +118,16 @@ struct SettingsMenuView: View {
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .padding(.horizontal, 16)
-            Picker("Controller Type", selection: $selectedController) {
-                ForEach(controllerTypes, id: \.self) { type in
-                    Text(type).tag(type)
+            HStack {
+                Spacer()
+                Picker("Controller Type", selection: $selectedController) {
+                    ForEach(controllerTypes, id: \.self) { type in
+                        Text(type).tag(type)
+                    }
                 }
+                .pickerStyle(.menu)
+                .padding(.horizontal, 16)
             }
-            .pickerStyle(SegmentedPickerStyle())
-            .padding(.horizontal, 16)
             
             // Controller Color Section
             VStack(alignment: .leading, spacing: 10) {
@@ -209,3 +211,4 @@ struct SettingsMenuView: View {
         controllerName: .constant("")
     )
 }
+
