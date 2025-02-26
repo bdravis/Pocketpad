@@ -8,12 +8,14 @@
 import SwiftUI
 
 struct DPadButtonStyle: ButtonStyle {
+    var split: Bool
+    
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .background(Color(uiColor: .secondaryLabel).opacity(configuration.isPressed ? 1.0 : 0.0))
+            .background(Color(uiColor: .secondaryLabel).opacity(configuration.isPressed && !split ? 1.0 : 0.0))
             .foregroundStyle(Color(uiColor: configuration.isPressed ? .systemBackground : .label))
             .contentShape(Rectangle())
             .clipShape(Rectangle())
-            .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
+            .animation(.linear(duration: 0.1), value: configuration.isPressed)
     }
 }

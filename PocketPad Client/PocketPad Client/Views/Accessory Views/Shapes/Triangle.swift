@@ -16,6 +16,6 @@ struct Triangle: Shape {
         path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
         path.addLine(to: CGPoint(x: rect.midX, y: rect.minY))
 
-        return path.strokedPath(StrokeStyle(lineWidth: 1.5))
+        return path
     }
 }
