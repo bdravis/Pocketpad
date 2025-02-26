@@ -1,13 +1,13 @@
 # This Python file uses the following encoding: utf-8
 import sys
 
-from Server_Implementation import bluetooth
+import bluetooth_server
 
 from PySide6.QtWidgets import QApplication, QMainWindow, QListWidgetItem, QMessageBox
 
 # Important:
 # You need to run the following command to generate the ui_form.py file
-#     pyside6-uic form.ui -o ui_form.py, or
+#     pyside6-uic PocketPad.ui -o ui_form.py, or
 #     pyside2-uic form.ui -o ui_form.py
 from ui_form import Ui_MainWindow
 
@@ -46,11 +46,11 @@ class MainWindow(QMainWindow):
     
     def start_bluetooth_server(self):
         self.network_server_initiated=False
-        if (self.bluetooth_server_initiated == False):
+        if not self.bluetooth_server_initiated:
             self.bluetooth_server_initiated=True
             # Function to start up Bluetooth server
             #
-
+            bluetooth_server.start_server()
             #
             # Function to start up Bluetooth server
         else:
