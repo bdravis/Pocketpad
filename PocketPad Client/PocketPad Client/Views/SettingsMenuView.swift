@@ -22,16 +22,14 @@ private let maxHeightFraction: CGFloat = 0.9
 struct SettingsMenuView: View {
     // MARK: - Bound Properties
     @Binding var isShowingSettings: Bool
-    @Binding var isSplitDPad: Bool
-    @Binding var selectedController: String
-    @Binding var controllerColor: Color
-    @Binding var controllerName: String
+    
+    @AppStorage("splitDPad") var splitDPad: Bool = false
+    @AppStorage("selectedController") var selectedController: ControllerType = .Xbox
+    @AppStorage("controllerColor") var controllerColor: Color = .blue
+    @AppStorage("controllerName") var controllerName: String = "None"
     
     // MARK: - Local State for Color Grid Toggle
     @State private var showColorGrid: Bool = false
-    
-    // MARK: - Controller Types
-    private let controllerTypes = ["Xbox", "PlayStation", "GameCube", "Switch"]
     
     // MARK: - Body
     var body: some View {
@@ -86,9 +84,7 @@ struct SettingsMenuView: View {
                 .padding(.leading, 16)
             Spacer()
             Button {
-                withAnimation(.bouncy) {
-                    isShowingSettings = false
-                }
+                isShowingSettings = false
             } label: {
                 Image(systemName: "xmark.circle.fill")
                     .font(.title)
@@ -110,7 +106,7 @@ struct SettingsMenuView: View {
                 .padding(.horizontal, 16)
             
             // Toggle for D-Pad Layout
-            Toggle("Split vs Conjoined D-Pad", isOn: $isSplitDPad)
+            Toggle("Split vs Conjoined D-Pad", isOn: $splitDPad)
                 .padding(.horizontal, 16)
             
             // Controller Type Picker
@@ -121,8 +117,8 @@ struct SettingsMenuView: View {
             HStack {
                 Spacer()
                 Picker("Controller Type", selection: $selectedController) {
-                    ForEach(controllerTypes, id: \.self) { type in
-                        Text(type).tag(type)
+                    ForEach(ControllerType.allCases, id: \.self) { type in
+                        Text(type.rawValue).tag(type)
                     }
                 }
                 .pickerStyle(.menu)
@@ -204,11 +200,7 @@ struct SettingsMenuView: View {
 // MARK: - Preview
 #Preview {
     SettingsMenuView(
-        isShowingSettings: .constant(true),
-        isSplitDPad: .constant(false),
-        selectedController: .constant("Xbox"),
-        controllerColor: .constant(.blue),
-        controllerName: .constant("")
+        isShowingSettings: .constant(true)
     )
 }
 
