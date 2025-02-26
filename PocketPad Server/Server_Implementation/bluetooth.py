@@ -7,8 +7,8 @@ import time
 from typing import Any, Dict, Union
 from constants import (POCKETPAD_SERVICE, LATENCY_CHARACTERISTIC, 
                        CONNECTION_CHARACTERISTIC, PLAYER_ID_CHARACTERISTIC, 
-                       CONTROLLER_TYPE_CHARACTERISTIC, INPUT_CHARACTERISTIC,
-                       DPAD_DIRECTIONS)
+                       CONTROLLER_TYPE_CHARACTERISTIC, INPUT_CHARACTERISTIC)
+from inputs import parse_input
 
 from bless import (  # type: ignore
     BlessServer,
@@ -53,7 +53,6 @@ def read_request(characteristic: BlessGATTCharacteristic, **kwargs) -> bytearray
 def write_request(characteristic: BlessGATTCharacteristic, value: Any, **kwargs):
     characteristic.value = value
 
-
     if (characteristic.uuid.upper() == LATENCY_CHARACTERISTIC):
         sent_time, latency = reconstruct_timestamp(int(characteristic.value))
 
@@ -64,10 +63,7 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any, **kwargs)
         print(f"Player: {int(characteristic.value)}")
     
     if (characteristic.uuid.upper() == INPUT_CHARACTERISTIC):
-        data = characteristic.value.decode('utf-8')
-        data_string = json.loads(data) # unwrap extra quotes
-
-        print(data_string)
+        parse_input(characteristic.value)
 
 
 async def run(loop):

@@ -8,11 +8,11 @@
 import UIKit
 
 // Directional input format
-enum DPadDirection: Codable {
-    case up
-    case down
-    case left
-    case right
+enum DPadDirection: Int, Codable {
+    case up = 0
+    case down = 1
+    case left = 2
+    case right = 3
 }
 
 struct DPadConfig: ButtonConfig {
