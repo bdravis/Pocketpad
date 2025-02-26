@@ -11,10 +11,16 @@ import UIKit
 let DEFAULT_BUTTON_SIZE: CGFloat = 50.0
 
 // Enum for the type of button it is
-enum ButtonType: Codable {
-    case regular
-    case joystick
-    case dpad
+enum ButtonType: Int, Codable {
+    case regular = 0
+    case joystick = 1
+    case dpad = 2
+}
+
+// Whats gets sent to the server whenever a controller input is made, converted to JSON
+struct InputFormat: Codable {
+    var type: Int
+    var inputValue: Int // i.e. D-pad direction, which button on the controller
 }
 
 // Protocol for configuration of the buttons for the layout

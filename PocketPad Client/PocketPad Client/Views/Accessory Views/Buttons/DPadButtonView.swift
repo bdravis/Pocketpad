@@ -26,17 +26,17 @@ struct DPadButtonView: View {
             
             // Horizontal directional arrows
             HStack {
-                DirectionalArrow(rotation: -90, input: config.inputs[.left]) // left arrow
+                DirectionalArrow(rotation: -90, input: config.inputs[.left], direction: .left) // left arrow
                 Spacer()
-                DirectionalArrow(rotation: 90, input: config.inputs[.right]) // right arrow
+                DirectionalArrow(rotation: 90, input: config.inputs[.right], direction: .right) // right arrow
             }
             .frame(maxHeight: DPAD_THICKNESS)
             
             // Vertical directional arrows
             VStack {
-                DirectionalArrow(rotation: 0, input: config.inputs[.up]) // up arrow
+                DirectionalArrow(rotation: 0, input: config.inputs[.up], direction: .up) // up arrow
                 Spacer()
-                DirectionalArrow(rotation: 180, input: config.inputs[.down]) // down arrow
+                DirectionalArrow(rotation: 180, input: config.inputs[.down], direction: .down) // down arrow
             }
             .frame(maxWidth: DPAD_THICKNESS)
         }
@@ -45,12 +45,33 @@ struct DPadButtonView: View {
 
 // Style for the directional arrow on the D-Pad
 struct DirectionalArrow: View {
+    @StateObject private var bluetoothManager = BluetoothManager.shared
+    
     let rotation: Double
     let input: String? // input used for the button action
+    let direction: DPadDirection
     
     var body: some View {
         Button(action: {
             // TODO: Button action
+            if let service = bluetoothManager.selectedService {
+                if let char = bluetoothManager.discoveredCharacteristics.first(where: { $0.uuid == INPUT_CHARACTERISTIC }) {
+                    // Create an instance of InputFormat
+                    let directional_input = InputFormat(type: ButtonType.dpad.rawValue, inputValue: direction.rawValue)
+                    
+                    print("input of " + String(direction.rawValue))
+                    print(directional_input)
+                    
+                    let encoder = JSONEncoder()
+                    do {
+                        let data = try encoder.encode(directional_input)
+                        print("hehehaw")
+                        service.peripheral?.writeValue(data, for: char, type: .withoutResponse)
+                    } catch {
+                        print("Error encoding directional input")
+                    }
+                }
+            }
         }) {
             Triangle()
                 .rotation(.degrees(rotation))
