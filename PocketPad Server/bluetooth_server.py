@@ -1,12 +1,14 @@
 import sys
 import logging
 import asyncio
+import json
 import threading
 import time
 from typing import Any, Dict, Union
 from server_constants import (POCKETPAD_SERVICE, LATENCY_CHARACTERISTIC, 
                        CONNECTION_CHARACTERISTIC, PLAYER_ID_CHARACTERISTIC, 
-                       CONTROLLER_TYPE_CHARACTERISTIC, INPUT_CHARACTERISTIC)
+                       CONTROLLER_TYPE_CHARACTERISTIC, INPUT_CHARACTERISTIC,
+                       DPAD_DIRECTIONS)
 
 from bless import (  # type: ignore
     BlessServer,
@@ -55,6 +57,12 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any, **kwargs)
 
     if (characteristic.uuid.upper() == PLAYER_ID_CHARACTERISTIC):
         print(f"Player: {int(characteristic.value)}")
+    
+    if (characteristic.uuid.upper() == INPUT_CHARACTERISTIC):
+        data = characteristic.value.decode('utf-8')
+        data_string = json.loads(data) # unwrap extra quotes
+
+        print(data_string)
 
 
 async def run(loop):

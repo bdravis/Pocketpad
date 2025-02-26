@@ -1,5 +1,5 @@
 .DS_Store
-/PocketPad Client/PocketPad Client.xcodeproj/xcuserdata
+/PocketPad Client/PocketPad Client.xcodeproj/project.xcworkspace/xcuserdata
 .venv
 
 venv/
