@@ -156,6 +156,21 @@ struct ContentView: View {
                 }
             }
         }
+        // Overlay the SettingsMenuView when isShowingSettings is true.
+        .overlay(
+            Group {
+                if isShowingSettings {
+                    SettingsMenuView(
+                        isShowingSettings: $isShowingSettings,
+                        isSplitDPad: $isSplitDPad,
+                        selectedController: $selectedController,
+                        controllerColor: $controllerColor,
+                        controllerName: $controllerName
+                    )
+                    .transition(.move(edge: .top))
+                }
+            }
+        )
     }
 }
 
