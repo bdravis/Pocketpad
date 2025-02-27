@@ -1,36 +1,69 @@
-import json
 from enums import (ButtonType, DPadDirection)
+from struct import unpack
 
 def parse_input(raw_data):
-    # parse into dict
-    input_dict = json.loads(raw_data.decode('utf-8'))
+    # Find number of bytes in input data
+    data_length_in_bytes = len(raw_data)
+    format_str = "B" * data_length_in_bytes
 
-    # extract type and input value
-    raw_type = input_dict["type"]
-    raw_input_value = input_dict["inputValue"]
+    # Unpack the raw data into a tuple
+    unpacked_data = unpack(format_str, raw_data)
+    print("DEBUG: Unpacked data")
+    print(unpacked_data)
 
-    # check if type is a valid buttonType
+    # Check that common fields exist
+    try:
+        # Fields that are common to all sets of input data
+        num_common_fields = 4
+        player_id = unpacked_data[0]
+        controller_id = unpacked_data[1]
+        input_id = unpacked_data[2]
+        raw_type = unpacked_data[3]
+    except:
+        print("Error: Input format missing fields")
+        return
+
+    # Check for valid button type
     try:
         button_type = ButtonType(raw_type)
-
-        if button_type == ButtonType.REGULAR:
-            print("TBD")
-        elif button_type == ButtonType.JOYSTICK:
-            print("TBD")
-        elif button_type == ButtonType.DPAD:
-            # check if value is a valid D-pad Direction
-            try:
-                direction = DPadDirection(raw_input_value)
-
-                if direction == DPadDirection.UP:
-                    print("Received UP")
-                elif direction == DPadDirection.DOWN:
-                    print("Received DOWN")
-                elif direction == DPadDirection.LEFT:
-                    print("Received LEFT")
-                elif direction == DPadDirection.RIGHT:
-                    print("Received RIGHT")
-            except:
-                print("Error: Invalid DPad Direction")
     except:
         print("Error: Invalid Button Type")
+        return
+
+    if button_type == ButtonType.REGULAR:
+        print(f"DEBUG: Received Input for Button {input_id}")
+        print("Regular CLICK")
+
+    elif button_type == ButtonType.JOYSTICK:
+        print(f"DEBUG: Received Input for Joystick {input_id}")
+
+        # TODO Parse joystick input
+        
+    elif button_type == ButtonType.DPAD:
+        print(f"DEBUG: Input for D-Pad {input_id}")
+
+        # Check if value is a valid D-pad Direction
+        try:
+            raw_direction = unpacked_data[num_common_fields]
+        except:
+            print("Error: D-Pad input format missing fields")
+            return
+
+        try:
+            direction = DPadDirection(raw_direction)
+        except:
+            print("Error: Invalid DPad direction")
+            return
+        
+        if direction == DPadDirection.UP:
+            print("Received UP")
+        elif direction == DPadDirection.DOWN:
+            print("Received DOWN")
+        elif direction == DPadDirection.LEFT:
+            print("Received LEFT")
+        elif direction == DPadDirection.RIGHT:
+            print("Received RIGHT")
+        else:
+            print("Error: DPad direction not handled")
+    else:
+        print("Error: Button type not handled")
