@@ -8,25 +8,35 @@
 import SwiftUI
 
 struct ContentView: View {
+    // MARK: - State Variables for Settings
+    @State private var isShowingSettings = false
+    @State private var isSplitDPad = false
+    @State private var selectedController = "Xbox"
+    @State private var controllerColor = Color.blue
+    @State private var controllerName = ""
+    
     @StateObject private var bluetoothManager = BluetoothManager.shared
     
     var body: some View {
-        NavigationView {
-            ZStack(alignment: .top) {
+        NavigationStack {
+            ZStack {
+                // Background color
                 Color(.blue)
                     .opacity(0.1)
                     .ignoresSafeArea()
                 
-                VStack {
+                // Main Content
+                VStack(spacing: 20) {
+                    // Title
                     HStack {
                         Text("PocketPad")
                             .font(.largeTitle)
                             .multilineTextAlignment(.leading)
                             .padding()
-                        
                         Spacer()
                     }
                     
+                    // Bluetooth Connection Status
                     HStack {
                         if let device = bluetoothManager.connectedDevice {
                             if let name = device.name {
@@ -77,13 +87,57 @@ struct ContentView: View {
                             .cornerRadius(25)
                         }
                     }
-                    .padding()
+                    .padding(.horizontal)
+                    
+                    // NavigationLink to ControllerView for Debugging
+                    HStack {
+                        NavigationLink(destination: ControllerView(buttons: DEBUG_BUTTONS)) {
+                            Text("Open Debug ControllerView")
+                        }
+                    }
+                    .padding(.horizontal)
                     
                     Spacer()
                 }
+                
+                // Gear Icon for Settings (top-right)
+                VStack {
+                    HStack {
+                        Spacer()
+                        Button(action: {
+                            withAnimation(.easeInOut) {
+                                isShowingSettings = true
+                            }
+                        }) {
+                            Image(systemName: "gearshape.fill")
+                                .resizable()
+                                .frame(width: 30, height: 30)
+                                .foregroundColor(.accentColor)
+                                .padding()
+                        }
+                    }
+                    Spacer()
+                }
             }
-            
+            .navigationTitle("Controller")
+            .navigationBarTitleDisplayMode(.inline)
         }
+        // Overlay the SettingsMenuView when isShowingSettings is true
+        .overlay(
+            Group {
+                if isShowingSettings {
+                    SettingsMenuView(
+                        isShowingSettings: $isShowingSettings,
+                        isSplitDPad: $isSplitDPad,
+                        selectedController: $selectedController,
+                        controllerColor: $controllerColor,
+                        controllerName: $controllerName
+                    )
+                    .transition(.move(edge: .top))
+                }
+            }
+        )
+        // Bluetooth Manager updates (from first version)
         .onChange(of: bluetoothManager.connectedDevice) { device in
             if device != nil {
                 bluetoothManager.stopScanning()
@@ -102,9 +156,27 @@ struct ContentView: View {
                 }
             }
         }
+        // Overlay the SettingsMenuView when isShowingSettings is true.
+        .overlay(
+            Group {
+                if isShowingSettings {
+                    SettingsMenuView(
+                        isShowingSettings: $isShowingSettings,
+                        isSplitDPad: $isSplitDPad,
+                        selectedController: $selectedController,
+                        controllerColor: $controllerColor,
+                        controllerName: $controllerName
+                    )
+                    .transition(.move(edge: .top))
+                }
+            }
+        )
     }
 }
 
-#Preview {
-    ContentView()
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+    }
 }
+

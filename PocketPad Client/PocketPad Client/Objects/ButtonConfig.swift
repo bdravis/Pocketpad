@@ -11,10 +11,10 @@ import UIKit
 let DEFAULT_BUTTON_SIZE: CGFloat = 50.0
 
 // Enum for the type of button it is
-enum ButtonType: Codable {
-    case regular
-    case joystick
-    case dpad
+enum ButtonType: UInt8, Codable {
+    case regular = 0
+    case joystick = 1
+    case dpad = 2
 }
 
 // Protocol for configuration of the buttons for the layout
@@ -24,6 +24,9 @@ protocol ButtonConfig: Codable {
     var scale: CGFloat { get set } // % scale of the button (1.0 = 100% scale)
     
     var type: ButtonType { get set } // what type of button it is
+    
+    var inputId: UInt8 { get set } // id for buttons when sending input
+    
 }
 
 extension ButtonConfig {
@@ -63,5 +66,13 @@ extension ButtonConfig {
         }
         
         return fixedPos
+    }
+    
+    // Creates input_id for the new button config
+    mutating func create_input_id(controllerConfigId: UInt8) {
+        // TODO: once controllerConfigId is added
+        // Looks through remaining available inputId's for the specified controller configuration
+        // Then assigns one to the current button configuration
+        
     }
 }
