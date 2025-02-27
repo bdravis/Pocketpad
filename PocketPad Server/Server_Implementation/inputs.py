@@ -15,9 +15,9 @@ def parse_input(raw_data):
     try:
         # Fields that are common to all sets of input data
         num_common_fields = 4
-        raw_player_id = unpacked_data[0]
-        raw_controller_id = unpacked_data[1]
-        raw_input_id = unpacked_data[2]
+        player_id = unpacked_data[0]
+        controller_id = unpacked_data[1]
+        input_id = unpacked_data[2]
         raw_type = unpacked_data[3]
     except:
         print("Error: Input format missing fields")
@@ -31,11 +31,18 @@ def parse_input(raw_data):
         return
 
     if button_type == ButtonType.REGULAR:
-        print("Regular Button, TBD")
+        print(f"DEBUG: Received Input for Button {input_id}")
+        print("Regular CLICK")
+
     elif button_type == ButtonType.JOYSTICK:
-        print("Joystick, TBD")
+        print(f"DEBUG: Received Input for Joystick {input_id}")
+
+        # TODO Parse joystick input
+        
     elif button_type == ButtonType.DPAD:
-        # check if value is a valid D-pad Direction
+        print(f"DEBUG: Input for D-Pad {input_id}")
+
+        # Check if value is a valid D-pad Direction
         try:
             raw_direction = unpacked_data[num_common_fields]
         except:
