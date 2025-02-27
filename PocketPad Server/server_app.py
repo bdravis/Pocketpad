@@ -3,7 +3,9 @@ import sys
 
 import bluetooth_server
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QListWidgetItem, QMessageBox
+from PySide6.QtWidgets import QApplication, QMainWindow, QListWidgetItem, QMessageBox, QCheckBox, QVBoxLayout, QWidget
+
+from PySide6.QtGui import QFont
 
 # Important:
 # You need to run the following command to generate the ui_form.py file
@@ -17,6 +19,10 @@ class MainWindow(QMainWindow):
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+
+        self.connected_players = []
+        self.player_checkbox_mapping = {}
+        self.num_players_connected = 0
         
         self.ui.bluetooth_button.clicked.connect(self.start_bluetooth_server)
         self.bluetooth_server_initiated=False
@@ -26,13 +32,35 @@ class MainWindow(QMainWindow):
 
         self.ui.latency_setting_box.stateChanged.connect(self.toggle_latency)
 
-        #server.set_latency_callback(self.update_latency)
+        # Callback function for updating a given player's latency
+        #
+        bluetooth_server.set_latency_callback(self.update_latency)
+        #
+        # Callback function for updating a given player's latency 
+        
+        # Callback function for updating player connection list
+        #
+        bluetooth_server.set_connection_callback(self.update_player_connection)
+        #
+        # Callback function for updating player connection list
 
-        self.connected_players = []
-        #server.set_connection_callback(self.update_player_connection)
+        # Callback function for updating a given player's controller type (Idk if function name will differ so feel free to change)
+        #
+        bluetooth_server.set_connection_callback(self.update_controller_type)
+        #
+        # Callback function for updating a given player's controller type
 
-        #server.set_connection_callback(self.update_controller_type)
+        self.checkbox_container = QWidget()
+        self.checkbox_layout = QVBoxLayout(self.checkbox_container)
+        self.ui.controller_checkboxes.setWidget(self.checkbox_container)
+        self.ui.controller_checkboxes.setWidgetResizable(True)        
 
+        # Dev testing function calls
+        #
+        #self.ui.bluetooth_button.clicked.connect(lambda: self.update_player_connection("disconnect", f"player {self.num_players_connected - 1}", "xbox"))
+        #self.ui.network_button.clicked.connect(lambda: self.update_player_connection("connect", f"player {self.num_players_connected}", "xbox"))
+        #
+        # Dev testing function calls
 
     def start_network_server(self):
         self.bluetooth_server_initiated=False
@@ -43,16 +71,20 @@ class MainWindow(QMainWindow):
             already_initiated.setText("Network Server is already running")
             already_initiated.exec()
 
-    
+    #   This function will start up a bluetooth server (and eventually shut down a network server) using the
+    #   functionality implemented for server start-up in bluetooth_server.py. If the bluetooth server is
+    #   already advertising, it will display a messagebox on the user's screen letting them know that the
+    #   bluetooth server is already advertising. 
+    #
+    #   @param: self - the instance of the PocketPadWindow
+    #
+    #   @return: none
+    #
     def start_bluetooth_server(self):
         self.network_server_initiated=False
         if not self.bluetooth_server_initiated:
             self.bluetooth_server_initiated=True
-            # Function to start up Bluetooth server
-            #
             bluetooth_server.start_server()
-            #
-            # Function to start up Bluetooth server
         else:
             already_initiated = QMessageBox()
             already_initiated.setText("Bluetooth Server is already running")
@@ -96,15 +128,100 @@ class MainWindow(QMainWindow):
             print("Hide Latency")
     
     def update_player_connection(self, connection, player_id, controller_type):
-        print("Updating Player Connection")
-        if connection == "connect":
-            print("Connect")
+        if (connection == "connect"):
+            if player_id not in self.connected_players:
+                player_connection = QListWidgetItem()
 
-        elif connection == "disconnect":
-            print("Disconnect")
+                # Generate player name
+                #
+                player_connection_font = QFont()
+                player_connection_font.setPointSize(14)
+                player_connection.setText(player_id)
+                player_connection.setFont(player_connection_font)
+                self.connected_players.append(player_id)
+                #
+                # Generate player name
+                
+                # Implement functionality for creating icons
+                #
+                #if (controller_type == "custom"):
+                #    player_connection.setIcon(QIcon(_<enter path to icon>_))
+                #elif ():
+                #
+                # Implement functionality for creating icons
+
+                self.ui.connection_list.addItem(player_connection)
+
+                # Generate user checkboxes
+                #
+                controller_checkbox = QCheckBox(f"Display {player_id}'s inputs")
+                controller_checkbox.setStyleSheet("QCheckBox { font-size: 16px; background-color: transparent;}")
+                controller_checkbox.setMinimumHeight(25)
+                controller_checkbox.setMaximumHeight(50)
+                #controller_checkbox.stateChanged.connect(lambda state, cb=controller_checkbox: self.on_checkbox_toggled(cb, state))
+                self.checkbox_layout.addWidget(controller_checkbox)
+                self.player_checkbox_mapping[player_id] = controller_checkbox
+                #
+                # Generate user checkboxes 
+
+                # Implement generate controller mockup
+                #
+                
+                #
+                # Implement generate controller mockup
+
+                # Update number of connected users
+                #
+                self.num_players_connected+=1
+                self.ui.num_connected_label.setText(f"{self.num_players_connected}/4")
+                #
+                # Update number of connected users
+            else:
+                already_initiated = QMessageBox()
+                already_initiated.setText(f"A player with player_id, {player_id}, already is connected")
+                already_initiated.exec()
+
+        elif (connection == "disconnect"):
+
+            for player_index in range(self.ui.connection_list.count()):
+                player_connection = self.ui.connection_list.item(player_index)
+                if (player_connection.text() == player_id):
+                    self.ui.connection_list.takeItem(player_index)
+
+            # Remove player's checkbox
+            #
+            if (player_id in self.player_checkbox_mapping):
+                controller_checkbox = self.player_checkbox_mapping[player_id]
+                self.checkbox_layout.removeWidget(controller_checkbox)
+                controller_checkbox.deleteLater()
+                del self.player_checkbox_mapping[player_id]
+            else:
+                already_initiated = QMessageBox()
+                already_initiated.setText(f"A player with player_id, {player_id}, does not exist")
+                already_initiated.exec()
+            #
+            # Remove player's checkbox
+
+            # Implement remove controller mockups
+            #
+
+            #
+            # Implement remove controller mockups
+            
+            if (player_id in self.connected_players):
+                self.connected_players.remove(player_id)
+                self.num_players_connected-=1
+                self.ui.num_connected_label.setText(f"{self.num_players_connected}/4")
+            else:
+                already_initiated = QMessageBox()
+                already_initiated.setText(f"A player with player_id, {player_id}, does not exist")
+                already_initiated.exec()
 
     def update_controller_type(self, player_id, controller_type):
         print("Updating Controller")
+
+    def display_controller_input(self, player_id, input):
+        print("Display Controller Input")
 
     def toggle_controller_input(self, player_id):
         print("Toggling Controller Input")
