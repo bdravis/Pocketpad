@@ -26,7 +26,7 @@ struct SettingsMenuView: View {
     @AppStorage("splitDPad") var splitDPad: Bool = false
     @AppStorage("selectedController") var selectedController: ControllerType = .Xbox
     @AppStorage("controllerColor") var controllerColor: Color = .blue
-    @AppStorage("controllerName") var controllerName: String = ""
+    @AppStorage("controllerName") var controllerName: String = "Enter controller name"
     
     // MARK: - Local State for Color Grid Toggle
     @State private var showColorGrid: Bool = false
@@ -126,6 +126,9 @@ struct SettingsMenuView: View {
             // Controller Color Section
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
+                    Text("Controller Color")
+                        .foregroundColor(.primary)
+                    Spacer()
                     Circle()
                         .fill(controllerColor)
                         .frame(width: 44, height: 44)
@@ -174,11 +177,14 @@ struct SettingsMenuView: View {
                     .padding(.horizontal, 16)
                 }
             }
-            
-            // Controller Name Section
-            TextField("Enter controller name", text: $controllerName)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding(.horizontal, 16)
+            HStack {
+                            Text("Controller Name")
+                                .foregroundColor(.primary)
+                            Spacer()
+                            TextField("Enter controller name", text: $controllerName)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                        }
+                        .padding(.horizontal, 16)
         }
     }
 }
