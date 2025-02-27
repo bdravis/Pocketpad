@@ -3,7 +3,7 @@ import sys
 
 import bluetooth_server
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QListWidgetItem, QMessageBox, QCheckBox, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QApplication, QMainWindow, QListWidgetItem, QMessageBox, QCheckBox, QVBoxLayout, QWidget, QLabel, QHBoxLayout
 
 from PySide6.QtGui import QFont
 
@@ -24,41 +24,41 @@ class MainWindow(QMainWindow):
         self.player_checkbox_mapping = {}
         self.num_players_connected = 0
         
-        self.ui.bluetooth_button.clicked.connect(self.start_bluetooth_server)
+        #self.ui.bluetooth_button.clicked.connect(self.start_bluetooth_server)
         self.bluetooth_server_initiated=False
 
-        self.ui.network_button.clicked.connect(self.start_network_server)
+        #self.ui.network_button.clicked.connect(self.start_network_server)
         self.network_server_initiated=False
 
         self.ui.latency_setting_box.stateChanged.connect(self.toggle_latency)
 
         # Callback function for updating a given player's latency
         #
-        bluetooth_server.set_latency_callback(self.update_latency)
+        #bluetooth_server.set_latency_callback(self.update_latency)
         #
         # Callback function for updating a given player's latency 
         
         # Callback function for updating player connection list
         #
-        bluetooth_server.set_connection_callback(self.update_player_connection)
+        #bluetooth_server.set_connection_callback(self.update_player_connection)
         #
         # Callback function for updating player connection list
 
         # Callback function for updating a given player's controller type (Idk if function name will differ so feel free to change)
         #
-        bluetooth_server.set_connection_callback(self.update_controller_type)
+        #bluetooth_server.set_connection_callback(self.update_controller_type)
         #
         # Callback function for updating a given player's controller type
 
         self.checkbox_container = QWidget()
         self.checkbox_layout = QVBoxLayout(self.checkbox_container)
         self.ui.controller_checkboxes.setWidget(self.checkbox_container)
-        self.ui.controller_checkboxes.setWidgetResizable(True)        
+        self.ui.controller_checkboxes.setWidgetResizable(True)
 
         # Dev testing function calls
         #
-        #self.ui.bluetooth_button.clicked.connect(lambda: self.update_player_connection("disconnect", f"player {self.num_players_connected - 1}", "xbox"))
-        #self.ui.network_button.clicked.connect(lambda: self.update_player_connection("connect", f"player {self.num_players_connected}", "xbox"))
+        self.ui.bluetooth_button.clicked.connect(lambda: self.update_player_connection("disconnect", f"player {self.num_players_connected - 1}", "xbox"))
+        self.ui.network_button.clicked.connect(lambda: self.update_player_connection("connect", f"player {self.num_players_connected}", "xbox"))
         #
         # Dev testing function calls
 
@@ -166,7 +166,23 @@ class MainWindow(QMainWindow):
 
                 # Implement generate controller mockup
                 #
-                
+                controller_widget = QWidget()
+        
+                controller_name = QLabel(f"{player_id}'s Controller")
+                controller_latency = QLabel("0 ms")
+        
+                text_format_layout = QHBoxLayout()
+                text_format_layout.addWidget(controller_name)
+                text_format_layout.addWidget(controller_latency)
+        
+                controller_widget.setLayout(text_format_layout)
+        
+                main_layout = QVBoxLayout()
+                main_layout.addWidget(controller_widget)
+                main_layout.addStretch()
+        
+                # Set the main layout on the widget.
+                self.setLayout(main_layout)
                 #
                 # Implement generate controller mockup
 
