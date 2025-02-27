@@ -10,6 +10,7 @@ import SwiftUI
 let STICK_SIZE = DEFAULT_BUTTON_SIZE / 3
 
 struct JoystickButtonView: View {
+    @StateObject private var bluetoothManager = BluetoothManager.shared
     var config: JoystickConfig
     
     var body: some View {
