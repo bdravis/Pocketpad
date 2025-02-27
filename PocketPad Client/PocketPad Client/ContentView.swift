@@ -120,8 +120,7 @@ struct ContentView: View {
         .overlay(
             ZStack {
                 Rectangle()
-                    .foregroundStyle(.regularMaterial)
-                    .environment(\.colorScheme, .dark) // force dark mode style
+                    .foregroundStyle(.black)
                     .opacity(isShowingSettings ? 0.6 : 0.0)
                     .animation(.easeOut, value: isShowingSettings)
                     .ignoresSafeArea()
