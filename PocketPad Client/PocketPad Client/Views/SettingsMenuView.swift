@@ -22,21 +22,18 @@ private let maxHeightFraction: CGFloat = 0.9
 struct SettingsMenuView: View {
     // MARK: - Bound Properties
     @Binding var isShowingSettings: Bool
-    @Binding var isSplitDPad: Bool
-    @Binding var selectedController: String
-    @Binding var controllerColor: Color
-    @Binding var controllerName: String
+    
+    @AppStorage("splitDPad") var splitDPad: Bool = false
+    @AppStorage("selectedController") var selectedController: ControllerType = .Xbox
+    @AppStorage("controllerColor") var controllerColor: Color = .blue
+    @AppStorage("controllerName") var controllerName: String = ""
     
     // MARK: - Local State for Color Grid Toggle
     @State private var showColorGrid: Bool = false
     
-    // MARK: - Controller Types
-    private let controllerTypes = ["Xbox", "PlayStation", "GameCube", "Switch"]
-    
     // MARK: - Body
     var body: some View {
         GeometryReader { geometry in
-            // adaptive menu size based on the available space.
             let menuWidth = min(
                 max(minMenuWidth, geometry.size.width * 0.5),
                 geometry.size.width * maxWidthFraction
@@ -47,7 +44,7 @@ struct SettingsMenuView: View {
             )
             
             ZStack {
-                // Background with blur effect and rounded corners.
+                // Background with blur effect and rounded corners
                 RoundedRectangle(cornerRadius: 15)
                     .fill(.regularMaterial)
                     .frame(width: menuWidth, height: menuHeight)
@@ -69,13 +66,12 @@ struct SettingsMenuView: View {
                 }
                 .frame(width: menuWidth, height: menuHeight)
             }
-            // Center the menu on the screen.
+            // Center the menu on the screen
             .position(
                 x: geometry.size.width / 2,
                 y: geometry.size.height / 2
             )
         }
-        .animation(.easeInOut, value: isShowingSettings)
     }
     
     // MARK: - Header with Close Button
@@ -87,9 +83,7 @@ struct SettingsMenuView: View {
                 .padding(.leading, 16)
             Spacer()
             Button {
-                withAnimation(.easeInOut) {
-                    isShowingSettings = false
-                }
+                isShowingSettings = false
             } label: {
                 Image(systemName: "xmark.circle.fill")
                     .font(.title)
@@ -97,45 +91,41 @@ struct SettingsMenuView: View {
                     .padding(.trailing, 16)
             }
         }
-        .padding(.vertical, 12)
+        .padding(.vertical, 16)
     }
     
     // MARK: - Main Settings Content
     private var settingsContent: some View {
         VStack(alignment: .leading, spacing: 20) {
-            // Controller Settings Title
-            Text("Controller Settings")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .padding(.top, 20)
-                .padding(.horizontal, 16)
-            
-            // Toggle for D-Pad Layout
-            Toggle("Split vs Conjoined D-Pad", isOn: $isSplitDPad)
-                .padding(.horizontal, 16)
-            
             // Controller Type Picker
-            Text("Controller Type")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .padding(.horizontal, 16)
-            Picker("Controller Type", selection: $selectedController) {
-                ForEach(controllerTypes, id: \.self) { type in
-                    Text(type).tag(type)
+            HStack {
+                Text("Controller Type")
+                    .foregroundColor(.primary)
+                Spacer()
+                Picker("Controller Type", selection: $selectedController) {
+                    ForEach(ControllerType.allCases, id: \.self) { type in
+                        Text(type.rawValue).tag(type)
+                    }
                 }
+                .pickerStyle(.menu)
             }
-            .pickerStyle(SegmentedPickerStyle())
+            .padding(.horizontal, 16)
+            //Picker for D-PAD (Split (True) vs Conjoined (False))
+            HStack {
+                Text("D-PAD")
+                    .foregroundColor(.primary)
+                Spacer()
+                Picker("D-PAD", selection: $splitDPad) {
+                    Text("Conjoined").tag(false)
+                    Text("Split").tag(true)
+                }
+                .pickerStyle(.menu)
+            }
             .padding(.horizontal, 16)
             
             // Controller Color Section
             VStack(alignment: .leading, spacing: 10) {
-                Text("Controller Color")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .padding(.horizontal, 16)
-                
                 HStack {
-                    // Show the current color as a circle.
                     Circle()
                         .fill(controllerColor)
                         .frame(width: 44, height: 44)
@@ -145,7 +135,6 @@ struct SettingsMenuView: View {
                     
                     Spacer()
                     
-                    // Button to open/close the color grid.
                     Button(action: {
                         withAnimation {
                             showColorGrid.toggle()
@@ -157,7 +146,6 @@ struct SettingsMenuView: View {
                 }
                 .padding(.horizontal, 16)
                 
-                // Display the color grid if the user tapped "Change Color"
                 if showColorGrid {
                     let columns = [
                         GridItem(.flexible()),
@@ -178,7 +166,7 @@ struct SettingsMenuView: View {
                                 .onTapGesture {
                                     withAnimation {
                                         controllerColor = color
-                                        showColorGrid = false // Hide the grid after selection
+                                        showColorGrid = false
                                     }
                                 }
                         }
@@ -188,10 +176,6 @@ struct SettingsMenuView: View {
             }
             
             // Controller Name Section
-            Text("Controller Name")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .padding(.horizontal, 16)
             TextField("Enter controller name", text: $controllerName)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding(.horizontal, 16)
@@ -202,10 +186,7 @@ struct SettingsMenuView: View {
 // MARK: - Preview
 #Preview {
     SettingsMenuView(
-        isShowingSettings: .constant(true),
-        isSplitDPad: .constant(false),
-        selectedController: .constant("Xbox"),
-        controllerColor: .constant(.blue),
-        controllerName: .constant("")
+        isShowingSettings: .constant(true)
     )
 }
+

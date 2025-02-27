@@ -13,18 +13,20 @@ struct PocketPad_ClientApp: App {
     
     var body: some Scene {
         WindowGroup {
-            if isShowingSplash {
-                LaunchScreen()
-                    .onAppear {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                            withAnimation {
-                                isShowingSplash = false
+            ContentView()
+                .overlay {
+                    LaunchScreen()
+                        .opacity(isShowingSplash ? 1.0 : 0.0)
+                        .transition(.opacity)
+                        .animation(.easeIn, value: isShowingSplash)
+                        .onAppear {
+                            if isShowingSplash {
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                    isShowingSplash = false
+                                }
                             }
                         }
-                    }
-            } else {
-                ContentView()
-            }
+                }
         }
     }
 }
