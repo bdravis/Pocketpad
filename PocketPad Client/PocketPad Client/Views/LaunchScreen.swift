@@ -26,6 +26,7 @@ struct LaunchScreen: View {
                     .foregroundColor(.blue)
             }
         }
+        .background(Color(uiColor: .systemBackground))
     }
 }
 

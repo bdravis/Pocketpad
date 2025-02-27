@@ -10,10 +10,6 @@ import SwiftUI
 struct ContentView: View {
     // MARK: - State Variables for Settings
     @State private var isShowingSettings = false
-    @State private var isSplitDPad = false
-    @State private var selectedController = "Xbox"
-    @State private var controllerColor = Color.blue
-    @State private var controllerName = ""
     
     @StateObject private var bluetoothManager = BluetoothManager.shared
     
@@ -105,9 +101,7 @@ struct ContentView: View {
                     HStack {
                         Spacer()
                         Button(action: {
-                            withAnimation(.easeInOut) {
-                                isShowingSettings = true
-                            }
+                            isShowingSettings = true
                         }) {
                             Image(systemName: "gearshape.fill")
                                 .resizable()
@@ -124,17 +118,18 @@ struct ContentView: View {
         }
         // Overlay the SettingsMenuView when isShowingSettings is true
         .overlay(
-            Group {
-                if isShowingSettings {
-                    SettingsMenuView(
-                        isShowingSettings: $isShowingSettings,
-                        isSplitDPad: $isSplitDPad,
-                        selectedController: $selectedController,
-                        controllerColor: $controllerColor,
-                        controllerName: $controllerName
-                    )
+            ZStack {
+                Rectangle()
+                    .foregroundStyle(.regularMaterial)
+                    .environment(\.colorScheme, .dark) // force dark mode style
+                    .opacity(isShowingSettings ? 0.6 : 0.0)
+                    .animation(.easeOut, value: isShowingSettings)
+                    .ignoresSafeArea()
+                    
+                SettingsMenuView(isShowingSettings: $isShowingSettings)
+                    .offset(y: isShowingSettings ? 0 : -UIScreen.main.bounds.height)
                     .transition(.move(edge: .top))
-                }
+                    .animation(.bouncy, value: isShowingSettings)
             }
         )
         // Bluetooth Manager updates (from first version)
@@ -156,21 +151,6 @@ struct ContentView: View {
                 }
             }
         }
-        // Overlay the SettingsMenuView when isShowingSettings is true.
-        .overlay(
-            Group {
-                if isShowingSettings {
-                    SettingsMenuView(
-                        isShowingSettings: $isShowingSettings,
-                        isSplitDPad: $isSplitDPad,
-                        selectedController: $selectedController,
-                        controllerColor: $controllerColor,
-                        controllerName: $controllerName
-                    )
-                    .transition(.move(edge: .top))
-                }
-            }
-        )
     }
 }
 
