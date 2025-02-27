@@ -5,7 +5,7 @@ import json
 import threading
 import time
 from typing import Any, Dict, Union
-from constants import (POCKETPAD_SERVICE, LATENCY_CHARACTERISTIC, 
+from server_constants import (POCKETPAD_SERVICE, LATENCY_CHARACTERISTIC, 
                        CONNECTION_CHARACTERISTIC, PLAYER_ID_CHARACTERISTIC, 
                        CONTROLLER_TYPE_CHARACTERISTIC, INPUT_CHARACTERISTIC)
 from inputs import parse_input
@@ -17,19 +17,14 @@ from bless import (  # type: ignore
     GATTAttributePermissions,
 )
 
+logger = None
+trigger: Union[asyncio.Event, threading.Event] = None
+thread = None
+
 class BlessServer(BlessServer):
     async def add_new_descriptor(self, service_uuid, char_uuid, desc_uuid, properties, value, permissions):
         print(f"Adding descriptor {desc_uuid} to {char_uuid} in {service_uuid}")
         return super().add_new_descriptor(service_uuid, char_uuid, desc_uuid, properties, value, permissions)
-
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(name=__name__)
-
-trigger: Union[asyncio.Event, threading.Event]
-if sys.platform in ["darwin", "win32"]:
-    trigger = threading.Event()
-else:
-    trigger = asyncio.Event()
 
 def reconstruct_timestamp(sent_ms):
     """Reconstruct possible timestamps based on the last 5 digits."""
@@ -67,6 +62,8 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any, **kwargs)
 
 
 async def run(loop):
+    global logger, trigger
+    
     trigger.clear()
 
     # Instantiate the server
@@ -165,6 +162,30 @@ async def run(loop):
     await asyncio.sleep(5)
     await server.stop()
 
+logger = logging.getLogger(name=__name__)
 
-loop = asyncio.get_event_loop()
-loop.run_until_complete(run(loop))
+#   This function is starts advertising the BLESS server to 
+#   the users creating a thread for an instance of the server
+#   loop
+#
+#   @param: NONE
+#
+#   @return: NONE
+#
+def start_server():
+    global logger, trigger, thread
+    logging.basicConfig(level=logging.DEBUG)
+
+    if sys.platform in ["darwin", "win32"]:
+        trigger = threading.Event()
+    else:
+        trigger = asyncio.Event()
+
+    loop = asyncio.new_event_loop()
+
+    def run_loop():
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(run(loop))
+
+    thread = threading.Thread(target=run_loop, daemon=True)
+    thread.start()

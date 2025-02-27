@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'form.ui'
+## Form generated from reading UI file 'PocketPad.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.8.2
 ##
@@ -59,7 +59,7 @@ class Ui_MainWindow(object):
         self.controllers_label.setSizePolicy(sizePolicy1)
         self.controllers_label.setMaximumSize(QSize(16777215, 30))
         font = QFont()
-        font.setPointSize(12)
+        font.setPointSize(14)
         font.setBold(True)
         self.controllers_label.setFont(font)
         self.controllers_label.setAlignment(Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignTop)
@@ -77,6 +77,9 @@ class Ui_MainWindow(object):
         self.num_connected_label.setObjectName(u"num_connected_label")
         sizePolicy1.setHeightForWidth(self.num_connected_label.sizePolicy().hasHeightForWidth())
         self.num_connected_label.setSizePolicy(sizePolicy1)
+        font1 = QFont()
+        font1.setPointSize(10)
+        self.num_connected_label.setFont(font1)
         self.num_connected_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_3.addWidget(self.num_connected_label)
@@ -115,14 +118,11 @@ class Ui_MainWindow(object):
         self.network_tab.setObjectName(u"network_tab")
         self.verticalLayout_6 = QVBoxLayout(self.network_tab)
         self.verticalLayout_6.setObjectName(u"verticalLayout_6")
-        self.verticalSpacer_5 = QSpacerItem(20, 5, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
-
-        self.verticalLayout_6.addItem(self.verticalSpacer_5)
-
         self.connection_selection = QFrame(self.network_tab)
         self.connection_selection.setObjectName(u"connection_selection")
         sizePolicy.setHeightForWidth(self.connection_selection.sizePolicy().hasHeightForWidth())
         self.connection_selection.setSizePolicy(sizePolicy)
+        self.connection_selection.setMinimumSize(QSize(0, 75))
         self.connection_selection.setFrameShape(QFrame.Shape.StyledPanel)
         self.verticalLayout_7 = QVBoxLayout(self.connection_selection)
         self.verticalLayout_7.setObjectName(u"verticalLayout_7")
@@ -135,13 +135,30 @@ class Ui_MainWindow(object):
 
         self.network_button = QPushButton(self.connection_selection)
         self.network_button.setObjectName(u"network_button")
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.network_button.sizePolicy().hasHeightForWidth())
+        self.network_button.setSizePolicy(sizePolicy2)
+        self.network_button.setMaximumSize(QSize(16777215, 50))
 
         self.verticalLayout_7.addWidget(self.network_button)
 
         self.bluetooth_button = QPushButton(self.connection_selection)
         self.bluetooth_button.setObjectName(u"bluetooth_button")
+        sizePolicy2.setHeightForWidth(self.bluetooth_button.sizePolicy().hasHeightForWidth())
+        self.bluetooth_button.setSizePolicy(sizePolicy2)
+        self.bluetooth_button.setMaximumSize(QSize(16777215, 50))
 
         self.verticalLayout_7.addWidget(self.bluetooth_button)
+
+        self.server_close_button = QPushButton(self.connection_selection)
+        self.server_close_button.setObjectName(u"server_close_button")
+        sizePolicy2.setHeightForWidth(self.server_close_button.sizePolicy().hasHeightForWidth())
+        self.server_close_button.setSizePolicy(sizePolicy2)
+        self.server_close_button.setMaximumSize(QSize(16777215, 50))
+
+        self.verticalLayout_7.addWidget(self.server_close_button)
 
 
         self.verticalLayout_6.addWidget(self.connection_selection)
@@ -152,19 +169,15 @@ class Ui_MainWindow(object):
 
         self.latency_setting_box = QCheckBox(self.network_tab)
         self.latency_setting_box.setObjectName(u"latency_setting_box")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        sizePolicy2.setHorizontalStretch(0)
-        sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.latency_setting_box.sizePolicy().hasHeightForWidth())
-        self.latency_setting_box.setSizePolicy(sizePolicy2)
+        sizePolicy3 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        sizePolicy3.setHorizontalStretch(0)
+        sizePolicy3.setVerticalStretch(0)
+        sizePolicy3.setHeightForWidth(self.latency_setting_box.sizePolicy().hasHeightForWidth())
+        self.latency_setting_box.setSizePolicy(sizePolicy3)
         self.latency_setting_box.setChecked(True)
         self.latency_setting_box.setTristate(False)
 
         self.verticalLayout_6.addWidget(self.latency_setting_box)
-
-        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-
-        self.verticalLayout_6.addItem(self.verticalSpacer_2)
 
         self.settings_selection.addTab(self.network_tab, "")
         self.controller_tab = QWidget()
@@ -177,7 +190,7 @@ class Ui_MainWindow(object):
         self.controller_checkboxes.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 236, 143))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 236, 139))
         self.controller_checkboxes.setWidget(self.scrollAreaWidgetContents)
 
         self.verticalLayout_5.addWidget(self.controller_checkboxes)
@@ -198,11 +211,11 @@ class Ui_MainWindow(object):
 
         self.main_application_area = QWidget(self.centralwidget)
         self.main_application_area.setObjectName(u"main_application_area")
-        sizePolicy3 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        sizePolicy3.setHorizontalStretch(1)
-        sizePolicy3.setVerticalStretch(0)
-        sizePolicy3.setHeightForWidth(self.main_application_area.sizePolicy().hasHeightForWidth())
-        self.main_application_area.setSizePolicy(sizePolicy3)
+        sizePolicy4 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        sizePolicy4.setHorizontalStretch(1)
+        sizePolicy4.setVerticalStretch(0)
+        sizePolicy4.setHeightForWidth(self.main_application_area.sizePolicy().hasHeightForWidth())
+        self.main_application_area.setSizePolicy(sizePolicy4)
         self.main_application_area.setMinimumSize(QSize(400, 100))
         self.verticalLayout = QVBoxLayout(self.main_application_area)
         self.verticalLayout.setObjectName(u"verticalLayout")
@@ -212,8 +225,8 @@ class Ui_MainWindow(object):
 
         self.graphicsView = QFrame(self.main_application_area)
         self.graphicsView.setObjectName(u"graphicsView")
-        sizePolicy3.setHeightForWidth(self.graphicsView.sizePolicy().hasHeightForWidth())
-        self.graphicsView.setSizePolicy(sizePolicy3)
+        sizePolicy4.setHeightForWidth(self.graphicsView.sizePolicy().hasHeightForWidth())
+        self.graphicsView.setSizePolicy(sizePolicy4)
         self.graphicsView.setMinimumSize(QSize(25, 375))
         self.graphicsView.setFrameShape(QFrame.Shape.StyledPanel)
 
@@ -263,11 +276,11 @@ class Ui_MainWindow(object):
 
         self.view_code = QPushButton(self.widget)
         self.view_code.setObjectName(u"view_code")
-        sizePolicy4 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
-        sizePolicy4.setHorizontalStretch(0)
-        sizePolicy4.setVerticalStretch(0)
-        sizePolicy4.setHeightForWidth(self.view_code.sizePolicy().hasHeightForWidth())
-        self.view_code.setSizePolicy(sizePolicy4)
+        sizePolicy5 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+        sizePolicy5.setHorizontalStretch(0)
+        sizePolicy5.setVerticalStretch(0)
+        sizePolicy5.setHeightForWidth(self.view_code.sizePolicy().hasHeightForWidth())
+        self.view_code.setSizePolicy(sizePolicy5)
         self.view_code.setMinimumSize(QSize(0, 25))
         self.view_code.setMaximumSize(QSize(50, 16777215))
 
@@ -282,10 +295,10 @@ class Ui_MainWindow(object):
 
         self.label_2 = QLabel(self.connection_code_box)
         self.label_2.setObjectName(u"label_2")
-        font1 = QFont()
-        font1.setPointSize(30)
-        font1.setBold(True)
-        self.label_2.setFont(font1)
+        font2 = QFont()
+        font2.setPointSize(30)
+        font2.setBold(True)
+        self.label_2.setFont(font2)
         self.label_2.setTextFormat(Qt.TextFormat.PlainText)
         self.label_2.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
@@ -334,9 +347,10 @@ class Ui_MainWindow(object):
         self.controllers_label.setText(QCoreApplication.translate("MainWindow", u"Connected Controllers", None))
         self.num_connected_label.setText(QCoreApplication.translate("MainWindow", u"0/4", None))
         self.settings_label.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>Settings</p></body></html>", None))
-        self.label.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:10pt; font-weight:700;\">Connection Type:</span></p></body></html>", None))
-        self.network_button.setText(QCoreApplication.translate("MainWindow", u"Network", None))
-        self.bluetooth_button.setText(QCoreApplication.translate("MainWindow", u"Bluetooth", None))
+        self.label.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:10pt; font-weight:700;\">Server Options:</span></p></body></html>", None))
+        self.network_button.setText(QCoreApplication.translate("MainWindow", u"Network Server", None))
+        self.bluetooth_button.setText(QCoreApplication.translate("MainWindow", u"Bluetooth Server", None))
+        self.server_close_button.setText(QCoreApplication.translate("MainWindow", u"Shut Down Server", None))
         self.latency_setting_box.setText(QCoreApplication.translate("MainWindow", u"Display Controller Latency", None))
         self.settings_selection.setTabText(self.settings_selection.indexOf(self.network_tab), QCoreApplication.translate("MainWindow", u"Networks", None))
         self.settings_selection.setTabText(self.settings_selection.indexOf(self.controller_tab), QCoreApplication.translate("MainWindow", u"Controllers", None))
