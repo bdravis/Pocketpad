@@ -12,7 +12,7 @@ struct JoystickConfig: ButtonConfig {
     var position: CGPoint
     var scale: CGFloat
     var type: ButtonType
-    var input_id: UInt8
+    var inputId: UInt8
     
     var input: String // which joystick button it will correlate to
     var sensitivity: Double // the sensitivity of the controller
@@ -20,7 +20,7 @@ struct JoystickConfig: ButtonConfig {
     
     // Object Initializer
     init(
-        position: CGPoint, scale: CGFloat, input_id: UInt8,
+        position: CGPoint, scale: CGFloat, inputId: UInt8,
         input: String, sensitivity: Double = 0.0, deadzone: Double = 0.0
     ) {
         self.type = .joystick
@@ -28,8 +28,8 @@ struct JoystickConfig: ButtonConfig {
         self.position = position
         self.scale = scale
         
-        self.input_id = input_id
-        // TODO: Change input_id to controller id, see ButtonConfig file
+        self.inputId = inputId
+        // TODO: Change inputId to controllerConfigId, see ButtonConfig file
         
         self.input = input
         self.sensitivity = sensitivity

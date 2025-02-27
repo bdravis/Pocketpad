@@ -20,13 +20,13 @@ struct DPadConfig: ButtonConfig {
     var position: CGPoint
     var scale: CGFloat
     var type: ButtonType
-    var input_id: UInt8
+    var inputId: UInt8
     
     var inputs: [DPadDirection: String] // what the buttons of the dpad are
     
     // Object Initializer
     init(
-        position: CGPoint, scale: CGFloat, input_id: UInt8,
+        position: CGPoint, scale: CGFloat, inputId: UInt8,
         inputs: [DPadDirection: String]
     ) {
         self.type = .dpad
@@ -34,8 +34,8 @@ struct DPadConfig: ButtonConfig {
         self.position = position
         self.scale = scale
         
-        self.input_id = input_id
-        // TODO: Change input_id to controller id, see ButtonConfig file
+        self.inputId = inputId
+        // TODO: Change inputId to controllerId, see ButtonConfig file
         
         self.inputs = inputs
     }

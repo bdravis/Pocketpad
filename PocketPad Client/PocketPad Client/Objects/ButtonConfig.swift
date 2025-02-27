@@ -17,13 +17,6 @@ enum ButtonType: UInt8, Codable {
     case dpad = 2
 }
 
-// Whats gets sent to the server whenever a controller input is made, converted to JSON
-struct InputFormat: Codable {
-    var type: Int // i.e. regular, joystick, or dpad
-    var inputValue: Int // i.e. D-pad direction, which button on the controller
-    var id: UUID // id of associated config
-}
-
 // Protocol for configuration of the buttons for the layout
 protocol ButtonConfig: Codable {
     var id: UUID { get }
@@ -32,7 +25,7 @@ protocol ButtonConfig: Codable {
     
     var type: ButtonType { get set } // what type of button it is
     
-    var input_id: UInt8 { get set } // id for buttons when sending input
+    var inputId: UInt8 { get set } // id for buttons when sending input
     
 }
 
@@ -76,9 +69,9 @@ extension ButtonConfig {
     }
     
     // Creates input_id for the new button config
-    mutating func create_input_id(controller_config_id: UInt8) {
-        // TODO: once controller_config_id is added
-        // Looks through remaining available input_id's for the specified controller configuration
+    mutating func create_input_id(controllerConfigId: UInt8) {
+        // TODO: once controllerConfigId is added
+        // Looks through remaining available inputId's for the specified controller configuration
         // Then assigns one to the current button configuration
         
     }

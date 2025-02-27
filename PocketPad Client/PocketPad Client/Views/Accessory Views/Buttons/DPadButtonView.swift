@@ -57,15 +57,19 @@ struct DirectionalArrow: View {
             // TODO: Button action
             if let service = bluetoothManager.selectedService {
                 if let char = bluetoothManager.discoveredCharacteristics.first(where: { $0.uuid == INPUT_CHARACTERISTIC }) {
-                    // Create an instance of InputFormat
-                    let directional_input = InputFormat(type: ButtonType.dpad.rawValue, inputValue: direction.rawValue, id: config.id)
-                    let encoder = JSONEncoder()
-                    do {
-                        let data = try encoder.encode(directional_input)
-                        service.peripheral?.writeValue(data, for: char, type: .withoutResponse)
-                    } catch {
-                        print("Error encoding directional input")
-                    }
+                    let ui8_playerId: UInt8 = 0 // Assuming one player
+                    let ui8_controllerId: UInt8 = 0 // Set constant for now
+                    let ui8_inputId : UInt8 = config.inputId
+                    let ui8_buttonType : UInt8 = config.type.rawValue
+                    let ui8_dpadDirection : UInt8 = direction.rawValue
+                    
+                    print(ui8_playerId)
+                    print(ui8_controllerId)
+                    print(ui8_inputId)
+                    print(ui8_buttonType)
+                    print(ui8_dpadDirection)
+                    let data = Data([ui8_playerId, ui8_controllerId, ui8_inputId, ui8_buttonType, ui8_dpadDirection])
+                    service.peripheral?.writeValue(data, for: char, type: .withoutResponse)
                 }
             }
         }) {
