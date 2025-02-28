@@ -52,6 +52,7 @@ struct SettingsMenuView: View {
                 VStack(spacing: 0) {
                     headerView
                     Divider()
+                        .padding(.bottom, 6)
                     ScrollView {
                         settingsContent
                             .padding(.bottom, 20)
@@ -85,12 +86,12 @@ struct SettingsMenuView: View {
                     .padding(.trailing, 16)
             }
         }
-        .padding(.vertical, 16)
+        .padding(.vertical, 10)
     }
     
     // MARK: - Main Settings Content
     private var settingsContent: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: 14) {
             // Controller Type Picker
             HStack {
                 Text("Controller Type")
