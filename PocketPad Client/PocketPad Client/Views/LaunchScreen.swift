@@ -14,11 +14,12 @@ struct LaunchScreen: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 20) {
-                Image(systemName: "gamecontroller.circle.fill")
+                Image("Logo")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 100, height: 100)
-                    .foregroundColor(.blue)
+                    .padding(15)
+                    .frame(width: 130, height: 130)
+                    .background(.blue, in: Circle())
                 
                 Text("PocketPad")
                     .font(.title)
