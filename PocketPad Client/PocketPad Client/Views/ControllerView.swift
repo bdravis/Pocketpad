@@ -15,6 +15,8 @@ let DEBUG_BUTTONS: [ButtonConfig] = [ // Example buttons
     RegularButtonConfig(position: CGPoint(x: 360, y: 260), scale: 1.0, inputId: 2, input: "A"),
     RegularButtonConfig(position: CGPoint(x: 300, y: 320), scale: 1.0, inputId: 3, input: "B"),
     
+    RegularButtonConfig(position: CGPoint(x: 200, y: 100), scale: 1.0, inputId: 6, input: "Start", style: .Pill),
+    
     JoystickConfig(position: CGPoint(x: 0, y: 400), scale: 1.0, inputId: 4, input: "RightJoystick"),
     DPadConfig(
         position: CGPoint(x: 100, y: 0), scale: 1.0, inputId: 5,

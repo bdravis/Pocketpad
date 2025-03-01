@@ -31,6 +31,6 @@ struct RegularButtonView: View {
         }) {
             Text(config.input)
         }
-        .buttonStyle(CircularButtonStyle()) // TODO: Fix the hitbox being a square
+        .applyButtonStyle(style: config.style)
     }
 }

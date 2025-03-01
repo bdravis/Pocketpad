@@ -18,8 +18,8 @@ struct CircularButtonStyle: ButtonStyle {
             .minimumScaleFactor(0.01)
             .scaledToFill()
             .lineLimit(1)
-            .clipShape(Circle())
             .contentShape(Circle())
+            .clipShape(Circle())
             .overlay(
                 Circle()
                     .strokeBorder(Color(uiColor: .label), lineWidth: 3)
