@@ -7,12 +7,6 @@
 
 import SwiftUI
 
-// MARK: - Example Colors for the Grid
-private let availableColors: [Color] = [
-    .red, .blue, .green, .orange,
-    .yellow, .purple, .pink, .gray
-]
-
 // MARK: - Layout Constants
 private let minMenuWidth: CGFloat = 320
 private let minMenuHeight: CGFloat = 500
@@ -58,6 +52,7 @@ struct SettingsMenuView: View {
                 VStack(spacing: 0) {
                     headerView
                     Divider()
+                        .padding(.bottom, 6)
                     ScrollView {
                         settingsContent
                             .padding(.bottom, 20)
@@ -91,12 +86,12 @@ struct SettingsMenuView: View {
                     .padding(.trailing, 16)
             }
         }
-        .padding(.vertical, 16)
+        .padding(.vertical, 10)
     }
     
     // MARK: - Main Settings Content
     private var settingsContent: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: 14) {
             // Controller Type Picker
             HStack {
                 Text("Controller Type")
@@ -128,54 +123,15 @@ struct SettingsMenuView: View {
                 HStack {
                     Text("Controller Color")
                         .foregroundColor(.primary)
-                    Spacer()
-                    Circle()
-                        .fill(controllerColor)
-                        .frame(width: 44, height: 44)
-                        .overlay(
-                            Circle().stroke(Color(.separator), lineWidth: 1)
-                        )
                     
                     Spacer()
                     
-                    Button(action: {
-                        withAnimation {
-                            showColorGrid.toggle()
-                        }
-                    }) {
-                        Text("Change Color")
-                    }
-                    .padding(.trailing, 16)
+                    ColorPicker("", selection: $controllerColor, supportsOpacity: false)
+                        .labelsHidden()
+                        .padding(.trailing, 16)
+
                 }
                 .padding(.horizontal, 16)
-                
-                if showColorGrid {
-                    let columns = [
-                        GridItem(.flexible()),
-                        GridItem(.flexible())
-                    ]
-                    
-                    LazyVGrid(columns: columns, spacing: 10) {
-                        ForEach(availableColors, id: \.self) { color in
-                            Rectangle()
-                                .fill(color)
-                                .frame(height: 44)
-                                .cornerRadius(8)
-                                .overlay(
-                                    Image(systemName: "checkmark")
-                                        .foregroundColor(.white)
-                                        .opacity(controllerColor == color ? 1 : 0)
-                                )
-                                .onTapGesture {
-                                    withAnimation {
-                                        controllerColor = color
-                                        showColorGrid = false
-                                    }
-                                }
-                        }
-                    }
-                    .padding(.horizontal, 16)
-                }
             }
             HStack {
                             Text("Controller Name")
