@@ -7,11 +7,6 @@
 
 import UIKit
 
-enum RegularButtonStyle: Codable {
-    case Circle
-    case Pill
-}
-
 struct RegularButtonConfig: ButtonConfig {
     // Protocol Properties
     var position: CGPoint
@@ -20,13 +15,13 @@ struct RegularButtonConfig: ButtonConfig {
     var inputId: UInt8
     
     var input: String // the button it is bound to
-    var style: RegularButtonStyle // the style/shape of the button on the view
+    var style: RegularButtonStyle // style configuration of the button
     var turbo: Bool // whether or not it is a turbo tap
     
     // Object Initializer
     init(
         position: CGPoint, scale: CGFloat, inputId: UInt8,
-        input: String, style: RegularButtonStyle = .Circle, turbo: Bool = false
+        input: String, style: RegularButtonStyle? = nil, turbo: Bool = false
     ) {
         self.type = .regular
         
@@ -37,7 +32,13 @@ struct RegularButtonConfig: ButtonConfig {
         // TODO: Change inputId to controllerId, see ButtonConfig file
         
         self.input = input
-        self.style = style
         self.turbo = turbo
+        
+        if let style = style {
+            self.style = style
+        } else {
+            // create a default style configuration
+            self.style = .init(shape: .Circle, iconType: .Text, icon: input)
+        }
     }
 }

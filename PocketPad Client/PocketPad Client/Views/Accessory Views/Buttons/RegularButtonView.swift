@@ -29,8 +29,21 @@ struct RegularButtonView: View {
                 }
             }
         }) {
-            Text(config.input)
+            if let icon = config.style.icon {
+                switch config.style.iconType {
+                case .Text:
+                    Text(icon)
+                case .SFSymbol:
+                    ZStack {
+                        Image(systemName: icon)
+                            .resizable()
+                            .scaledToFit() // make sure it does not stretch
+                    }
+                }
+            } else {
+                Text("") // empty textbox
+            }
         }
-        .applyButtonStyle(style: config.style)
+        .applyButtonStyle(shape: config.style.shape)
     }
 }
