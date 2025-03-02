@@ -191,6 +191,7 @@ def start_server():
     thread = threading.Thread(target=run_loop, daemon=True)
     thread.start()
 
+# NEEDS WORK
 def stop_server():
     global trigger, thread, loop
     print("Stop Server")
@@ -202,6 +203,7 @@ def stop_server():
 
     if loop and loop.is_running():
         loop.call_soon_threadsafe(loop.stop)
+# NEEDS WORK
 
 # Main function to start the bluetooth server for testing purposes
 if __name__ == "__main__":
