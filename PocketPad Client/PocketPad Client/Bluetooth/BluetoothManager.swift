@@ -27,6 +27,8 @@ class BluetoothManager: NSObject, ObservableObject {
     @Published var writeStatus: String = ""
     @Published var isConnecting = false
     
+    @Published var connectionError: String?
+    
     private override init() {
         super.init()
         centralManager = CBCentralManager(delegate: self, queue: nil)
@@ -73,6 +75,21 @@ class BluetoothManager: NSObject, ObservableObject {
         }
     }
     
+    func sendInput(_ data: Data) {
+        guard let service = selectedService else { return }
+        if let char = discoveredCharacteristics.first(where: { $0.uuid == INPUT_CHARACTERISTIC }) {
+            peripheral?.writeValue(data, for: char, type: .withoutResponse)
+        }
+    }
+    
+    func pingServer() {
+        guard let service = selectedService else { return }
+        if let char = discoveredCharacteristics.first(where: { $0.uuid == LATENCY_CHARACTERISTIC }) {
+            let now = Int(Date().timeIntervalSinceReferenceDate * 1000) % 100000
+            service.peripheral?.writeValue(String(now).data(using: .utf8)!, for: char, type: .withoutResponse)
+        }
+    }
+    
     func readValue(for characteristic: CBCharacteristic) {
         peripheral?.readValue(for: characteristic)
     }
@@ -115,6 +132,7 @@ extension BluetoothManager: CBCentralManagerDelegate {
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
         DispatchQueue.main.async {
             self.isConnecting = false
+            self.connectionError = error?.localizedDescription
             print("Failed to connect: \(error?.localizedDescription ?? "Unknown error")")
         }
     }

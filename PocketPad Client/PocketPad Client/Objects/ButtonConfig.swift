@@ -67,12 +67,4 @@ extension ButtonConfig {
         
         return fixedPos
     }
-    
-    // Creates input_id for the new button config
-    mutating func create_input_id(controllerConfigId: UInt8) {
-        // TODO: once controllerConfigId is added
-        // Looks through remaining available inputId's for the specified controller configuration
-        // Then assigns one to the current button configuration
-        
-    }
 }

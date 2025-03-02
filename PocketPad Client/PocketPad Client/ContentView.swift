@@ -34,7 +34,11 @@ struct ContentView: View {
                     
                     // Bluetooth Connection Status
                     HStack {
-                        if let device = bluetoothManager.connectedDevice {
+                        if bluetoothManager.bluetoothState != .poweredOn {
+                            Text("Bluetooth is Off")
+                                .foregroundColor(.red)
+                                .bold()
+                        } else if let device = bluetoothManager.connectedDevice {
                             if let name = device.name {
                                 Text("Connected to '\(name)'")
                                     .foregroundColor(.green)
@@ -81,6 +85,8 @@ struct ContentView: View {
                             }
                             .background(Color.blue)
                             .cornerRadius(25)
+                            .opacity(bluetoothManager.bluetoothState != .poweredOn ? 0.5 : 1.0)
+                            .disabled(bluetoothManager.bluetoothState != .poweredOn)
                         }
                     }
                     .padding(.horizontal)
@@ -138,16 +144,13 @@ struct ContentView: View {
             }
         }
         .onAppear {
-            Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-                if let service = bluetoothManager.selectedService {
-                    if let char = bluetoothManager.discoveredCharacteristics.first(where: { $0.uuid == LATENCY_CHARACTERISTIC }) {
-                        let now = Int(Date().timeIntervalSinceReferenceDate * 1000) % 100000
-                        service.peripheral?.writeValue(String(now).data(using: .utf8)!, for: char, type: .withoutResponse)
-                    }
-                    if let char = bluetoothManager.discoveredCharacteristics.first(where: { $0.uuid == PLAYER_ID_CHARACTERISTIC }) {
-                        service.peripheral?.writeValue(String(0).data(using: .utf8)!, for: char, type: .withoutResponse)
-                    }
-                }
+            Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
+                bluetoothManager.pingServer()
+//                if let service = bluetoothManager.selectedService {
+//                    if let char = bluetoothManager.discoveredCharacteristics.first(where: { $0.uuid == PLAYER_ID_CHARACTERISTIC }) {
+//                        service.peripheral?.writeValue(String(0).data(using: .utf8)!, for: char, type: .withoutResponse)
+//                    }
+//                }
             }
         }
     }

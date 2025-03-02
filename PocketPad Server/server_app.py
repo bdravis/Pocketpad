@@ -28,10 +28,10 @@ class MainWindow(QMainWindow):
         self.player_controller_input_display = {}
         self.num_players_connected = 0
         
-        #self.ui.bluetooth_button.clicked.connect(self.start_bluetooth_server)
+        self.ui.bluetooth_button.clicked.connect(self.start_bluetooth_server)
         self.bluetooth_server_initiated=False
 
-        #self.ui.network_button.clicked.connect(self.start_network_server)
+        self.ui.network_button.clicked.connect(self.start_network_server)
         self.network_server_initiated=False
 
         self.ui.latency_setting_box.stateChanged.connect(self.toggle_latency)
