@@ -35,7 +35,6 @@ struct DPadConfig: ButtonConfig {
         self.scale = scale
         
         self.inputId = inputId
-        // TODO: Change inputId to controllerId, see ButtonConfig file
         
         self.inputs = inputs
     }
