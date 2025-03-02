@@ -2,6 +2,8 @@
 /PocketPad Client/PocketPad Client.xcodeproj/project.xcworkspace/xcuserdata
 .venv
 
+__pycache__/
+
 venv/
 
 # QT Creator
