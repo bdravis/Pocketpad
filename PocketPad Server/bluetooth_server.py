@@ -4,10 +4,12 @@ import asyncio
 import json
 import threading
 import time
+from struct import unpack
 from typing import Any, Dict, Union
 from server_constants import (POCKETPAD_SERVICE, LATENCY_CHARACTERISTIC, 
                        CONNECTION_CHARACTERISTIC, PLAYER_ID_CHARACTERISTIC, 
-                       CONTROLLER_TYPE_CHARACTERISTIC, INPUT_CHARACTERISTIC)
+                       CONTROLLER_TYPE_CHARACTERISTIC, INPUT_CHARACTERISTIC,
+                       ConnectionMessage)
 from inputs import parse_input
 
 from bless import (  # type: ignore
@@ -60,6 +62,22 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any, **kwargs)
     if (characteristic.uuid.upper() == INPUT_CHARACTERISTIC):
         parse_input(characteristic.value)
 
+    if (characteristic.uuid.upper() == CONNECTION_CHARACTERISTIC):
+
+        # encoded as a tuple so we can expand this packet with more information
+
+        data_length_in_bytes = len(characteristic.value)
+        format_str = "B" * data_length_in_bytes
+        connection_information = unpack(format_str, characteristic.value)
+
+        characteristic.value = bytearray(ConnectionMessage.received.value)
+
+        if connection_information[0] == ConnectionMessage.connecting.value:
+            # Perhaps send playerid back here or at least generate it
+            print("player connected")
+        if connection_information[0] == ConnectionMessage.disconnecting.value:
+            print("player disconnected")
+
 
 async def run(loop):
     global logger, trigger
@@ -91,7 +109,7 @@ async def run(loop):
             CONNECTION_CHARACTERISTIC: {
                 "Properties": (
                     GATTCharacteristicProperties.read
-                    | GATTCharacteristicProperties.write_without_response
+                    | GATTCharacteristicProperties.write
                     | GATTCharacteristicProperties.indicate
                 ),
                 "Permissions": (
