@@ -189,3 +189,23 @@ def start_server():
 
     thread = threading.Thread(target=run_loop, daemon=True)
     thread.start()
+
+
+# Main function to start the bluetooth server for testing purposes
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG)
+
+    if sys.platform in ["darwin", "win32"]:
+        trigger = threading.Event()
+    else:
+        trigger = asyncio.Event()
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    try:
+        loop.run_until_complete(run(loop))  # Ensure `run(loop)` correctly starts the server
+    except KeyboardInterrupt:
+        print("Server shutting down...")
+    finally:
+        loop.close()
