@@ -10,22 +10,25 @@ import SwiftUI
 
 // MARK: - Scanner View
 struct BluetoothScannerView: View {
+    @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
+    
     @StateObject private var bluetoothManager = BluetoothManager.shared
     @State private var selectedDevice: CBPeripheral?
-
+    
     var body: some View {
-        NavigationStack {
-            List(bluetoothManager.discoveredDevices, id: \.identifier) { device in
-                DeviceRow(device: device, selectedDevice: $selectedDevice)
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationTitle("Available Devices")
+        List(bluetoothManager.discoveredDevices, id: \.identifier) { device in
+            DeviceRow(device: device, selectedDevice: $selectedDevice)
         }
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationTitle("Available Devices")
         .onAppear {
             bluetoothManager.startScanning()
         }
         .onDisappear {
             bluetoothManager.stopScanning()
+        }
+        .onChange(of: bluetoothManager.connectedDevice) { _ in
+            presentationMode.wrappedValue.dismiss()
         }
     }
 }
@@ -83,23 +86,22 @@ struct DeviceRow: View {
         ]
         
         var body: some View {
-            NavigationStack {
-                List(devices) { device in
-                    Button(action: { selectedDevice = device }) {
-                        VStack(alignment: .leading) {
-                            Text(device.name)
-                                .font(.headline)
-                            Text(device.id.uuidString)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
+            List(devices) { device in
+                Button(action: { selectedDevice = device }) {
+                    VStack(alignment: .leading) {
+                        Text(device.name)
+                            .font(.headline)
+                        Text(device.id.uuidString)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
                     }
                 }
-                .navigationTitle("Available Devices")
-                .navigationBarTitleDisplayMode(.inline)
             }
+            .navigationTitle("Available Devices")
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
+    
     
     return PreviewBluetoothScannerView()
 }

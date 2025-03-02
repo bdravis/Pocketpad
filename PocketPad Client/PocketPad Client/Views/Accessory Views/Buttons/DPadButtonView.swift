@@ -68,7 +68,7 @@ struct DirectionalArrow: View {
                     let ui8_dpadDirection : UInt8 = direction.rawValue
                     
                     let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_dpadDirection])
-                    service.peripheral?.writeValue(data, for: char, type: .withoutResponse)
+                    bluetoothManager.sendInput(data)
                 }
             }
         }) {

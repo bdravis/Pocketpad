@@ -20,7 +20,7 @@ struct RegularButtonView: View {
                     let ui8_buttonType : UInt8 = config.type.rawValue
                     
                     let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType])
-                    service.peripheral?.writeValue(data, for: char, type: .withoutResponse)
+                    bluetoothManager.sendInput(data)
                 }
             }
         }) {
