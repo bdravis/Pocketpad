@@ -22,6 +22,7 @@ from bless import (  # type: ignore
 logger = None
 trigger: Union[asyncio.Event, threading.Event] = None
 thread = None
+loop = None
 
 class BlessServer(BlessServer):
     async def add_new_descriptor(self, service_uuid, char_uuid, desc_uuid, properties, value, permissions):
@@ -191,7 +192,7 @@ logger = logging.getLogger(name=__name__)
 #   @return: NONE
 #
 def start_server():
-    global logger, trigger, thread
+    global logger, trigger, thread, loop
     logging.basicConfig(level=logging.DEBUG)
 
     if sys.platform in ["darwin", "win32"]:
@@ -208,6 +209,19 @@ def start_server():
     thread = threading.Thread(target=run_loop, daemon=True)
     thread.start()
 
+# NEEDS WORK
+def stop_server():
+    global trigger, thread, loop
+    print("Stop Server")
+    if trigger:
+        trigger.set()  # Signal the server loop to stop
+
+    if thread and thread.is_alive():
+        thread.join()  # Ensure the server thread is properly stopped
+
+    if loop and loop.is_running():
+        loop.call_soon_threadsafe(loop.stop)
+# NEEDS WORK
 
 # Main function to start the bluetooth server for testing purposes
 if __name__ == "__main__":
