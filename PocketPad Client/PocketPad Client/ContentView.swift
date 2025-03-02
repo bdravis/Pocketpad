@@ -34,7 +34,11 @@ struct ContentView: View {
                     
                     // Bluetooth Connection Status
                     HStack {
-                        if let device = bluetoothManager.connectedDevice {
+                        if bluetoothManager.bluetoothState != .poweredOn {
+                            Text("Bluetooth is Off")
+                                .foregroundColor(.red)
+                                .bold()
+                        } else if let device = bluetoothManager.connectedDevice {
                             if let name = device.name {
                                 Text("Connected to '\(name)'")
                                     .foregroundColor(.green)
@@ -81,6 +85,8 @@ struct ContentView: View {
                             }
                             .background(Color.blue)
                             .cornerRadius(25)
+                            .opacity(bluetoothManager.bluetoothState != .poweredOn ? 0.5 : 1.0)
+                            .disabled(bluetoothManager.bluetoothState != .poweredOn)
                         }
                     }
                     .padding(.horizontal)
