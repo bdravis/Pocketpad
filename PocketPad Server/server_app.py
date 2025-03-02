@@ -24,10 +24,10 @@ class MainWindow(QMainWindow):
         self.player_checkbox_mapping = {}
         self.num_players_connected = 0
         
-        #self.ui.bluetooth_button.clicked.connect(self.start_bluetooth_server)
+        self.ui.bluetooth_button.clicked.connect(self.start_bluetooth_server)
         self.bluetooth_server_initiated=False
 
-        #self.ui.network_button.clicked.connect(self.start_network_server)
+        self.ui.network_button.clicked.connect(self.start_network_server)
         self.network_server_initiated=False
 
         self.ui.latency_setting_box.stateChanged.connect(self.toggle_latency)
@@ -57,8 +57,8 @@ class MainWindow(QMainWindow):
 
         # Dev testing function calls
         #
-        self.ui.bluetooth_button.clicked.connect(lambda: self.update_player_connection("disconnect", f"player {self.num_players_connected - 1}", "xbox"))
-        self.ui.network_button.clicked.connect(lambda: self.update_player_connection("connect", f"player {self.num_players_connected}", "xbox"))
+        # self.ui.bluetooth_button.clicked.connect(lambda: self.update_player_connection("disconnect", f"player {self.num_players_connected - 1}", "xbox"))
+        # self.ui.network_button.clicked.connect(lambda: self.update_player_connection("connect", f"player {self.num_players_connected}", "xbox"))
         #
         # Dev testing function calls
 
