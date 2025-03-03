@@ -17,7 +17,8 @@ struct LayoutConfig: Codable {
     
     init(from decoder: Decoder) throws {
         // TODO: decode to struct using coding keys
-        name = "TODO" // placeholder values so that it doesn't error
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        name = try container.decode(String.self, forKey: .name)
         landscapeButtons = []
         portraitButtons = []
     }

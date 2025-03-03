@@ -15,7 +15,7 @@ enum DPadDirection: UInt8, Codable {
     case right = 3
 }
 
-struct DPadConfig: ButtonConfig {
+struct DPadConfig: ButtonConfig, Codable {
     // Protocol Properties
     var position: CGPoint
     var scale: CGFloat

@@ -7,7 +7,7 @@
 
 import UIKit
 
-struct RegularButtonConfig: ButtonConfig {
+struct RegularButtonConfig: ButtonConfig, Codable {
     // Protocol Properties
     var position: CGPoint
     var scale: CGFloat
