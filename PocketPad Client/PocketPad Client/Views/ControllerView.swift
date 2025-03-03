@@ -48,14 +48,14 @@ struct ControllerView: View {
                                     DPadButtonView(config: btn.wrappedValue as! DPadConfig)
                             }
                         }
-                        .position(btn.wrappedValue.getScaledPosition(bounds: geometry.frame(in: .local)))
-                        .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE)
                         .scaleEffect(btn.scale.wrappedValue)
+                        .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE)
+                        .position(btn.wrappedValue.getScaledPosition(bounds: geometry.frame(in: .local)))
 #if DEBUG
                         ButtonInfoView(config: btn.wrappedValue)
-                            .position(btn.wrappedValue.getScaledPosition(bounds: geometry.frame(in: .local)))
                             .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE)
                             .scaleEffect(btn.scale.wrappedValue)
+                            .position(btn.wrappedValue.getScaledPosition(bounds: geometry.frame(in: .local)))
 #endif
                     }
                 }
