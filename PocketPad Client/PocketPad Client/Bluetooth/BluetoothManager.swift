@@ -27,6 +27,8 @@ class BluetoothManager: NSObject, ObservableObject {
     @Published var writeStatus: String = ""
     @Published var isConnecting = false
     
+    @Published var connectionError: String?
+    
     private override init() {
         super.init()
         centralManager = CBCentralManager(delegate: self, queue: nil)
@@ -54,17 +56,6 @@ class BluetoothManager: NSObject, ObservableObject {
         centralManager.connect(peripheral, options: nil)
     }
     
-    func disconnect() {
-        if let peripheral = connectedDevice {
-            centralManager.cancelPeripheralConnection(peripheral)
-            discoveredServices.removeAll()
-            discoveredCharacteristics.removeAll()
-            selectedService = nil
-            isConnecting = false
-            connectedDevice = nil
-        }
-    }
-    
     func sendData(_ dataString: String, to characteristic: CBCharacteristic) {
         guard let data = dataString.data(using: .utf8) else { return }
         peripheral?.writeValue(data, for: characteristic, type: .withResponse)
@@ -73,6 +64,33 @@ class BluetoothManager: NSObject, ObservableObject {
         }
     }
     
+    func sendInput(_ data: Data) {
+        guard let service = selectedService else { return }
+        if let char = discoveredCharacteristics.first(where: { $0.uuid == INPUT_CHARACTERISTIC }) {
+            peripheral?.writeValue(data, for: char, type: .withoutResponse)
+        }
+    }
+    
+    func pingServer() {
+        guard let service = selectedService else { return }
+        if let char = discoveredCharacteristics.first(where: { $0.uuid == LATENCY_CHARACTERISTIC }) {
+            let now = Int(Date().timeIntervalSinceReferenceDate * 1000) % 100000
+            service.peripheral?.writeValue(String(now).data(using: .utf8)!, for: char, type: .withoutResponse)
+        }
+    }
+     
+    func disconnect() {
+        if let peripheral = connectedDevice {
+            
+            // This does not currently work because it should wait until it hears back from the server but there is not a callback for that
+            if let characteristic = self.discoveredCharacteristics.first(where: { $0.uuid == CONNECTION_CHARACTERISTIC }) {
+                peripheral.writeValue(Data([ConnectionMessage.disconnecting.rawValue]), for: characteristic, type: .withResponse)
+                peripheral.readValue(for: characteristic)
+            }
+
+        }
+    }
+   
     func readValue(for characteristic: CBCharacteristic) {
         peripheral?.readValue(for: characteristic)
     }
@@ -115,6 +133,7 @@ extension BluetoothManager: CBCentralManagerDelegate {
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
         DispatchQueue.main.async {
             self.isConnecting = false
+            self.connectionError = error?.localizedDescription
             print("Failed to connect: \(error?.localizedDescription ?? "Unknown error")")
         }
     }
@@ -167,6 +186,15 @@ extension BluetoothManager: CBPeripheralDelegate {
                 self.discoveredCharacteristics = characteristics
             }
         }
+        
+        // Send 1 to CONNECTION_CHARACTERITIC on connection
+        
+        for characteristic in characteristics {
+            if characteristic.uuid == CONNECTION_CHARACTERISTIC {
+                // Send the message upon discovering the characteristic
+                peripheral.writeValue(Data([ConnectionMessage.connecting.rawValue]), for: characteristic, type: .withResponse)
+            }
+        }
     }
     
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
@@ -180,6 +208,27 @@ extension BluetoothManager: CBPeripheralDelegate {
             DispatchQueue.main.async {
                 self.lastMessage = string
             }
+        }
+        
+        if characteristic.uuid == CONNECTION_CHARACTERISTIC {
+            // Process the server's response
+            if let value = characteristic.value {
+                let response = value.first ?? 0  // Assuming the response is a single byte
+                print("Server response: \(response)")
+                
+                // Check if the response is RECIEVED_CONNECTION_INFORMATION
+                if response == ConnectionMessage.recieved.rawValue {
+                    print("Server acknowledged disconnection")
+                }
+            }
+            
+            // Disconnect after receiving the response
+            centralManager.cancelPeripheralConnection(peripheral)
+            discoveredServices.removeAll()
+            discoveredCharacteristics.removeAll()
+            selectedService = nil
+            isConnecting = false
+            connectedDevice = nil
         }
     }
     

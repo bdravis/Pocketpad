@@ -29,7 +29,6 @@ struct JoystickConfig: ButtonConfig {
         self.scale = scale
         
         self.inputId = inputId
-        // TODO: Change inputId to controllerConfigId, see ButtonConfig file
         
         self.input = input
         self.sensitivity = sensitivity

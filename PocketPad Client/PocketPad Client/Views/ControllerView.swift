@@ -19,7 +19,7 @@ let DEBUG_BUTTONS: [ButtonConfig] = [ // Example buttons
     RegularButtonConfig(position: CGPoint(x: 260, y: 100), scale: 1.0, inputId: 6, input: "Start", style: .init(shape: .Pill, iconType: .Text, icon: "Start")), // Pill style test
     RegularButtonConfig(position: CGPoint(x: 200, y: 100), scale: 1.0, inputId: 7, input: "Select", style: .init(shape: .Pill, iconType: .Text)), // No text test
     
-    JoystickConfig(position: CGPoint(x: 0, y: 400), scale: 1.0, inputId: 4, input: "RightJoystick"),
+    JoystickConfig(position: CGPoint(x: 100, y: 200), scale: 1.0, inputId: 4, input: "RightJoystick"),
     DPadConfig(
         position: CGPoint(x: 100, y: 0), scale: 1.0, inputId: 5,
         inputs: [
@@ -36,16 +36,28 @@ struct ControllerView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .topLeading) {
-                ForEach($buttons, id: \.id) { btn in
-                    GeneralButtonView(config: btn.wrappedValue)
+                ForEach($buttons, id: \.wrappedValue.id) { btn in
+                    ZStack {
+                        Group {
+                            switch btn.wrappedValue.type {
+                                case .regular:
+                                    RegularButtonView(config: btn.wrappedValue as! RegularButtonConfig)
+                                case .joystick:
+                                    JoystickButtonView(config: btn.wrappedValue as! JoystickConfig)
+                                case .dpad:
+                                    DPadButtonView(config: btn.wrappedValue as! DPadConfig)
+                            }
+                        }
                         .position(btn.wrappedValue.getScaledPosition(bounds: geometry.frame(in: .local)))
                         .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE)
                         .scaleEffect(btn.scale.wrappedValue)
 #if DEBUG
-                    ButtonInfoView(config: btn.wrappedValue)
-                        .position(btn.wrappedValue.getScaledPosition(bounds: geometry.frame(in: .local)))
-                        .scaleEffect(btn.scale.wrappedValue)
+                        ButtonInfoView(config: btn.wrappedValue)
+                            .position(btn.wrappedValue.getScaledPosition(bounds: geometry.frame(in: .local)))
+                            .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE)
+                            .scaleEffect(btn.scale.wrappedValue)
 #endif
+                    }
                 }
             }
         }
