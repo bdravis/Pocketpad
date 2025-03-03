@@ -15,12 +15,13 @@ struct RegularButtonConfig: ButtonConfig, Codable {
     var inputId: UInt8
     
     var input: String // the button it is bound to
+    var style: RegularButtonStyle // style configuration of the button
     var turbo: Bool // whether or not it is a turbo tap
     
     // Object Initializer
     init(
         position: CGPoint, scale: CGFloat, inputId: UInt8,
-         input: String, turbo: Bool = false
+        input: String, style: RegularButtonStyle? = nil, turbo: Bool = false
     ) {
         self.type = .regular
         
@@ -31,5 +32,12 @@ struct RegularButtonConfig: ButtonConfig, Codable {
         
         self.input = input
         self.turbo = turbo
+        
+        if let style = style {
+            self.style = style
+        } else {
+            // create a default style configuration
+            self.style = .init(shape: .Circle, iconType: .Text, icon: input)
+        }
     }
 }
