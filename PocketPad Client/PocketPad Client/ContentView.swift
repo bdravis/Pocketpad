@@ -91,6 +91,16 @@ struct ContentView: View {
                     }
                     .padding(.horizontal)
                     
+                    if let error = bluetoothManager.connectionError {
+                        HStack {
+                            Text(error)
+                                .foregroundColor(.red)
+                            
+                            Spacer()
+                        }
+                        .padding(.horizontal)
+                    }
+                    
                     // NavigationLink to ControllerView for Debugging
                     HStack {
                         NavigationLink(destination: ControllerView(buttons: DEBUG_BUTTONS)) {
@@ -146,11 +156,6 @@ struct ContentView: View {
         .onAppear {
             Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
                 bluetoothManager.pingServer()
-//                if let service = bluetoothManager.selectedService {
-//                    if let char = bluetoothManager.discoveredCharacteristics.first(where: { $0.uuid == PLAYER_ID_CHARACTERISTIC }) {
-//                        service.peripheral?.writeValue(String(0).data(using: .utf8)!, for: char, type: .withoutResponse)
-//                    }
-//                }
             }
         }
     }
