@@ -5,4 +5,7 @@
         <file>icons/wii.svg</file>
         <file>icons/xbox.svg</file>
     </qresource>
+    <qresource prefix="/pngs">
+        <file>pngs/logo.png</file>
+    </qresource>
 </RCC>
