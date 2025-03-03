@@ -44,7 +44,20 @@ struct ButtonConfigWrapper: Codable {
     
     // Conform wrapper struct to Encodable
     func encode(to encoder: Encoder) throws {
-        let container = encoder.container(keyedBy: CodingKeys.self)
-        // TBD
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        // This switch statement tries to cast buttonConfig as each different type of config
+        switch buttonConfig {
+            case let payload as DPadConfig:
+                try container.encode(Base.dPadConfig, forKey: .base)
+                try container.encode(payload, forKey: .payload)
+            case let payload as JoystickConfig:
+                try container.encode(Base.joystickConfig, forKey: .base)
+                try container.encode(payload, forKey: .payload)
+            case let payload as RegularButtonConfig:
+                try container.encode(Base.regularButtonConfig, forKey: .base)
+                try container.encode(payload, forKey: .payload)
+            default:
+                break
+        }
     }
 }

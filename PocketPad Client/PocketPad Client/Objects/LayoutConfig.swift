@@ -16,11 +16,12 @@ struct LayoutConfig: Codable {
     }
     
     init(from decoder: Decoder) throws {
-        // TODO: decode to struct using coding keys
         let container = try decoder.container(keyedBy: CodingKeys.self)
         name = try container.decode(String.self, forKey: .name)
-        landscapeButtons = []
-        portraitButtons = []
+        let wrappedLandscapeButtons = try container.decode([ButtonConfigWrapper].self, forKey: .landscapeButtons)
+        landscapeButtons = wrappedLandscapeButtons.map({ $0.buttonConfig })
+        let wrappedPortraitButtons = try container.decode([ButtonConfigWrapper].self, forKey: .portraitButtons)
+        portraitButtons = wrappedPortraitButtons.map({ $0.buttonConfig })
     }
     
     func encode(to encoder: any Encoder) throws {

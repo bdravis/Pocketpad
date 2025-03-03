@@ -115,7 +115,9 @@ DEBUG_LAYOUT = LayoutConfig(
     portrait_buttons = DEBUG_BUTTONS
 )
 
-# Dictionary that maps player IDs to their current layout configurations
+# Maps player IDs to their current layout configurations
+# The actual mapping may be more complex in the system
+# This dictionary is simply a proof of concept
 layouts_by_player_id: dict[int, Optional[LayoutConfig]] = {
     0: DEBUG_LAYOUT,
     1: None,
