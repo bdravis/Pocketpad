@@ -28,29 +28,29 @@ class MainWindow(QMainWindow):
         self.player_controller_input_display = {}
         self.num_players_connected = 0
         
-        self.ui.bluetooth_button.clicked.connect(self.start_bluetooth_server)
+        #self.ui.bluetooth_button.clicked.connect(self.start_bluetooth_server)
         self.bluetooth_server_initiated=False
 
-        self.ui.network_button.clicked.connect(self.start_network_server)
+        #self.ui.network_button.clicked.connect(self.start_network_server)
         self.network_server_initiated=False
 
         self.ui.latency_setting_box.stateChanged.connect(self.toggle_latency)
 
         # Callback function for updating a given player's latency
         #
-        #bluetooth_server.set_latency_callback(self.update_latency)
+        bluetooth_server.set_latency_callback(self.update_latency)
         #
         # Callback function for updating a given player's latency 
         
         # Callback function for updating player connection list
         #
-        #bluetooth_server.set_connection_callback(self.update_player_connection)
+        bluetooth_server.set_connection_callback(self.update_player_connection)
         #
         # Callback function for updating player connection list
 
         # Callback function for updating a given player's controller type (Idk if function name will differ so feel free to change)
         #
-        #bluetooth_server.set_connection_callback(self.update_controller_type)
+        bluetooth_server.set_controller_callback(self.update_controller_type)
         #
         # Callback function for updating a given player's controller type
 
@@ -87,7 +87,7 @@ class MainWindow(QMainWindow):
         self.bluetooth_server_initiated=False
         if (self.network_server_initiated == False):
             self.network_server_initiated=True
-            bluetooth_server.stop_server()
+            #bluetooth_server.stop_server()
         else:
             already_initiated = QMessageBox()
             already_initiated.setText("Network Server is already running")
@@ -196,9 +196,9 @@ class MainWindow(QMainWindow):
                 controller_checkbox.setMinimumHeight(25)
                 controller_checkbox.setMaximumHeight(50)
                 controller_checkbox.setChecked(True)
-                controller_checkbox.stateChanged.connect(lambda: self.toggle_controller_input(controller_checkbox, player_id))
-                self.checkbox_layout.addWidget(controller_checkbox)
+                controller_checkbox.toggled.connect(lambda: self.toggle_controller_input(controller_checkbox, player_id))
                 self.player_checkbox_mapping[player_id] = controller_checkbox
+                self.checkbox_layout.addWidget(controller_checkbox)
                 self.player_controller_input_display[player_id] = True
                 #
                 # Generate user checkboxes 
@@ -294,7 +294,8 @@ class MainWindow(QMainWindow):
         print("Updating Controller")
 
     def display_controller_input(self, player_id, input):
-        print("Display Controller Input")
+        if self.player_controller_input_display[player_id]:
+            print("Display Controller Input")
 
     
     #   This function edits the boolean characteristic for a given player which will determine whether or not
@@ -312,8 +313,7 @@ class MainWindow(QMainWindow):
         if checkbox.isChecked():
             self.player_controller_input_display[player_id] = True
         else:
-            self.player_controller_input_display[player_id] = True
-
+            self.player_controller_input_display[player_id] = False
     
     # NEEDS WORKS 
     def refresh_grid_layout(self, index):

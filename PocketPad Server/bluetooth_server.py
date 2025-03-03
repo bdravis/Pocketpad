@@ -24,10 +24,27 @@ trigger: Union[asyncio.Event, threading.Event] = None
 thread = None
 loop = None
 
+latency_function = None
+connection_function = None
+controller_function = None
+
+
 class BlessServer(BlessServer):
     async def add_new_descriptor(self, service_uuid, char_uuid, desc_uuid, properties, value, permissions):
         print(f"Adding descriptor {desc_uuid} to {char_uuid} in {service_uuid}")
         return super().add_new_descriptor(service_uuid, char_uuid, desc_uuid, properties, value, permissions)
+
+def set_latency_callback(latency_function_callback):
+    global latency_function
+    latency_function = latency_function_callback
+
+def set_connection_callback(connection_function_callback):
+    global connection_function
+    connection_function = connection_function_callback
+
+def set_controller_callback(controller_function_callback):
+    global controller_function
+    controller_function = controller_function_callback
 
 def reconstruct_timestamp(sent_ms):
     """Reconstruct possible timestamps based on the last 5 digits."""
@@ -49,6 +66,7 @@ def read_request(characteristic: BlessGATTCharacteristic, **kwargs) -> bytearray
 
 
 def write_request(characteristic: BlessGATTCharacteristic, value: Any, **kwargs):
+    global latency_function, connection_function, controller_function
     characteristic.value = value
 
     if (characteristic.uuid.upper() == LATENCY_CHARACTERISTIC):
@@ -56,6 +74,7 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any, **kwargs)
 
         print(f"Client Sent Time (Reconstructed): {sent_time} ms")
         print(f"Estimated Latency: {latency} ms")
+        latency_function(f"{player_id}", latency)
 
     if (characteristic.uuid.upper() == PLAYER_ID_CHARACTERISTIC):
         print(f"Player: {int(characteristic.value)}")
@@ -76,8 +95,11 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any, **kwargs)
         if connection_information[0] == ConnectionMessage.connecting.value:
             # Perhaps send playerid back here or at least generate it
             print("player connected")
+            connection_function("connect", f"{player_id}", f"{controller_type}")
+
         if connection_information[0] == ConnectionMessage.disconnecting.value:
             print("player disconnected")
+            connection_function("disconnect", f"{player_id}", f"{controller_type}")
 
 
 async def run(loop):
