@@ -4,10 +4,12 @@ import asyncio
 import json
 import threading
 import time
+from struct import unpack
 from typing import Any, Dict, Union
 from server_constants import (POCKETPAD_SERVICE, LATENCY_CHARACTERISTIC, 
                        CONNECTION_CHARACTERISTIC, PLAYER_ID_CHARACTERISTIC, 
-                       CONTROLLER_TYPE_CHARACTERISTIC, INPUT_CHARACTERISTIC)
+                       CONTROLLER_TYPE_CHARACTERISTIC, INPUT_CHARACTERISTIC,
+                       ConnectionMessage)
 from inputs import parse_input
 
 from bless import (  # type: ignore
@@ -20,6 +22,7 @@ from bless import (  # type: ignore
 logger = None
 trigger: Union[asyncio.Event, threading.Event] = None
 thread = None
+loop = None
 
 class BlessServer(BlessServer):
     async def add_new_descriptor(self, service_uuid, char_uuid, desc_uuid, properties, value, permissions):
@@ -60,6 +63,22 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any, **kwargs)
     if (characteristic.uuid.upper() == INPUT_CHARACTERISTIC):
         parse_input(characteristic.value)
 
+    if (characteristic.uuid.upper() == CONNECTION_CHARACTERISTIC):
+
+        # encoded as a tuple so we can expand this packet with more information
+
+        data_length_in_bytes = len(characteristic.value)
+        format_str = "B" * data_length_in_bytes
+        connection_information = unpack(format_str, characteristic.value)
+
+        characteristic.value = bytearray(ConnectionMessage.received.value)
+
+        if connection_information[0] == ConnectionMessage.connecting.value:
+            # Perhaps send playerid back here or at least generate it
+            print("player connected")
+        if connection_information[0] == ConnectionMessage.disconnecting.value:
+            print("player disconnected")
+
 
 async def run(loop):
     global logger, trigger
@@ -91,7 +110,7 @@ async def run(loop):
             CONNECTION_CHARACTERISTIC: {
                 "Properties": (
                     GATTCharacteristicProperties.read
-                    | GATTCharacteristicProperties.write_without_response
+                    | GATTCharacteristicProperties.write
                     | GATTCharacteristicProperties.indicate
                 ),
                 "Permissions": (
@@ -173,7 +192,7 @@ logger = logging.getLogger(name=__name__)
 #   @return: NONE
 #
 def start_server():
-    global logger, trigger, thread
+    global logger, trigger, thread, loop
     logging.basicConfig(level=logging.DEBUG)
 
     if sys.platform in ["darwin", "win32"]:
@@ -190,6 +209,19 @@ def start_server():
     thread = threading.Thread(target=run_loop, daemon=True)
     thread.start()
 
+# NEEDS WORK
+def stop_server():
+    global trigger, thread, loop
+    print("Stop Server")
+    if trigger:
+        trigger.set()  # Signal the server loop to stop
+
+    if thread and thread.is_alive():
+        thread.join()  # Ensure the server thread is properly stopped
+
+    if loop and loop.is_running():
+        loop.call_soon_threadsafe(loop.stop)
+# NEEDS WORK
 
 # Main function to start the bluetooth server for testing purposes
 if __name__ == "__main__":
