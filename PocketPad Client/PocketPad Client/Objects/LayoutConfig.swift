@@ -15,6 +15,12 @@ struct LayoutConfig: Codable {
         case name, wrappedLandscapeButtons, wrappedPortraitButtons
     }
     
+    init(name: String, landscapeButtons: [ButtonConfig], portraitButtons: [ButtonConfig]) {
+        self.name = name;
+        self.landscapeButtons = landscapeButtons;
+        self.portraitButtons = portraitButtons;
+    }
+    
     // Wrappers are used because protocols (i.e. ButtonConfig) cannot conform to Codable
     // Wrappers allow the encoding and decoding of multiple types that comform to the protocol
     init(from decoder: Decoder) throws {
