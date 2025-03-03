@@ -24,7 +24,13 @@ trigger: Union[asyncio.Event, threading.Event] = None
 thread = None
 loop = None
 
+num_players = 0
+next_id = 0
+num_players_lock = threading.Lock()
+next_id_lock = threading.Lock()
+
 class BlessServer(BlessServer):
+
     async def add_new_descriptor(self, service_uuid, char_uuid, desc_uuid, properties, value, permissions):
         print(f"Adding descriptor {desc_uuid} to {char_uuid} in {service_uuid}")
         return super().add_new_descriptor(service_uuid, char_uuid, desc_uuid, properties, value, permissions)
@@ -50,6 +56,8 @@ def read_request(characteristic: BlessGATTCharacteristic, **kwargs) -> bytearray
 
 def write_request(characteristic: BlessGATTCharacteristic, value: Any, **kwargs):
     characteristic.value = value
+    global num_players
+    global next_id
 
     if (characteristic.uuid.upper() == LATENCY_CHARACTERISTIC):
         sent_time, latency = reconstruct_timestamp(int(characteristic.value))
@@ -71,13 +79,21 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any, **kwargs)
         format_str = "B" * data_length_in_bytes
         connection_information = unpack(format_str, characteristic.value)
 
-        characteristic.value = bytearray(ConnectionMessage.received.value)
+        with num_players_lock:
+            if connection_information[0] == ConnectionMessage.connecting.value:
+                # Perhaps send playerid back here or at least generate it
+                print(f"player {next_id} connected")
 
-        if connection_information[0] == ConnectionMessage.connecting.value:
-            # Perhaps send playerid back here or at least generate it
-            print("player connected")
-        if connection_information[0] == ConnectionMessage.disconnecting.value:
-            print("player disconnected")
+                characteristic.value = bytearray(num_players)
+                num_players += 1
+                next_id += 1
+
+            if connection_information[0] == ConnectionMessage.disconnecting.value:
+                # TODO change server to indicate who is leaving
+                print("player disconnected")
+                num_players -= 1
+                characteristic.value = bytearray(ConnectionMessage.received.value)
+
 
 
 async def run(loop):
