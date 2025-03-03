@@ -7,7 +7,7 @@
 
 enum ControllerType: String, CaseIterable {
     case Xbox = "Xbox"
-    case Playstation = "Playstation"
-    case Gamecube = "Gamecube"
+    case PlayStation = "PlayStation"
+    case Wii = "Wii"
     case Switch = "Switch"
 }

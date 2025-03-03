@@ -20,7 +20,7 @@ struct SettingsMenuView: View {
     @AppStorage("splitDPad") var splitDPad: Bool = false
     @AppStorage("selectedController") var selectedController: ControllerType = .Xbox
     @AppStorage("controllerColor") var controllerColor: Color = .blue
-    @AppStorage("controllerName") var controllerName: String = "Enter controller name"
+    @AppStorage("controllerName") var controllerName: String = "Controller"
     
     // MARK: - Local State for Color Grid Toggle
     @State private var showColorGrid: Bool = false
@@ -99,7 +99,7 @@ struct SettingsMenuView: View {
                 Spacer()
                 Picker("Controller Type", selection: $selectedController) {
                     ForEach(ControllerType.allCases, id: \.self) { type in
-                        Text(type.rawValue).tag(type)
+                        Label(type.rawValue, image: type.rawValue).tag(type)
                     }
                 }
                 .pickerStyle(.menu)

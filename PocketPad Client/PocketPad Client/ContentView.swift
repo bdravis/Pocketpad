@@ -134,17 +134,19 @@ struct ContentView: View {
         }
         // Overlay the SettingsMenuView when isShowingSettings is true
         .overlay(
-            ZStack {
-                Rectangle()
-                    .foregroundStyle(.black)
-                    .opacity(isShowingSettings ? 0.6 : 0.0)
-                    .animation(.easeOut, value: isShowingSettings)
-                    .ignoresSafeArea()
+            GeometryReader { geometry in
+                ZStack {
+                    Rectangle()
+                        .foregroundStyle(.black)
+                        .opacity(isShowingSettings ? 0.6 : 0.0)
+                        .animation(.easeOut, value: isShowingSettings)
+                        .ignoresSafeArea()
                     
-                SettingsMenuView(isShowingSettings: $isShowingSettings)
-                    .offset(y: isShowingSettings ? 0 : -UIScreen.main.bounds.height)
-                    .transition(.move(edge: .top))
-                    .animation(.bouncy, value: isShowingSettings)
+                    SettingsMenuView(isShowingSettings: $isShowingSettings)
+                        .offset(y: isShowingSettings ? 0 : -geometry.size.height)
+                        .transition(.move(edge: .top))
+                        .animation(.bouncy, value: isShowingSettings)
+                }
             }
         )
         // Bluetooth Manager updates (from first version)
