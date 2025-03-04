@@ -7,7 +7,7 @@
 
 import UIKit
 
-struct JoystickConfig: ButtonConfig, Codable {
+struct JoystickConfig: ButtonConfig, ConfigType {
     // Protocol Properties
     var position: CGPoint
     var scale: CGFloat

@@ -16,13 +16,19 @@ struct PocketPad_ClientTests {
     }
     
     @Test func exportBasicControllers() async throws {
-        // MARK: Export to Controllers
-        try LayoutManager.shared.saveLayout(DefaultLayouts.SwitchConfig)
+        // checks export/import of all of the controller types
+        for controller in ControllerType.allCases {
+            let initialLayout = DefaultLayouts.getLayout(for: controller)
+            try LayoutManager.shared.saveLayout(DefaultLayouts.getLayout(for: controller))
+            let loadedLayout = try LayoutManager.shared.loadLayout(for: "\(controller.rawValue).plist")
+            #expect(loadedLayout == initialLayout)
+        }
         
-        // MARK: Read Controller Files
-        try LayoutManager.shared.loadLayouts()
-        let loadedSwitchLayout = try LayoutManager.shared.loadLayout(for: "Switch.plist")
-        #expect(loadedSwitchLayout.name == DefaultLayouts.SwitchConfig.name) // TODO: Make this compare the structs as a whole
+        try LayoutManager.shared.loadLayouts() // load the controllers to make sure the files exist
+        #expect(LayoutManager.shared.availableLayouts.count >= 4)
+        for controller in ControllerType.allCases {
+            #expect(LayoutManager.shared.availableLayouts.contains("\(controller.rawValue).plist"))
+        }
     }
 
 }

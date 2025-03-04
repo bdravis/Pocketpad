@@ -8,14 +8,14 @@
 import UIKit
 
 // Directional input format
-enum DPadDirection: UInt8, Codable {
+enum DPadDirection: UInt8, ConfigType {
     case up = 0
     case down = 1
     case left = 2
     case right = 3
 }
 
-struct DPadConfig: ButtonConfig, Codable {
+struct DPadConfig: ButtonConfig, ConfigType {
     // Protocol Properties
     var position: CGPoint
     var scale: CGFloat
