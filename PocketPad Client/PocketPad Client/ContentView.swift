@@ -103,7 +103,7 @@ struct ContentView: View {
                     
                     // NavigationLink to ControllerView for Debugging
                     HStack {
-                        NavigationLink(destination: ControllerView(buttons: DEBUG_BUTTONS)) {
+                        NavigationLink(destination: ControllerView(layout: LayoutManager.shared.currentController)) {
                             Text("Open Debug ControllerView")
                         }
                     }

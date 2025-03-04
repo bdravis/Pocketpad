@@ -31,12 +31,13 @@ let DEBUG_BUTTONS: [ButtonConfig] = [ // Example buttons
 // MARK: Main Controller View
 struct ControllerView: View {
     // TODO: Make a View Model with the buttons
-    @State var buttons: [ButtonConfig]
+    @State private var orientation = UIDeviceOrientation.unknown
+    @State var layout: LayoutConfig
     
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .topLeading) {
-                ForEach($buttons, id: \.wrappedValue.id) { btn in
+                ForEach(orientation.isPortrait ? $layout.portraitButtons : $layout.landscapeButtons, id: \.wrappedValue.id) { btn in
                     ZStack {
                         Group {
                             switch btn.wrappedValue.type {
@@ -60,6 +61,12 @@ struct ControllerView: View {
                     }
                 }
             }
+            .onRotate { newOrientation in
+                orientation = newOrientation
+            }
+            .onAppear {
+                orientation = UIDevice.current.orientation
+            }
         }
         .navigationTitle("Controller")
         .navigationBarTitleDisplayMode(.inline)
@@ -67,5 +74,5 @@ struct ControllerView: View {
 }
 
 #Preview {
-    ControllerView(buttons: DEBUG_BUTTONS)
+    ControllerView(layout: .init(name: "Debug", landscapeButtons: DEBUG_BUTTONS, portraitButtons: DEBUG_BUTTONS))
 }

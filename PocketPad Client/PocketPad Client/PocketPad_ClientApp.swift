@@ -21,6 +21,14 @@ struct PocketPad_ClientApp: App {
                         .animation(.easeIn, value: isShowingSplash)
                         .onAppear {
                             if isShowingSplash {
+                                // Load the controller layouts
+                                do {
+                                    try LayoutManager.shared.loadLayouts()
+                                    try LayoutManager.shared.setCurrentLayout(to: UserDefaults.standard.string(forKey: "selectedController") ?? "Xbox")
+                                } catch {
+                                    print(error.localizedDescription)
+                                    // TODO: Add error popup
+                                }
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                                     isShowingSplash = false
                                 }

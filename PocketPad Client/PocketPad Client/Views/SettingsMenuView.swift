@@ -22,9 +22,6 @@ struct SettingsMenuView: View {
     @AppStorage("controllerColor") var controllerColor: Color = .blue
     @AppStorage("controllerName") var controllerName: String = "Controller"
     
-    // MARK: - Local State for Color Grid Toggle
-    @State private var showColorGrid: Bool = false
-    
     // MARK: - Body
     var body: some View {
         GeometryReader { geometry in
@@ -103,20 +100,31 @@ struct SettingsMenuView: View {
                     }
                 }
                 .pickerStyle(.menu)
+                .onChange(of: selectedController, initial: false) {
+                    // update the controller layout
+                    do {
+                        try LayoutManager.shared.setCurrentLayout(to: selectedController.rawValue)
+                    } catch {
+                        print(error.localizedDescription)
+                        // TODO: alert user of error
+                    }
+                }
             }
             .padding(.horizontal, 16)
             //Picker for D-PAD (Split (True) vs Conjoined (False))
-            HStack {
-                Text("D-PAD")
-                    .foregroundColor(.primary)
-                Spacer()
-                Picker("D-PAD", selection: $splitDPad) {
-                    Text("Conjoined").tag(false)
-                    Text("Split").tag(true)
+            if LayoutManager.shared.hasDPad {
+                HStack {
+                    Text("D-PAD")
+                        .foregroundColor(.primary)
+                    Spacer()
+                    Picker("D-PAD", selection: $splitDPad) {
+                        Text("Conjoined").tag(false)
+                        Text("Split").tag(true)
+                    }
+                    .pickerStyle(.menu)
                 }
-                .pickerStyle(.menu)
+                .padding(.horizontal, 16)
             }
-            .padding(.horizontal, 16)
             
             // Controller Color Section
             VStack(alignment: .leading, spacing: 10) {
