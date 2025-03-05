@@ -125,6 +125,7 @@ struct ContentView: View {
                                 .foregroundColor(.accentColor)
                                 .padding()
                         }
+                        .accessibilityIdentifier("SettingsGearButton")
                     }
                     Spacer()
                 }

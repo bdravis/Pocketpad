@@ -30,6 +30,55 @@ final class PocketPad_ClientUITests: XCTestCase {
 
         // Use XCTAssert and related functions to verify your tests produce the correct results.
     }
+    
+    @MainActor
+    func testHideDPad() throws {
+        // tests if the settings view dpad option hides when a gamepad without a dpad is selected
+        continueAfterFailure = false
+        let app = XCUIApplication() // Initializes the XCTest app
+        app.launch() // Launches the app
+        
+        // make it go to the view
+        let settingsBtn = app.buttons["SettingsGearButton"]
+        guard settingsBtn.waitForExistence(timeout: 5) else {
+            XCTFail()
+            return
+        }
+        settingsBtn.tap()
+        
+        let controllerPicker = app.buttons["ControllerPicker"]
+        guard controllerPicker.waitForExistence(timeout: 2) else {
+            XCTFail()
+            return
+        }
+        
+        controllerPicker.tap()
+        
+        // set current controller to one that has a dpad
+        let xboxBtn = app.buttons["Xbox"]
+        guard xboxBtn.waitForExistence(timeout: 1) else {
+            XCTFail()
+            return
+        }
+        xboxBtn.tap()
+        
+        // DPad style should exist now
+        let dpadStyleBtn = app.buttons["DPadStyle"]
+        XCTAssertTrue(dpadStyleBtn.waitForExistence(timeout: 1))
+        
+        controllerPicker.tap()
+        
+        // set to current controller without dpad
+        let dpadlessBtn = app.buttons["DPad-less Test"]
+        guard dpadlessBtn.waitForExistence(timeout: 1) else {
+            XCTFail()
+            return
+        }
+        dpadlessBtn.tap()
+        
+        // make sure the button is no longer there
+        XCTAssertTrue(dpadStyleBtn.waitForNonExistence(timeout: 1))
+    }
 
     @MainActor
     func testLaunchPerformance() throws {
