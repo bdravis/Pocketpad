@@ -10,4 +10,5 @@ enum ControllerType: String, CaseIterable {
     case PlayStation = "PlayStation"
     case Wii = "Wii"
     case Switch = "Switch"
+    case DPadless = "DPad-less Test"
 }
