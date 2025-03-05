@@ -106,6 +106,7 @@ struct ContentView: View {
                         NavigationLink(destination: ControllerView(layout: LayoutManager.shared.currentController)) {
                             Text("Open Debug ControllerView")
                         }
+                        .accessibilityIdentifier("OpenControllerView")
                     }
                     .padding(.horizontal)
                     

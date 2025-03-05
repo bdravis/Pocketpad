@@ -84,6 +84,7 @@ struct SettingsMenuView: View {
                     .foregroundColor(.primary)
                     .padding(.trailing, 16)
             }
+            .accessibilityIdentifier("SettingsCloseButton")
         }
         .padding(.vertical, 10)
     }

@@ -23,12 +23,63 @@ final class PocketPad_ClientUITests: XCTestCase {
     }
 
     @MainActor
-    func testExample() throws {
+    func testControllerDisplay() throws {
         // UI tests must launch the application that they test.
         let app = XCUIApplication()
         app.launch()
 
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
+        let validControllers = ["Xbox", "PlayStation", "Switch", "Wii"]
+        let controllerBtnCount = [
+            "Xbox": 13,
+            "PlayStation": 12,
+            "Switch": 14,
+            "Wii": 11
+        ]
+        
+        // Define the buttons
+        let settingsBtn = app.buttons["SettingsGearButton"]
+        let settingsCloseBtn = app.buttons["SettingsCloseButton"]
+        let controllerViewBtn = app.buttons["OpenControllerView"]
+        let controllerPicker = app.buttons["ControllerPicker"]
+        
+        for validController in validControllers {
+            guard settingsBtn.waitForExistence(timeout: 2) else {
+                XCTFail()
+                return
+            }
+            settingsBtn.tap()
+            
+            // select the controller from the picker
+            guard controllerPicker.waitForExistence(timeout: 2) else {
+                XCTFail()
+                return
+            }
+            controllerPicker.tap()
+            
+            let controllerBtn = app.buttons[validController]
+            guard controllerBtn.waitForExistence(timeout: 1) else {
+                XCTFail()
+                return
+            }
+            controllerBtn.tap()
+            XCTAssertTrue(settingsCloseBtn.exists)
+            settingsCloseBtn.tap()
+            
+            // open up the controller view
+            guard controllerViewBtn.waitForExistence(timeout: 2) else {
+                XCTFail()
+                return
+            }
+            controllerViewBtn.tap()
+            
+            XCTAssertTrue(app.buttons["ControllerButton"].waitForExistence(timeout: 2))
+            
+            // make sure the count of the buttons is equal to the specified controller setup
+            XCTAssertEqual(app.buttons.matching(identifier: "ControllerButton").count, controllerBtnCount[validController])
+            
+            // go back to the previous view
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+        }
     }
     
     @MainActor

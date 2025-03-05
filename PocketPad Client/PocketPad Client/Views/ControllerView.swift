@@ -51,6 +51,8 @@ struct ControllerView: View {
                         }
                         .scaleEffect(btn.scale.wrappedValue)
                         .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE)
+                        .accessibilityAddTraits(.isButton)
+                        .accessibilityIdentifier("ControllerButton")
                         .position(btn.wrappedValue.getScaledPosition(bounds: geometry.frame(in: .local)))
 #if DEBUG
                         ButtonInfoView(config: btn.wrappedValue)
