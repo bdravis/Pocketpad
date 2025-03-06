@@ -57,7 +57,7 @@ class LayoutManager {
     
     private func getControllerType(for name: String) -> ControllerType? {
         for controller in ControllerType.allCases {
-            if name == controller.rawValue {
+            if name == controller.stringValue {
                 return controller
             }
         }
