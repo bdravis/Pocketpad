@@ -1,11 +1,8 @@
 import random
 
-# This Python file uses the following encoding: utf-8
 import sys
 
 import bluetooth_server
-
-import xml.etree.ElementTree as ET
 
 from PySide6.QtWidgets import QApplication, QMainWindow, QListWidgetItem, QMessageBox, QCheckBox, QVBoxLayout, QWidget, QLabel, QHBoxLayout, QFrame, QGridLayout, QSystemTrayIcon, QMenu
 from PySide6.QtCore import Qt, QSettings, QByteArray, QBuffer, QSize
@@ -60,6 +57,8 @@ class MainWindow(QMainWindow):
 
         self.ui.network_button.clicked.connect(self.start_network_server)
         self.network_server_initiated=False
+
+        self.ui.server_close_button.clicked.connect(self.stop_server)
 
         self.ui.latency_setting_box.stateChanged.connect(self.toggle_latency)
 
@@ -148,7 +147,7 @@ class MainWindow(QMainWindow):
         self.bluetooth_server_initiated=False
         if (self.network_server_initiated == False):
             self.network_server_initiated=True
-            #bluetooth_server.stop_server()
+            bluetooth_server.stop_server()
         else:
             already_initiated = QMessageBox()
             already_initiated.setText("Network Server is already running")
@@ -173,6 +172,22 @@ class MainWindow(QMainWindow):
         else:
             already_initiated = QMessageBox()
             already_initiated.setText("Bluetooth Server is already running")
+            already_initiated.exec()
+    
+    def stop_server(self):
+        if self.bluetooth_server_initiated:
+            self.bluetooth_server_initiated=False
+            bluetooth_server.stop_server()
+        elif self.network_server_initiated:
+            self.network_server_initiated=False
+            # Network Function
+            #
+
+            #
+            # Network Function
+        else:
+            already_initiated = QMessageBox()
+            already_initiated.setText("The is no server currently running")
             already_initiated.exec()
 
     def update_latency(self, player_id, latency):
