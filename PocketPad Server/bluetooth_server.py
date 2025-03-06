@@ -37,7 +37,7 @@ controller_function = None
 class BlessServer(BlessServer):
 
     async def add_new_descriptor(self, service_uuid, char_uuid, desc_uuid, properties, value, permissions):
-        print(f"Adding descriptor {desc_uuid} to {char_uuid} in {service_uuid}")
+        #print(f"Adding descriptor {desc_uuid} to {char_uuid} in {service_uuid}")
         return super().add_new_descriptor(service_uuid, char_uuid, desc_uuid, properties, value, permissions)
 
 def set_latency_callback(latency_function_callback):
@@ -67,11 +67,11 @@ def reconstruct_timestamp(sent_ms):
 
 
 def read_request(characteristic: BlessGATTCharacteristic, **kwargs) -> bytearray:
-    logger.debug(f"Reading {characteristic.uuid} - {characteristic.value}")
+    #logger.debug(f"Reading {characteristic.uuid} - {characteristic.value}")
     return characteristic.value
     
 def write_request(characteristic: BlessGATTCharacteristic, value: Any):
-    print(f"Writing {characteristic.uuid} - {value}")
+    #print(f"Writing {characteristic.uuid} - {value}")
     
     characteristic.value = value
 
@@ -89,12 +89,12 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
 
         sent_time, latency = reconstruct_timestamp(int(now))
 
-        print(f"Client Sent Time (Reconstructed): {sent_time} ms")
-        print(f"Estimated Latency for player {player_id}: {latency} ms")
+        #print(f"Client Sent Time (Reconstructed): {sent_time} ms")
+        #print(f"Estimated Latency for player {player_id}: {latency} ms")
         
         characteristic.value = str(latency).encode()
 
-        latency_function(player_id, latency)
+        latency_function(str(player_id), latency)
         
         # server.update_value(POCKETPAD_SERVICE, LATENCY_CHARACTERISTIC)
 
@@ -102,8 +102,8 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
 
     characteristic.value = value
     
-    if (characteristic.uuid.upper() == PLAYER_ID_CHARACTERISTIC):
-        print(f"Player: {int(characteristic.value)}")
+    #if (characteristic.uuid.upper() == PLAYER_ID_CHARACTERISTIC):
+        #print(f"Player: {int(characteristic.value)}")
     
     if (characteristic.uuid.upper() == INPUT_CHARACTERISTIC):
         parse_input(characteristic.value)
@@ -122,16 +122,17 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
 
         with num_players_lock:
             if signal == ConnectionMessage.connecting.value:
+
+                print("I am in here\n")
                 # Perhaps send playerid back here or at least generate it
-                print(f"player {next_id} connected")
+                #print(f"player {next_id} connected")
 
                 # I do not know if this is going to work
                 response_data = [next_id, ConnectionMessage.connecting.value]
                 response = bytearray(response_data)
                 characteristic.value = response
 
-                num_players += 1
-                next_id += 1
+
 
                 if controller_type == 0:
                     controller_type = enums.ControllerType.Xbox
@@ -142,11 +143,13 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
                 if controller_type == 3:
                     controller_type = enums.ControllerType.Switch
 
-                connection_function("connect", str(player_id), controller_type)
+                connection_function("connect", str(next_id), controller_type)
+                num_players += 1
+                next_id += 1
 
             if signal == ConnectionMessage.disconnecting.value:
                 # TODO change server to indicate who is leaving
-                print(f"player {player_id} disconnected")
+                #print(f"player {player_id} disconnected")
                 num_players -= 1
 
                 response_data = [0, ConnectionMessage.received.value]
@@ -310,8 +313,8 @@ def stop_server():
     if thread and thread.is_alive():
         thread.join()  # Ensure the server thread is properly stopped
 
-    #if loop and loop.is_running():
-    #    loop.call_soon_threadsafe(loop.stop)
+    if loop and loop.is_running():
+        loop.call_soon_threadsafe(loop.stop)
 # NEEDS WORK
 
 # Main function to start the bluetooth server for testing purposes

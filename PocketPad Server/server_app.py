@@ -6,7 +6,7 @@ import bluetooth_server
 import enums
 
 from PySide6.QtWidgets import QApplication, QMainWindow, QListWidgetItem, QMessageBox, QCheckBox, QVBoxLayout, QWidget, QLabel, QHBoxLayout, QFrame, QGridLayout, QSystemTrayIcon, QMenu
-from PySide6.QtCore import Qt, QSettings, QByteArray, QBuffer, QSize
+from PySide6.QtCore import Qt, QSettings, QByteArray, QBuffer, QSize, Signal
 from PySide6.QtGui import QFont, QIcon, QAction, QPixmap, QPainter, QImage, QColor
 from PySide6.QtSvg import QSvgRenderer
 
@@ -16,6 +16,11 @@ from PySide6.QtSvg import QSvgRenderer
 from ui_form import Ui_MainWindow
 
 class MainWindow(QMainWindow):
+
+    latency_updated = Signal(str, int)
+    connection_updated = Signal(str, str, enums.ControllerType)
+    controller_updated = Signal(str, enums.ControllerType)
+
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -63,21 +68,25 @@ class MainWindow(QMainWindow):
 
         self.ui.latency_setting_box.stateChanged.connect(self.toggle_latency)
 
+        self.latency_updated.connect(self.update_latency)
+        self.connection_updated.connect(self.update_player_connection)
+        self.controller_updated.connect(self.update_controller_type)
+
         # Callback function for updating a given player's latency
         #
-        bluetooth_server.set_latency_callback(self.update_latency)
+        bluetooth_server.set_latency_callback(self.latency_updated.emit)
         #
         # Callback function for updating a given player's latency 
         
         # Callback function for updating player connection list
         #
-        bluetooth_server.set_connection_callback(self.update_player_connection)
+        bluetooth_server.set_connection_callback(self.connection_updated.emit)
         #
         # Callback function for updating player connection list
 
         # Callback function for updating a given player's controller type (Idk if function name will differ so feel free to change)
         #
-        bluetooth_server.set_controller_callback(self.update_controller_type)
+        bluetooth_server.set_controller_callback(self.controller_updated.emit)
         #
         # Callback function for updating a given player's controller type
 
