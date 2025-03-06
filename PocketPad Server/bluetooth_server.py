@@ -29,11 +29,27 @@ next_id = 0
 num_players_lock = threading.Lock()
 next_id_lock = threading.Lock()
 
+latency_function = None
+connection_function = None
+controller_function = None
+
 class BlessServer(BlessServer):
 
     async def add_new_descriptor(self, service_uuid, char_uuid, desc_uuid, properties, value, permissions):
         print(f"Adding descriptor {desc_uuid} to {char_uuid} in {service_uuid}")
         return super().add_new_descriptor(service_uuid, char_uuid, desc_uuid, properties, value, permissions)
+
+def set_latency_callback(latency_function_callback):
+    global latency_function
+    latency_function = latency_function_callback
+
+def set_connection_callback(connection_function_callback):
+    global connection_function
+    connection_function = connection_function_callback
+
+def set_controller_callback(controller_function_callback):
+    global controller_function
+    controller_function = controller_function_callback
 
 def reconstruct_timestamp(sent_ms):
     """Reconstruct possible timestamps based on the last 5 digits."""
@@ -46,25 +62,34 @@ def reconstruct_timestamp(sent_ms):
     
     latency = cur_ms - closest_time
     
-    return closest_time, latency
+    return closest_time, abs(latency)
 
 
 def read_request(characteristic: BlessGATTCharacteristic, **kwargs) -> bytearray:
     logger.debug(f"Reading {characteristic.uuid} - {characteristic.value}")
     return characteristic.value
-
-
-def write_request(characteristic: BlessGATTCharacteristic, value: Any, **kwargs):
+    
+def write_request(characteristic: BlessGATTCharacteristic, value: Any):
+    print(f"Writing {characteristic.uuid} - {value}")
+    
     characteristic.value = value
     global num_players
     global next_id
 
     if (characteristic.uuid.upper() == LATENCY_CHARACTERISTIC):
-        sent_time, latency = reconstruct_timestamp(int(characteristic.value))
+        sent_time, latency = reconstruct_timestamp(int(value))
 
         print(f"Client Sent Time (Reconstructed): {sent_time} ms")
         print(f"Estimated Latency: {latency} ms")
+        
+        characteristic.value = str(latency).encode()
+        
+        # server.update_value(POCKETPAD_SERVICE, LATENCY_CHARACTERISTIC)
 
+        return
+
+    characteristic.value = value
+    
     if (characteristic.uuid.upper() == PLAYER_ID_CHARACTERISTIC):
         print(f"Player: {int(characteristic.value)}")
     
@@ -111,7 +136,7 @@ async def run(loop):
             LATENCY_CHARACTERISTIC: {
                 "Properties": (
                     GATTCharacteristicProperties.read
-                    | GATTCharacteristicProperties.write_without_response
+                    | GATTCharacteristicProperties.write
                     | GATTCharacteristicProperties.indicate
                 ),
                 "Permissions": (
@@ -184,16 +209,17 @@ async def run(loop):
     }
     my_service_name = "PocketPad"
     server = BlessServer(name=my_service_name, loop=loop)
+
     server.read_request_func = read_request
     server.write_request_func = write_request
-
+    
     await server.add_gatt(gatt)
     await server.start(prioritize_local_name=True)
     logger.debug("Advertising")
-    if trigger.__module__ == "threading":
-        trigger.wait()
-    else:
-        await trigger.wait()
+    #if trigger.__module__ == "threading":
+    #    trigger.wait()
+    #else:
+    await trigger.wait()
     await asyncio.sleep(5)
     await server.stop()
 
@@ -210,17 +236,19 @@ logger = logging.getLogger(name=__name__)
 def start_server():
     global logger, trigger, thread, loop
     logging.basicConfig(level=logging.DEBUG)
+    logger = logging.getLogger(__name__)
 
-    if sys.platform in ["darwin", "win32"]:
-        trigger = threading.Event()
-    else:
-        trigger = asyncio.Event()
+    #if sys.platform in ["darwin", "win32"]:
+    #    trigger = threading.Event()
+    #else:
+    trigger = asyncio.Event()
 
     loop = asyncio.new_event_loop()
 
     def run_loop():
         asyncio.set_event_loop(loop)
         loop.run_until_complete(run(loop))
+        loop.close()
 
     thread = threading.Thread(target=run_loop, daemon=True)
     thread.start()
@@ -228,15 +256,16 @@ def start_server():
 # NEEDS WORK
 def stop_server():
     global trigger, thread, loop
-    print("Stop Server")
-    if trigger:
-        trigger.set()  # Signal the server loop to stop
+    logger.info("Shutting Down Server")
+    if trigger and loop:
+        loop.call_soon_threadsafe(trigger.set)
+        #trigger.set()  # Signal the server loop to stop
 
     if thread and thread.is_alive():
         thread.join()  # Ensure the server thread is properly stopped
 
-    if loop and loop.is_running():
-        loop.call_soon_threadsafe(loop.stop)
+    #if loop and loop.is_running():
+    #    loop.call_soon_threadsafe(loop.stop)
 # NEEDS WORK
 
 # Main function to start the bluetooth server for testing purposes

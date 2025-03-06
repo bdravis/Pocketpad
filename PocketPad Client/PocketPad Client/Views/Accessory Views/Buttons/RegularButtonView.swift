@@ -23,8 +23,21 @@ struct RegularButtonView: View {
                 
             }
         }) {
-            Text(config.input)
+            if let icon = config.style.icon {
+                switch config.style.iconType {
+                case .Text:
+                    Text(icon)
+                case .SFSymbol:
+                    ZStack {
+                        Image(systemName: icon)
+                            .resizable()
+                            .scaledToFit() // make sure it does not stretch
+                    }
+                }
+            } else {
+                Text("") // empty textbox
+            }
         }
-        .buttonStyle(CircularButtonStyle()) // TODO: Fix the hitbox being a square
+        .applyButtonStyle(shape: config.style.shape)
     }
 }

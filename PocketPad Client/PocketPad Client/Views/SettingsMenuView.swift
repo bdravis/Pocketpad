@@ -20,10 +20,9 @@ struct SettingsMenuView: View {
     @AppStorage("splitDPad") var splitDPad: Bool = false
     @AppStorage("selectedController") var selectedController: ControllerType = .Xbox
     @AppStorage("controllerColor") var controllerColor: Color = .blue
-    @AppStorage("controllerName") var controllerName: String = "Enter controller name"
+    @AppStorage("controllerName") var controllerName: String = "Controller"
     
-    // MARK: - Local State for Color Grid Toggle
-    @State private var showColorGrid: Bool = false
+    @State private var showDPadStyle: Bool = false
     
     // MARK: - Body
     var body: some View {
@@ -99,24 +98,41 @@ struct SettingsMenuView: View {
                 Spacer()
                 Picker("Controller Type", selection: $selectedController) {
                     ForEach(ControllerType.allCases, id: \.self) { type in
-                        Text(type.rawValue).tag(type)
+                        Label(type.rawValue, image: type.rawValue).tag(type)
                     }
                 }
                 .pickerStyle(.menu)
+                .accessibilityIdentifier("ControllerPicker")
+                .onChange(of: selectedController, initial: false) {
+                    // update the controller layout
+                    do {
+                        try LayoutManager.shared.setCurrentLayout(to: selectedController.rawValue)
+                        showDPadStyle = LayoutManager.shared.hasDPad
+                    } catch {
+                        print(error.localizedDescription)
+                        // TODO: alert user of error
+                    }
+                }
+                .onAppear {
+                    showDPadStyle = LayoutManager.shared.hasDPad
+                }
             }
             .padding(.horizontal, 16)
             //Picker for D-PAD (Split (True) vs Conjoined (False))
-            HStack {
-                Text("D-PAD")
-                    .foregroundColor(.primary)
-                Spacer()
-                Picker("D-PAD", selection: $splitDPad) {
-                    Text("Conjoined").tag(false)
-                    Text("Split").tag(true)
+            if showDPadStyle {
+                HStack {
+                    Text("D-PAD")
+                        .foregroundColor(.primary)
+                    Spacer()
+                    Picker("D-PAD", selection: $splitDPad) {
+                        Text("Conjoined").tag(false)
+                        Text("Split").tag(true)
+                    }
+                    .pickerStyle(.menu)
+                    .accessibilityIdentifier("DPadStyle")
                 }
-                .pickerStyle(.menu)
+                .padding(.horizontal, 16)
             }
-            .padding(.horizontal, 16)
             
             // Controller Color Section
             VStack(alignment: .leading, spacing: 10) {

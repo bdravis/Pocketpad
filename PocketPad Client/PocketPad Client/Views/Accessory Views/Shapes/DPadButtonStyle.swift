@@ -16,6 +16,6 @@ struct DPadButtonStyle: ButtonStyle {
             .foregroundStyle(Color(uiColor: configuration.isPressed ? .systemBackground : .label))
             .contentShape(Rectangle())
             .clipShape(Rectangle())
-            .animation(.linear(duration: 0.1), value: configuration.isPressed)
+//            .animation(.linear(duration: 0.1), value: configuration.isPressed)
     }
 }

@@ -91,9 +91,19 @@ struct ContentView: View {
                     }
                     .padding(.horizontal)
                     
+                    if let error = bluetoothManager.connectionError {
+                        HStack {
+                            Text(error)
+                                .foregroundColor(.red)
+                            
+                            Spacer()
+                        }
+                        .padding(.horizontal)
+                    }
+                    
                     // NavigationLink to ControllerView for Debugging
                     HStack {
-                        NavigationLink(destination: ControllerView(buttons: DEBUG_BUTTONS)) {
+                        NavigationLink(destination: ControllerView(layout: LayoutManager.shared.currentController)) {
                             Text("Open Debug ControllerView")
                         }
                     }
@@ -115,6 +125,7 @@ struct ContentView: View {
                                 .foregroundColor(.accentColor)
                                 .padding()
                         }
+                        .accessibilityIdentifier("SettingsGearButton")
                     }
                     Spacer()
                 }
@@ -124,17 +135,19 @@ struct ContentView: View {
         }
         // Overlay the SettingsMenuView when isShowingSettings is true
         .overlay(
-            ZStack {
-                Rectangle()
-                    .foregroundStyle(.black)
-                    .opacity(isShowingSettings ? 0.6 : 0.0)
-                    .animation(.easeOut, value: isShowingSettings)
-                    .ignoresSafeArea()
+            GeometryReader { geometry in
+                ZStack {
+                    Rectangle()
+                        .foregroundStyle(.black)
+                        .opacity(isShowingSettings ? 0.6 : 0.0)
+                        .animation(.easeOut, value: isShowingSettings)
+                        .ignoresSafeArea()
                     
-                SettingsMenuView(isShowingSettings: $isShowingSettings)
-                    .offset(y: isShowingSettings ? 0 : -UIScreen.main.bounds.height)
-                    .transition(.move(edge: .top))
-                    .animation(.bouncy, value: isShowingSettings)
+                    SettingsMenuView(isShowingSettings: $isShowingSettings)
+                        .offset(y: isShowingSettings ? 0 : -geometry.size.height)
+                        .transition(.move(edge: .top))
+                        .animation(.bouncy, value: isShowingSettings)
+                }
             }
         )
         // Bluetooth Manager updates (from first version)
@@ -146,11 +159,6 @@ struct ContentView: View {
         .onAppear {
             Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
                 bluetoothManager.pingServer()
-//                if let service = bluetoothManager.selectedService {
-//                    if let char = bluetoothManager.discoveredCharacteristics.first(where: { $0.uuid == PLAYER_ID_CHARACTERISTIC }) {
-//                        service.peripheral?.writeValue(String(0).data(using: .utf8)!, for: char, type: .withoutResponse)
-//                    }
-//                }
             }
         }
     }

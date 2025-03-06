@@ -36,6 +36,7 @@ class BluetoothManager: NSObject, ObservableObject {
     
     // MARK: - Public Methods
     func startScanning() {
+        self.connectionError = ""
         guard centralManager.state == .poweredOn else { return }
         
         isScanning = true
@@ -58,7 +59,7 @@ class BluetoothManager: NSObject, ObservableObject {
     
     func sendData(_ dataString: String, to characteristic: CBCharacteristic) {
         guard let data = dataString.data(using: .utf8) else { return }
-        peripheral?.writeValue(data, for: characteristic, type: .withResponse)
+        peripheral?.writeValue(data, for: characteristic, type: .withoutResponse)
         DispatchQueue.main.async {
             self.writeStatus = "Sending..."
         }
@@ -75,7 +76,7 @@ class BluetoothManager: NSObject, ObservableObject {
         guard let service = selectedService else { return }
         if let char = discoveredCharacteristics.first(where: { $0.uuid == LATENCY_CHARACTERISTIC }) {
             let now = Int(Date().timeIntervalSinceReferenceDate * 1000) % 100000
-            service.peripheral?.writeValue(String(now).data(using: .utf8)!, for: char, type: .withoutResponse)
+            service.peripheral?.writeValue(String(now).data(using: .utf8)!, for: char, type: .withResponse)
         }
     }
      
@@ -133,7 +134,7 @@ extension BluetoothManager: CBCentralManagerDelegate {
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
         DispatchQueue.main.async {
             self.isConnecting = false
-            self.connectionError = error?.localizedDescription
+            self.connectionError = error?.localizedDescription ?? ""
             print("Failed to connect: \(error?.localizedDescription ?? "Unknown error")")
         }
     }
@@ -148,6 +149,7 @@ extension BluetoothManager: CBCentralManagerDelegate {
             self.lastMessage = ""
             self.writeStatus = ""
             self.peripheral = nil
+            self.connectionError = "Connection lost"
         }
     }
 }
@@ -170,6 +172,23 @@ extension BluetoothManager: CBPeripheralDelegate {
                 self.selectedService = service
             }
             peripheral.discoverCharacteristics(nil, for: service)
+        }
+    }
+    
+    func peripheral(_ peripheral: CBPeripheral, didModifyServices invalidatedServices: [CBService]) {
+        print("Services modified: \(invalidatedServices)")
+        
+        for service in invalidatedServices {
+            if service.uuid == POCKETPAD_SERVICE {
+                print("Invalidated PocketPad service")
+                self.selectedService = nil
+                self.discoveredServices.removeAll()
+                self.discoveredCharacteristics.removeAll()
+                self.connectedDevice = nil
+                self.isConnecting = false
+                self.lastMessage = ""
+                self.connectionError = "Connection lost"
+            }
         }
     }
     

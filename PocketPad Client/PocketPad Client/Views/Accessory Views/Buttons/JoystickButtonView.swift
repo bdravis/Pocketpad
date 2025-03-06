@@ -47,7 +47,7 @@ struct JoystickButtonView: View {
                     while degrees > 360 {
                         degrees -= 360
                     }
-                    let ui8_angle: UInt8 = UInt8((degrees / 360) * 255) // Convert to degrees in range of 255. will be scaled back in server
+                    let ui8_angle: UInt8 = UInt8(Int((degrees * 256 / 360)) & 255) // Convert to degrees in range of 255. will be scaled back in server
                     
                     let normalizedMagnitude = clampedDistance / (DEFAULT_BUTTON_SIZE / 2) * 100
                     let ui8_magnitude: UInt8 = UInt8(min(max(normalizedMagnitude, 0), 255))
@@ -91,5 +91,5 @@ struct JoystickButtonView: View {
 }
 
 #Preview {
-    ControllerView(buttons: [JoystickConfig(position: CGPoint(x: 100, y: 200), scale: 1, inputId: 4, input: "RightJoystick")])
+    ControllerView(layout: .init(name: "Joystick Debug", landscapeButtons: [JoystickConfig(position: CGPoint(x: 100, y: 200), scale: 1, inputId: 4, input: "RightJoystick")], portraitButtons: [JoystickConfig(position: CGPoint(x: 100, y: 200), scale: 1, inputId: 4, input: "RightJoystick")]))
 }
