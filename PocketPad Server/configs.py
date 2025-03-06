@@ -3,6 +3,9 @@
 # 
 # Created by Jack on 2/27/25
 
+from config_styles import (
+    RegularButtonStyle, RegularButtonShape, RegularButtonIconType
+)
 from enums import (ButtonType, DPadDirection)
 from typing import Optional
 
@@ -18,6 +21,7 @@ class RegularButtonConfig(ButtonConfig):
         scale: float,
         input_id: int,
         input: str,
+        style: RegularButtonStyle = None,
         turbo: bool = False
     ):
         self.type = ButtonType.REGULAR
@@ -29,6 +33,17 @@ class RegularButtonConfig(ButtonConfig):
         
         self.input = input
         self.turbo = turbo
+
+        if style is not None:
+            self.style = style
+        else:
+            # create a default style configuration
+            self.style = RegularButtonStyle(
+                shape = RegularButtonShape.CIRCLE,
+                iconType = RegularButtonIconType.TEXT,
+                icon = input
+            )
+
 
 # Class for DPad configuration
 class DPadConfig(ButtonConfig):
