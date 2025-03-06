@@ -84,6 +84,7 @@ struct SettingsMenuView: View {
                     .foregroundColor(.primary)
                     .padding(.trailing, 16)
             }
+            .accessibilityIdentifier("SettingsCloseButton")
         }
         .padding(.vertical, 10)
     }
@@ -121,7 +122,7 @@ struct SettingsMenuView: View {
             //Picker for D-PAD (Split (True) vs Conjoined (False))
             if showDPadStyle {
                 HStack {
-                    Text("D-PAD")
+                    Text("DPad Style")
                         .foregroundColor(.primary)
                     Spacer()
                     Picker("D-PAD", selection: $splitDPad) {
@@ -129,6 +130,7 @@ struct SettingsMenuView: View {
                         Text("Split").tag(true)
                     }
                     .pickerStyle(.menu)
+                    .accessibilityAddTraits(.isButton)
                     .accessibilityIdentifier("DPadStyle")
                 }
                 .padding(.horizontal, 16)
@@ -145,6 +147,7 @@ struct SettingsMenuView: View {
                     ColorPicker("", selection: $controllerColor, supportsOpacity: false)
                         .labelsHidden()
                         .padding(.trailing, 16)
+                        .accessibilityIdentifier("ControllerColorPicker")
 
                 }
                 .padding(.horizontal, 16)
@@ -155,6 +158,7 @@ struct SettingsMenuView: View {
                             Spacer()
                             TextField("Enter controller name", text: $controllerName)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .accessibilityIdentifier("NameField")
                         }
                         .padding(.horizontal, 16)
         }

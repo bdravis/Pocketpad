@@ -25,6 +25,8 @@ struct DPadButtonView: View {
                 Circle()
                     .stroke(.black, style: StrokeStyle(lineWidth: 1.5))
                     .frame(width: DPAD_THICKNESS - 8, height: DPAD_THICKNESS - 8)
+                    .accessibilityAddTraits(.isButton)
+                    .accessibilityIdentifier("DPadConjoined")
             }
             
             // Horizontal directional arrows
@@ -32,8 +34,10 @@ struct DPadButtonView: View {
                 DirectionalArrow(split: split, rotation: -90, input: config.inputs[.left], direction: .left, config: config) // left arrow
                 Spacer()
                 DirectionalArrow(split: split, rotation: 90, input: config.inputs[.right], direction: .right, config: config) // right arrow
+                    .accessibilityIdentifier("DPadButton")
             }
             .frame(maxHeight: DPAD_THICKNESS)
+            .accessibilityAddTraits(.isButton)
             
             // Vertical directional arrows
             VStack {
