@@ -19,6 +19,13 @@ enum ButtonType: UInt8, ConfigType {
     case trigger = 4
 }
 
+// Enum for button event (pressed or released)
+enum ButtonEvent: UInt8, ConfigType {
+    case pressed = 0
+    case released = 1
+    case held = 2
+}
+
 // Protocol for configuration of the buttons for the layout
 protocol ButtonConfig: Codable {
     var id: UUID { get }
