@@ -4,6 +4,7 @@ import asyncio
 import json
 import threading
 import time
+import enums
 from struct import unpack
 from typing import Any, Dict, Union
 from server_constants import (POCKETPAD_SERVICE, LATENCY_CHARACTERISTIC, 
@@ -24,12 +25,17 @@ trigger: Union[asyncio.Event, threading.Event] = None
 thread = None
 loop = None
 
+num_players = 0
+next_id = 0
+num_players_lock = threading.Lock()
+next_id_lock = threading.Lock()
+
 latency_function = None
 connection_function = None
 controller_function = None
 
-
 class BlessServer(BlessServer):
+
     async def add_new_descriptor(self, service_uuid, char_uuid, desc_uuid, properties, value, permissions):
         print(f"Adding descriptor {desc_uuid} to {char_uuid} in {service_uuid}")
         return super().add_new_descriptor(service_uuid, char_uuid, desc_uuid, properties, value, permissions)
@@ -66,14 +72,29 @@ def read_request(characteristic: BlessGATTCharacteristic, **kwargs) -> bytearray
     
 def write_request(characteristic: BlessGATTCharacteristic, value: Any):
     print(f"Writing {characteristic.uuid} - {value}")
+    
+    characteristic.value = value
+
+    global num_players
+    global next_id
 
     if (characteristic.uuid.upper() == LATENCY_CHARACTERISTIC):
-        sent_time, latency = reconstruct_timestamp(int(value))
+
+        # data comes as little endian {Byte, quadword}
+        format_str = "<Bi"
+        connection_information = unpack(format_str, characteristic.value)
+
+        player_id = connection_information[0]
+        now = connection_information[1]
+
+        sent_time, latency = reconstruct_timestamp(int(now))
 
         print(f"Client Sent Time (Reconstructed): {sent_time} ms")
-        print(f"Estimated Latency: {latency} ms")
+        print(f"Estimated Latency for player {player_id}: {latency} ms")
         
         characteristic.value = str(latency).encode()
+
+        latency_function(player_id, latency)
         
         # server.update_value(POCKETPAD_SERVICE, LATENCY_CHARACTERISTIC)
 
@@ -95,13 +116,55 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
         format_str = "B" * data_length_in_bytes
         connection_information = unpack(format_str, characteristic.value)
 
-        characteristic.value = bytearray(ConnectionMessage.received.value)
+        player_id = connection_information[0]
+        signal = connection_information[1]
+        controller_type = connection_information[2]
 
-        if connection_information[0] == ConnectionMessage.connecting.value:
-            # Perhaps send playerid back here or at least generate it
-            print("player connected")
-        if connection_information[0] == ConnectionMessage.disconnecting.value:
-            print("player disconnected")
+        with num_players_lock:
+            if signal == ConnectionMessage.connecting.value:
+                # Perhaps send playerid back here or at least generate it
+                print(f"player {next_id} connected")
+
+                # I do not know if this is going to work
+                response_data = [next_id, ConnectionMessage.connecting.value]
+                response = bytearray(response_data)
+                characteristic.value = response
+
+                num_players += 1
+                next_id += 1
+
+                if controller_type == 0:
+                    controller_type = enums.ControllerType.Xbox
+                if controller_type == 1:
+                    controller_type = enums.ControllerType.Playstation
+                if controller_type == 2:
+                    controller_type = enums.ControllerType.Wii
+                if controller_type == 3:
+                    controller_type = enums.ControllerType.Switch
+
+                connection_function("connect", str(player_id), controller_type)
+
+            if signal == ConnectionMessage.disconnecting.value:
+                # TODO change server to indicate who is leaving
+                print(f"player {player_id} disconnected")
+                num_players -= 1
+
+                response_data = [0, ConnectionMessage.received.value]
+                response = bytearray(response_data)
+                characteristic.value = response
+                
+                if controller_type == 0:
+                    controller_type = enums.ControllerType.Xbox
+                if controller_type == 1:
+                    controller_type = enums.ControllerType.Playstation
+                if controller_type == 2:
+                    controller_type = enums.ControllerType.Wii
+                if controller_type == 3:
+                    controller_type = enums.ControllerType.Switch
+
+                characteristic.value = response
+                connection_function("disconnect", str(player_id), controller_type)
+
 
 
 async def run(loop):

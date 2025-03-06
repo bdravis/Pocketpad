@@ -60,7 +60,7 @@ struct DirectionalArrow: View {
     var body: some View {
         Button(action: {
             if let service = bluetoothManager.selectedService {
-                let ui8_playerId: UInt8 = 0 // Assuming one player
+                let ui8_playerId: UInt8 = LayoutManager.shared.player_id
                 let ui8_inputId : UInt8 = config.inputId
                 let ui8_buttonType : UInt8 = config.type.rawValue
                 let ui8_dpadDirection : UInt8 = direction.rawValue

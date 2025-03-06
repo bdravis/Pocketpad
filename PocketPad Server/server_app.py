@@ -3,6 +3,7 @@ import random
 import sys
 
 import bluetooth_server
+import enums
 
 from PySide6.QtWidgets import QApplication, QMainWindow, QListWidgetItem, QMessageBox, QCheckBox, QVBoxLayout, QWidget, QLabel, QHBoxLayout, QFrame, QGridLayout, QSystemTrayIcon, QMenu
 from PySide6.QtCore import Qt, QSettings, QByteArray, QBuffer, QSize
@@ -115,7 +116,7 @@ class MainWindow(QMainWindow):
 
     # REMOVE AFTER SPRINTS
     def dev_testing(self, player_id, num):
-        options = ["switch", "xbox", "playstation", "wii"]
+        options = [enums.ControllerType.Switch, enums.ControllerType.Xbox, enums.ControllerType.Playstation, enums.ControllerType.Wii]
         selected_option = options[num-1]
         self.update_controller_type(player_id, selected_option)
     # REMOVE AFTER SPRINTS
@@ -286,13 +287,13 @@ class MainWindow(QMainWindow):
                 
                 # Creating icons
                 #
-                if (controller_type == "playstation"):
+                if (controller_type == enums.ControllerType.Playstation):
                     icon_type = "icons/playstation.svg"
-                elif (controller_type == "switch"):
+                elif (controller_type == enums.ControllerType.Switch):
                     icon_type = "icons/switch.svg"
-                elif (controller_type == "wii"):
+                elif (controller_type == enums.ControllerType.Wii):
                     icon_type = "icons/wii.svg"
-                elif (controller_type == "xbox"):
+                elif (controller_type == enums.ControllerType.Xbox):
                     icon_type = "icons/xbox.svg"
 
 
@@ -417,13 +418,13 @@ class MainWindow(QMainWindow):
 
         @return: none
         """
-        if (controller_type == "playstation"):
+        if (controller_type == enums.ControllerType.Playstation):
             icon_type = "icons/playstation.svg"
-        elif (controller_type == "switch"):
+        elif (controller_type == enums.ControllerType.Switch):
             icon_type = "icons/switch.svg"
-        elif (controller_type == "wii"):
+        elif (controller_type == enums.ControllerType.Wii):
             icon_type = "icons/wii.svg"
-        elif (controller_type == "xbox"):
+        elif (controller_type == enums.ControllerType.Xbox):
             icon_type = "icons/xbox.svg"
 
         self.player_svg_paths_for_icons[player_id] = icon_type        
