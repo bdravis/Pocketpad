@@ -159,10 +159,10 @@ async def run(loop):
     await server.add_gatt(gatt)
     await server.start(prioritize_local_name=True)
     logger.debug("Advertising")
-    if trigger.__module__ == "threading":
-        trigger.wait()
-    else:
-        await trigger.wait()
+    #if trigger.__module__ == "threading":
+    #    trigger.wait()
+    #else:
+    await trigger.wait()
     await asyncio.sleep(5)
     await server.stop()
 
@@ -179,17 +179,19 @@ logger = logging.getLogger(name=__name__)
 def start_server():
     global logger, trigger, thread, loop
     logging.basicConfig(level=logging.DEBUG)
+    logger = logging.getLogger(__name__)
 
-    if sys.platform in ["darwin", "win32"]:
-        trigger = threading.Event()
-    else:
-        trigger = asyncio.Event()
+    #if sys.platform in ["darwin", "win32"]:
+    #    trigger = threading.Event()
+    #else:
+    trigger = asyncio.Event()
 
     loop = asyncio.new_event_loop()
 
     def run_loop():
         asyncio.set_event_loop(loop)
         loop.run_until_complete(run(loop))
+        loop.close()
 
     thread = threading.Thread(target=run_loop, daemon=True)
     thread.start()
@@ -197,15 +199,16 @@ def start_server():
 # NEEDS WORK
 def stop_server():
     global trigger, thread, loop
-    print("Stop Server")
-    if trigger:
-        trigger.set()  # Signal the server loop to stop
+    logger.info("Shutting Down Server")
+    if trigger and loop:
+        loop.call_soon_threadsafe(trigger.set)
+        #trigger.set()  # Signal the server loop to stop
 
     if thread and thread.is_alive():
         thread.join()  # Ensure the server thread is properly stopped
 
-    if loop and loop.is_running():
-        loop.call_soon_threadsafe(loop.stop)
+    #if loop and loop.is_running():
+    #    loop.call_soon_threadsafe(loop.stop)
 # NEEDS WORK
 
 # Main function to start the bluetooth server for testing purposes
