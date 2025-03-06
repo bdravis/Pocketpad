@@ -190,7 +190,7 @@ class Ui_MainWindow(object):
         self.controller_checkboxes.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 236, 139))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 73, 16))
         self.controller_checkboxes.setWidget(self.scrollAreaWidgetContents)
 
         self.verticalLayout_5.addWidget(self.controller_checkboxes)
@@ -223,14 +223,14 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addItem(self.verticalSpacer_4)
 
-        self.graphicsView = QFrame(self.main_application_area)
-        self.graphicsView.setObjectName(u"graphicsView")
-        sizePolicy4.setHeightForWidth(self.graphicsView.sizePolicy().hasHeightForWidth())
-        self.graphicsView.setSizePolicy(sizePolicy4)
-        self.graphicsView.setMinimumSize(QSize(25, 375))
-        self.graphicsView.setFrameShape(QFrame.Shape.StyledPanel)
+        self.controller_mockup_area = QFrame(self.main_application_area)
+        self.controller_mockup_area.setObjectName(u"controller_mockup_area")
+        sizePolicy4.setHeightForWidth(self.controller_mockup_area.sizePolicy().hasHeightForWidth())
+        self.controller_mockup_area.setSizePolicy(sizePolicy4)
+        self.controller_mockup_area.setMinimumSize(QSize(25, 375))
+        self.controller_mockup_area.setFrameShape(QFrame.Shape.StyledPanel)
 
-        self.verticalLayout.addWidget(self.graphicsView)
+        self.verticalLayout.addWidget(self.controller_mockup_area)
 
         self.code_depression_spacer = QSpacerItem(20, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
 
