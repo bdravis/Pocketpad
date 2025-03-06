@@ -169,7 +169,7 @@ class MainWindow(QMainWindow):
         self.network_server_initiated=False
         if not self.bluetooth_server_initiated:
             self.bluetooth_server_initiated=True
-            #bluetooth_server.start_server()
+            bluetooth_server.start_server()
         else:
             already_initiated = QMessageBox()
             already_initiated.setText("Bluetooth Server is already running")
