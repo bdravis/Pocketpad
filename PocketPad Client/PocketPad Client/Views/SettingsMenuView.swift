@@ -146,6 +146,7 @@ struct SettingsMenuView: View {
                     ColorPicker("", selection: $controllerColor, supportsOpacity: false)
                         .labelsHidden()
                         .padding(.trailing, 16)
+                        .accessibilityIdentifier("ControllerColorPicker")
 
                 }
                 .padding(.horizontal, 16)
@@ -156,6 +157,7 @@ struct SettingsMenuView: View {
                             Spacer()
                             TextField("Enter controller name", text: $controllerName)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .accessibilityIdentifier("NameField")
                         }
                         .padding(.horizontal, 16)
         }
