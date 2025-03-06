@@ -5,10 +5,10 @@
 //  Created by lemin on 2/26/25.
 //
 
-enum ControllerType: String, CaseIterable {
-    case Xbox = "Xbox"
-    case PlayStation = "PlayStation"
-    case Wii = "Wii"
-    case Switch = "Switch"
-    case DPadless = "DPad-less Test"
+enum ControllerType: UInt8, CaseIterable {
+    case Xbox = 0
+    case PlayStation = 1
+    case Wii = 2
+    case Switch = 3
+    case DPadless = 4
 }
