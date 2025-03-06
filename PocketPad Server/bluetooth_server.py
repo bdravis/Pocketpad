@@ -103,41 +103,6 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
         if connection_information[0] == ConnectionMessage.disconnecting.value:
             print("player disconnected")
 
-def write_request(characteristic: BlessGATTCharacteristic, value: Any, **kwargs):
-    global latency_function, connection_function, controller_function
-    characteristic.value = value
-
-    # if (characteristic.uuid.upper() == LATENCY_CHARACTERISTIC):
-    #     sent_time, latency = reconstruct_timestamp(int(characteristic.value))
-
-    #     print(f"Client Sent Time (Reconstructed): {sent_time} ms")
-    #     print(f"Estimated Latency: {latency} ms")
-    #     latency_function(f"{player_id}", latency)
-
-    if (characteristic.uuid.upper() == PLAYER_ID_CHARACTERISTIC):
-        print(f"Player: {int(characteristic.value)}")
-    
-    if (characteristic.uuid.upper() == INPUT_CHARACTERISTIC):
-        parse_input(characteristic.value)
-
-    # if (characteristic.uuid.upper() == CONNECTION_CHARACTERISTIC):
-
-    #     # encoded as a tuple so we can expand this packet with more information
-
-    #     data_length_in_bytes = len(characteristic.value)
-    #     format_str = "B" * data_length_in_bytes
-    #     connection_information = unpack(format_str, characteristic.value)
-
-    #     characteristic.value = bytearray(ConnectionMessage.received.value)
-
-    #     if connection_information[0] == ConnectionMessage.connecting.value:
-    #         # Perhaps send playerid back here or at least generate it
-    #         print("player connected")
-    #         connection_function("connect", f"{player_id}", f"{controller_type}")
-
-    #     if connection_information[0] == ConnectionMessage.disconnecting.value:
-    #         print("player disconnected")
-    #         connection_function("disconnect", f"{player_id}", f"{controller_type}")
 
 async def run(loop):
     global logger, trigger
