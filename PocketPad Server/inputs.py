@@ -23,7 +23,7 @@ def parse_input(raw_data) -> int:
 
     # Unpack the raw data into a tuple
     unpacked_data = unpack(format_str, raw_data)
-    logger.debug(f"Unpacked data: {unpacked_data}")
+    # logger.debug(f"Unpacked data: {unpacked_data}")
 
     # Check that common fields exist
     try:
@@ -66,8 +66,17 @@ def parse_input(raw_data) -> int:
     if button_type == ButtonType.REGULAR:
         logger.debug(f"Received input from button {input_id} from player {player_id}")
     elif button_type == ButtonType.JOYSTICK:
-        logger.debug(f"Received input from joystick {input_id} from player {player_id}")
-        # TODO Parse joystick input
+        # Check if the data contains values for angle and magnitude
+        try:
+            raw_angle = unpacked_data[NUM_COMMON_FIELDS]
+            raw_magnitude = unpacked_data[NUM_COMMON_FIELDS + 1]
+        except:
+            logger.error("Joystick input format missing fields")
+            return -1
+        
+        logger.debug(f"Received input from joystick {input_id} from player"
+        f" {player_id} with angle {raw_angle} and magnitude {raw_magnitude}")
+
     elif button_type == ButtonType.DPAD:
         # Check if the data contains a value for the DPad direction
         try:
