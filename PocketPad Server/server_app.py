@@ -74,7 +74,7 @@ class MainWindow(QMainWindow):
 
         # Callback function for updating a given player's latency
         #
-        bluetooth_server.set_latency_callback(self.latency_updated.emit)
+        bluetooth_server.set_latency_callback(self.ui.latency_setting_box.isChecked(), self.latency_updated.emit)
         #
         # Callback function for updating a given player's latency 
         
@@ -255,15 +255,18 @@ class MainWindow(QMainWindow):
         @return: none
         """
         if self.ui.latency_setting_box.isChecked():
+            bluetooth_server.set_latency_callback(self.ui.latency_setting_box.isChecked(), self.latency_updated.emit)
             for player_id in self.player_controller_mapping:
                 # Change latency label visibilty
                 #
+
                 self.player_controller_mapping[player_id]["latency_label"].setVisible(True)
 
                 self.update_latency(player_id, self.player_latency[player_id])
                 #
                 # Change latency label visibilty
         else:
+            bluetooth_server.set_latency_callback(self.ui.latency_setting_box.isChecked(), self.latency_updated.emit)
             for player_id in self.player_controller_mapping:
                 # Change latency label visibilty
                 #

@@ -31,6 +31,7 @@ num_players_lock = threading.Lock()
 next_id_lock = threading.Lock()
 
 latency_function = None
+send_latency = None
 connection_function = None
 controller_function = None
 
@@ -40,8 +41,9 @@ class BlessServer(BlessServer):
         #print(f"Adding descriptor {desc_uuid} to {char_uuid} in {service_uuid}")
         return super().add_new_descriptor(service_uuid, char_uuid, desc_uuid, properties, value, permissions)
 
-def set_latency_callback(latency_function_callback):
-    global latency_function
+def set_latency_callback(send_latency_callback, latency_function_callback):
+    global latency_function, send_latency
+    send_latency = send_latency_callback
     latency_function = latency_function_callback
 
 def set_connection_callback(connection_function_callback):
@@ -93,8 +95,9 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
         #print(f"Estimated Latency for player {player_id}: {latency} ms")
         
         characteristic.value = str(latency).encode()
-
-        latency_function(str(player_id), latency)
+        
+        if send_latency:
+            latency_function(str(player_id), latency)
         
         # server.update_value(POCKETPAD_SERVICE, LATENCY_CHARACTERISTIC)
 
