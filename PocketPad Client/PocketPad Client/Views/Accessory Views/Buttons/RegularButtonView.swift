@@ -39,5 +39,10 @@ struct RegularButtonView: View {
             }
         }
         .applyButtonStyle(shape: config.style.shape)
+        .pressAction(onPress: {
+            print("Pressed")
+        }, onRelease: {
+            print("Released")
+        })
     }
 }
