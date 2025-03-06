@@ -49,6 +49,8 @@ struct ControllerView: View {
                                     DPadButtonView(config: btn.wrappedValue as! DPadConfig)
                                 case .bumper:
                                     BumperButtonView(config: btn.wrappedValue as! BumperConfig)
+                                case .trigger:
+                                    TriggerButtonView(config: btn.wrappedValue as! TriggerConfig)
                             }
                         }
                         .scaleEffect(btn.scale.wrappedValue)
