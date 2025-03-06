@@ -122,7 +122,7 @@ struct SettingsMenuView: View {
             //Picker for D-PAD (Split (True) vs Conjoined (False))
             if showDPadStyle {
                 HStack {
-                    Text("D-PAD")
+                    Text("DPad Style")
                         .foregroundColor(.primary)
                     Spacer()
                     Picker("D-PAD", selection: $splitDPad) {
@@ -130,6 +130,7 @@ struct SettingsMenuView: View {
                         Text("Split").tag(true)
                     }
                     .pickerStyle(.menu)
+                    .accessibilityAddTraits(.isButton)
                     .accessibilityIdentifier("DPadStyle")
                 }
                 .padding(.horizontal, 16)
