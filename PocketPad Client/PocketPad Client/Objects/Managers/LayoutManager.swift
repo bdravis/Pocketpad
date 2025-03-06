@@ -10,6 +10,8 @@ import Foundation
 class LayoutManager {
     static let shared = LayoutManager() // create a data singleton
     
+    var player_id: UInt8 = 0
+    
     var availableLayouts: [String] = []
     
     // Current Layout Information

@@ -37,7 +37,7 @@ struct JoystickButtonView: View {
 #endif
                 
                 if let service = bluetoothManager.selectedService {
-                    let ui8_playerId: UInt8 = 0 // Assuming one player
+                    let ui8_playerId: UInt8 = LayoutManager.shared.player_id
                     let ui8_inputId : UInt8 = config.inputId
                     let ui8_buttonType : UInt8 = config.type.rawValue
                     var degrees = angle * 180 / .pi
@@ -58,7 +58,7 @@ struct JoystickButtonView: View {
             }
             .onEnded { _ in
                 if let service = bluetoothManager.selectedService {
-                    let ui8_playerId: UInt8 = 0 // Assuming one player
+                    let ui8_playerId: UInt8 = LayoutManager.shared.player_id
                     let ui8_inputId : UInt8 = config.inputId
                     let ui8_buttonType : UInt8 = config.type.rawValue
                     let ui8_angle : UInt8 = UInt8(0) // Convert to degrees
