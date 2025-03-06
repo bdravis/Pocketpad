@@ -26,4 +26,21 @@ enum ControllerType: UInt8, CaseIterable {
             return "DPad-less Test"
         }
     }
+    
+    init?(stringValue: String) {
+        switch stringValue {
+        case "Xbox":
+            self = .Xbox
+        case "PlayStation":
+            self = .PlayStation
+        case "Wii":
+            self = .Wii
+        case "Switch":
+            self = .Switch
+        case "DPad-less Test":
+            self = .DPadless
+        default:
+            return nil
+        }
+    }
 }
