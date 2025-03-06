@@ -3,6 +3,9 @@
 # 
 # Created by Jack on 2/27/25
 
+from config_styles import (
+    RegularButtonStyle, RegularButtonShape, RegularButtonIconType
+)
 from enums import (ButtonType, DPadDirection)
 from typing import Optional
 
@@ -18,6 +21,7 @@ class RegularButtonConfig(ButtonConfig):
         scale: float,
         input_id: int,
         input: str,
+        style: RegularButtonStyle = None,
         turbo: bool = False
     ):
         self.type = ButtonType.REGULAR
@@ -29,6 +33,17 @@ class RegularButtonConfig(ButtonConfig):
         
         self.input = input
         self.turbo = turbo
+
+        if style is not None:
+            self.style = style
+        else:
+            # create a default style configuration
+            self.style = RegularButtonStyle(
+                shape = RegularButtonShape.CIRCLE,
+                iconType = RegularButtonIconType.TEXT,
+                icon = input
+            )
+
 
 # Class for DPad configuration
 class DPadConfig(ButtonConfig):
@@ -88,38 +103,3 @@ class LayoutConfig:
         self.portrait_buttons_by_input_id: dict[int, ButtonConfig] = {
             button.input_id: button for button in portrait_buttons
         }
-
-
-# Debug Buttons
-# The same hardcoded values as the debug buttons in Swift client
-DEBUG_BUTTONS: list[ButtonConfig] = [
-    RegularButtonConfig(position = (300, 200), scale = 1.0, input_id = 0, input = "X"),
-    RegularButtonConfig(position = (240, 260), scale = 1.0, input_id = 1, input = "Y"),
-    RegularButtonConfig(position = (360, 260), scale = 1.0, input_id = 2, input = "A"),
-    RegularButtonConfig(position = (300, 320), scale = 1.0, input_id = 3, input = "B"),
-
-    JoystickConfig(position = (0, 400), scale = 1.0, input_id = 4, input = "RightJoystick"),
-
-    DPadConfig(position = (100, 0), scale = 1.0, input_id = 5, inputs = {
-        DPadDirection.UP: "DPadUp",
-        DPadDirection.RIGHT: "DPadRight",
-        DPadDirection.DOWN: "DPadDown",
-        DPadDirection.LEFT: "DPadLeft", 
-    })
-]
-
-# Debug layout, which contains debug buttons
-DEBUG_LAYOUT = LayoutConfig(
-    name = "Debug Layout",
-    landscape_buttons = [], # Only testing portrait mode for now
-    portrait_buttons = DEBUG_BUTTONS
-)
-
-# Maps player IDs to their current layout configurations
-# The actual mapping may be more complex in the system
-# This dictionary is simply a proof of concept
-layouts_by_player_id: dict[int, Optional[LayoutConfig]] = {
-    0: DEBUG_LAYOUT,
-    1: None,
-    2: None
-}

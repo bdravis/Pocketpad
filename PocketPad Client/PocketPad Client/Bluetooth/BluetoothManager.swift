@@ -59,7 +59,7 @@ class BluetoothManager: NSObject, ObservableObject {
     
     func sendData(_ dataString: String, to characteristic: CBCharacteristic) {
         guard let data = dataString.data(using: .utf8) else { return }
-        peripheral?.writeValue(data, for: characteristic, type: .withResponse)
+        peripheral?.writeValue(data, for: characteristic, type: .withoutResponse)
         DispatchQueue.main.async {
             self.writeStatus = "Sending..."
         }
