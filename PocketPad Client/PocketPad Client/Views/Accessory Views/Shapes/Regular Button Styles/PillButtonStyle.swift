@@ -11,7 +11,7 @@ struct PillButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .padding(2)
-            .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE * 0.35) // make it  L O N G
+            .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE * 0.5) // make it  L O N G
             .fontWeight(.regular)
             .background(Color(uiColor: configuration.isPressed ? .secondaryLabel : .secondarySystemFill))
             .foregroundStyle(Color(uiColor: configuration.isPressed ? .systemBackground : .label))
