@@ -21,7 +21,67 @@ final class PocketPad_ClientUITests: XCTestCase {
     override func tearDownWithError() throws {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
+    @MainActor
+        func testOpenandCloseSettingsMenu() throws {
+            let app = XCUIApplication()
+            app.launch()
+            
+            let settingsBtn = app.buttons["SettingsGearButton"]
+            guard settingsBtn.waitForExistence(timeout: 3) else{
+                XCTFail("Settings button open not found")
+                return
+            }
+            
+            settingsBtn.tap()
+            let settingsCloseBtn = app.buttons["SettingsCloseButton"]
+            guard settingsCloseBtn.waitForExistence(timeout: 3) else{
+                XCTFail("Settings button close not found")
+                return
+            }
+            settingsCloseBtn.tap()
+        }
+        
+        @MainActor
+        func testChangeControllerName() throws {
+            let app = XCUIApplication()
+            app.launch()
+            
+            let settingsBtn = app.buttons["SettingsGearButton"]
+            guard settingsBtn.waitForExistence(timeout: 3) else {
+                XCTFail("Settings button open not found")
+                return
+            }
+            settingsBtn.tap()
+            
+            let nameField = app.textFields["NameField"]
+            guard nameField.waitForExistence(timeout: 3) else {
+                XCTFail("Name field not found")
+                return
+            }
+            nameField.tap()
+            let endCoord = nameField.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5))
+            endCoord.tap()
+            let deleteString = String(repeating: XCUIKeyboardKey.delete.rawValue, count: 100)
+            nameField.typeText(deleteString)
+            let newName = "My Controller"
+            nameField.typeText(newName)
+            XCTAssertEqual(nameField.value as? String, newName, "Controller Name text field did not update correctly.")
+            
+            let settingsCloseBtn = app.buttons["SettingsCloseButton"]
+            guard settingsCloseBtn.waitForExistence(timeout: 10) else{
+                XCTFail("Settings button close not found")
+                return
+            }
+            Thread.sleep(forTimeInterval: 2.0)
 
+            settingsCloseBtn.tap()
+            Thread.sleep(forTimeInterval: 1.0)
+
+            settingsBtn.tap()
+            Thread.sleep(forTimeInterval: 2.0)
+
+            settingsCloseBtn.tap()
+        }
     @MainActor
     func testControllerDisplay() throws {
         // UI tests must launch the application that they test.
