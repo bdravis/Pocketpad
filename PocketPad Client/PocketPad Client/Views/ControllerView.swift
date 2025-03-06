@@ -55,6 +55,10 @@ struct ControllerView: View {
                                     BumperButtonView(config: btn.wrappedValue as! BumperConfig)
                                         .accessibilityAddTraits(.isButton)
                                         .accessibilityIdentifier("ControllerButton")
+                                case .trigger:
+                                    TriggerButtonView(config: btn.wrappedValue as! TriggerConfig)
+                                        .accessibilityAddTraits(.isButton)
+                                        .accessibilityIdentifier("ControllerButton")
                             }
                         }
                         .scaleEffect(btn.scale.wrappedValue)

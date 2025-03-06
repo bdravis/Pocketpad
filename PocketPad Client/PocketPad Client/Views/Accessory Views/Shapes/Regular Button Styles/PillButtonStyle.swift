@@ -29,3 +29,11 @@ struct PillButtonStyle: ButtonStyle {
 //            .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
     }
 }
+
+#Preview {
+    Button(action: {}) {
+        Text("Button")
+    }
+    .buttonStyle(PillButtonStyle())
+    .padding()
+}

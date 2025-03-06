@@ -16,6 +16,14 @@ enum ButtonType: UInt8, ConfigType {
     case joystick = 1
     case dpad = 2
     case bumper = 3
+    case trigger = 4
+}
+
+// Enum for button event (pressed or released)
+enum ButtonEvent: UInt8, ConfigType {
+    case pressed = 0
+    case released = 1
+    case held = 2
 }
 
 // Protocol for configuration of the buttons for the layout
