@@ -1,3 +1,9 @@
+# This file contains basic enums for config structs
+# Enums for config styles can be found in config_styles.py
+# ButtonType, DPadDirection, ControllerType
+# 
+# Created by Jack
+
 from enum import Enum
 
 class ButtonType(Enum):
