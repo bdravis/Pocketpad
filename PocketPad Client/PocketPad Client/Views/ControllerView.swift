@@ -47,6 +47,8 @@ struct ControllerView: View {
                                     JoystickButtonView(config: btn.wrappedValue as! JoystickConfig)
                                 case .dpad:
                                     DPadButtonView(config: btn.wrappedValue as! DPadConfig)
+                                case .bumper:
+                                    BumperButtonView(config: btn.wrappedValue as! BumperConfig)
                             }
                         }
                         .scaleEffect(btn.scale.wrappedValue)

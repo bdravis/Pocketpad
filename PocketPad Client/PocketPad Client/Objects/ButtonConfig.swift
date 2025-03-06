@@ -15,6 +15,7 @@ enum ButtonType: UInt8, ConfigType {
     case regular = 0
     case joystick = 1
     case dpad = 2
+    case bumper = 3
 }
 
 // Protocol for configuration of the buttons for the layout
