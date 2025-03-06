@@ -5,8 +5,7 @@
 
 import logging
 from configs import (
-    ButtonConfig, RegularButtonConfig, DPadConfig, JoystickConfig, LayoutConfig,
-    layouts_by_player_id
+    ButtonConfig, RegularButtonConfig, DPadConfig, JoystickConfig, LayoutConfig
 )
 from enums import (ButtonType, DPadDirection)
 from struct import unpack
@@ -37,24 +36,24 @@ def parse_input(raw_data) -> int:
         logger.error("Input format missing common fields")
         return -1
 
-    # Identify the current player layout
-    layout = layouts_by_player_id.get(player_id)
-    if layout is None:
-        logger.error("Player layout not found")
-        return -1
+    # # Identify the current player layout
+    # layout = layouts_by_player_id.get(player_id)
+    # if layout is None:
+    #     logger.error("Player layout not found")
+    #     return -1
 
-    # Identify the list of buttons, based on either portrait or layout mode 
-    in_portrait_mode = True # Hardcoded for now
-    if in_portrait_mode:
-        buttons_by_input_id = layout.portrait_buttons_by_input_id
-    else:
-        buttons_by_input_id = layout.landscape_buttons_by_input_id
+    # # Identify the list of buttons, based on either portrait or layout mode 
+    # in_portrait_mode = True # Hardcoded for now
+    # if in_portrait_mode:
+    #     buttons_by_input_id = layout.portrait_buttons_by_input_id
+    # else:
+    #     buttons_by_input_id = layout.landscape_buttons_by_input_id
     
-    # Identify the button associated with the specified input id
-    button = buttons_by_input_id.get(input_id)
-    if button is None:
-        logger.error("Invalid button input id")
-        return -1
+    # # Identify the button associated with the specified input id
+    # button = buttons_by_input_id.get(input_id)
+    # if button is None:
+    #     logger.error("Invalid button input id")
+    #     return -1
 
     # Check if button type is valid
     try:
@@ -65,9 +64,9 @@ def parse_input(raw_data) -> int:
     
     # Find the input string based on the button type
     if button_type == ButtonType.REGULAR:
-        logger.debug(f"Received button input {button.input} from player {player_id}")
+        logger.debug(f"Received input from button {input_id} from player {player_id}")
     elif button_type == ButtonType.JOYSTICK:
-        logger.debug(f"Received joystick input {button.input} from player {player_id}")
+        logger.debug(f"Received input from joystick {input_id} from player {player_id}")
         # TODO Parse joystick input
     elif button_type == ButtonType.DPAD:
         # Check if the data contains a value for the DPad direction
@@ -84,15 +83,24 @@ def parse_input(raw_data) -> int:
             logger.error("Invalid DPad direction")
             return -1
         
-        # Find the input corresponding to the specified DPad direction
-        dpad_inputs: dict[DPadDirection, str] = button.inputs
-        try:
-            dpad_input = dpad_inputs[direction]
-        except:
-            logger.error("No input found for DPad direction")
-            return -1
+        # # Find the input corresponding to the specified DPad direction
+        # dpad_inputs: dict[DPadDirection, str] = button.inputs
+        # try:
+        #     dpad_input = dpad_inputs[direction]
+        # except:
+        #     logger.error("No input found for DPad direction")
+        #     return -1
         
-        logger.debug(f"Received DPad input {dpad_input} from player {player_id}")
+        # Temporary map for parsing direction
+        direction_map: dict[DPadDirection, str] = {
+            DPadDirection.UP: "UP",
+            DPadDirection.DOWN: "DOWN",
+            DPadDirection.LEFT: "LEFT",
+            DPadDirection.RIGHT: "RIGHT"
+        }
+        dpad_input = direction_map[direction]
+
+        logger.debug(f"Received DPad input {dpad_input} from DPad {input_id} from player {player_id}")
     else:
         logger.error("Button type not handled")
         return -1

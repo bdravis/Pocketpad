@@ -16,11 +16,3 @@ class DPadDirection(Enum):
     DOWN = 1
     LEFT = 2
     RIGHT = 3
-
-enum ControllerType: String, CaseIterable {
-    Xbox = "Xbox"
-    PlayStation = "PlayStation"
-    case Wii = "Wii"
-    case Switch = "Switch"
-    case DPadless = "DPad-less Test"
-}
