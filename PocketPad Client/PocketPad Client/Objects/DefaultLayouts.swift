@@ -220,6 +220,27 @@ class DefaultLayouts {
         RegularButtonConfig(position: CGPoint(x: 200, y: 650), scale: 0.75, inputId: 7, input: "2")
     ])
     
+    // MARK: DPad-less Test
+    static let DPadlessTest: LayoutConfig = .init(name: "DPad-less Test", landscapeButtons: [
+        // Diamond of buttons
+        RegularButtonConfig(position: CGPoint(x: 650, y: 150), scale: 0.75, inputId: 0, input: "X"),
+        RegularButtonConfig(position: CGPoint(x: 600, y: 200), scale: 0.75, inputId: 1, input: "Y"),
+        RegularButtonConfig(position: CGPoint(x: 700, y: 200), scale: 0.75, inputId: 2, input: "A"),
+        RegularButtonConfig(position: CGPoint(x: 650, y: 250), scale: 0.75, inputId: 3, input: "B"),
+        
+        // Right Joystick
+        JoystickConfig(position: CGPoint(x: 450, y: 300), scale: 1.5, inputId: 4, input: "RightJoystick")
+    ], portraitButtons: [
+        // Diamond of buttons
+        RegularButtonConfig(position: CGPoint(x: 300, y: 500), scale: 0.75, inputId: 0, input: "X"),
+        RegularButtonConfig(position: CGPoint(x: 250, y: 550), scale: 0.75, inputId: 1, input: "Y"),
+        RegularButtonConfig(position: CGPoint(x: 350, y: 550), scale: 0.75, inputId: 2, input: "A"),
+        RegularButtonConfig(position: CGPoint(x: 300, y: 600), scale: 0.75, inputId: 3, input: "B"),
+        
+        // Right Joystick
+        JoystickConfig(position: CGPoint(x: 240, y: 680), scale: 1.5, inputId: 4, input: "RightJoystick")
+    ])
+    
     
     static func getLayout(for name: ControllerType) -> LayoutConfig {
         switch name {
@@ -231,6 +252,8 @@ class DefaultLayouts {
             return WiiConfig
         case .Switch:
             return SwitchConfig
+        case .DPadless:
+            return DPadlessTest
         }
     }
 }

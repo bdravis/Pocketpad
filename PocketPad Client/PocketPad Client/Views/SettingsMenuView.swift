@@ -22,6 +22,8 @@ struct SettingsMenuView: View {
     @AppStorage("controllerColor") var controllerColor: Color = .blue
     @AppStorage("controllerName") var controllerName: String = "Controller"
     
+    @State private var showDPadStyle: Bool = false
+    
     // MARK: - Body
     var body: some View {
         GeometryReader { geometry in
@@ -100,19 +102,24 @@ struct SettingsMenuView: View {
                     }
                 }
                 .pickerStyle(.menu)
+                .accessibilityIdentifier("ControllerPicker")
                 .onChange(of: selectedController, initial: false) {
                     // update the controller layout
                     do {
                         try LayoutManager.shared.setCurrentLayout(to: selectedController.rawValue)
+                        showDPadStyle = LayoutManager.shared.hasDPad
                     } catch {
                         print(error.localizedDescription)
                         // TODO: alert user of error
                     }
                 }
+                .onAppear {
+                    showDPadStyle = LayoutManager.shared.hasDPad
+                }
             }
             .padding(.horizontal, 16)
             //Picker for D-PAD (Split (True) vs Conjoined (False))
-            if LayoutManager.shared.hasDPad {
+            if showDPadStyle {
                 HStack {
                     Text("D-PAD")
                         .foregroundColor(.primary)
@@ -122,6 +129,7 @@ struct SettingsMenuView: View {
                         Text("Split").tag(true)
                     }
                     .pickerStyle(.menu)
+                    .accessibilityIdentifier("DPadStyle")
                 }
                 .padding(.horizontal, 16)
             }

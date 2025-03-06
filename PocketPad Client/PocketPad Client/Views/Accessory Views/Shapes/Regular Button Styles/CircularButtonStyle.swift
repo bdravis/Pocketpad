@@ -25,6 +25,6 @@ struct CircularButtonStyle: ButtonStyle {
                     .strokeBorder(Color(uiColor: .label), lineWidth: 3)
                     .opacity(configuration.isPressed ? 0.0 : 1.0)
             )
-            .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
+//            .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
     }
 }
