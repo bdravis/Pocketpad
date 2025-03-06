@@ -154,7 +154,7 @@ async def run(loop):
     my_service_name = "PocketPad"
     server = BlessServer(name=my_service_name, loop=loop)
     server.read_request_func = read_request
-    #server.write_request_func = write_request
+    server.write_request_func = write_request
 
     await server.add_gatt(gatt)
     await server.start(prioritize_local_name=True)
