@@ -17,8 +17,9 @@ struct BumperButtonView: View {
                 let ui8_playerId: UInt8 = 0 // Assuming one player
                 let ui8_inputId : UInt8 = config.inputId
                 let ui8_buttonType : UInt8 = config.type.rawValue
+                let ui8_event : UInt8 = ButtonEvent.pressed.rawValue
                 
-                let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType])
+                let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
                 bluetoothManager.sendInput(data)
             }
         }) {

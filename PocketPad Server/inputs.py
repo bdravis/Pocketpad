@@ -7,7 +7,7 @@ import logging
 from configs import (
     ButtonConfig, RegularButtonConfig, DPadConfig, JoystickConfig, LayoutConfig
 )
-from enums import (ButtonType, DPadDirection)
+from enums import (ButtonType, DPadDirection, ButtonEvent)
 from struct import unpack
 
 # Same logging setup as bluetooth.py
@@ -28,10 +28,11 @@ def parse_input(raw_data) -> int:
     # Check that common fields exist
     try:
         # Fields that are common to all sets of input data
-        NUM_COMMON_FIELDS = 3
+        NUM_COMMON_FIELDS = 4
         player_id = unpacked_data[0] # 
         input_id = unpacked_data[1]
         raw_type = unpacked_data[2]
+        raw_event = unpacked_data[3]
     except:
         logger.error("Input format missing common fields")
         return -1
@@ -61,6 +62,23 @@ def parse_input(raw_data) -> int:
     except:
         logger.error("Invalid button type")
         return -1
+    
+    # Check if button event is valid
+    try:
+        button_event = ButtonEvent(raw_event)
+    except:
+        logger.error("Invalid button event")
+        return -1
+    
+    # Temporary map for parsing button event
+    event_map: dict[ButtonEvent, str] = {
+        ButtonEvent.PRESSED: "PRESSED",
+        ButtonEvent.RELEASED: "RELEASED",
+        ButtonEvent.HELD: "HELD"
+    }
+    event_string = event_map[button_event]
+
+    logger.debug(f"Input is of type {event_string}")
     
     # Find the input string based on the button type
     if button_type == ButtonType.REGULAR:
@@ -113,5 +131,6 @@ def parse_input(raw_data) -> int:
     else:
         logger.error("Button type not handled")
         return -1
-    
+
+
     return 0
