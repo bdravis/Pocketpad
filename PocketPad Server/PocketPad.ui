@@ -346,8 +346,8 @@
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>236</width>
-                   <height>139</height>
+                   <width>73</width>
+                   <height>16</height>
                   </rect>
                  </property>
                 </widget>
@@ -411,7 +411,7 @@
         </spacer>
        </item>
        <item>
-        <widget class="QFrame" name="graphicsView">
+        <widget class="QFrame" name="controller_mockup_area">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
            <horstretch>1</horstretch>
