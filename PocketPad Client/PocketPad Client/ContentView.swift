@@ -142,6 +142,9 @@ struct ContentView: View {
                         .opacity(isShowingSettings ? 0.6 : 0.0)
                         .animation(.easeOut, value: isShowingSettings)
                         .ignoresSafeArea()
+                        .onTapGesture {
+                            isShowingSettings = false
+                        }
                     
                     SettingsMenuView(isShowingSettings: $isShowingSettings)
                         .offset(y: isShowingSettings ? 0 : -geometry.size.height)
