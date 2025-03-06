@@ -63,6 +63,45 @@ def reconstruct_timestamp(sent_ms):
 def read_request(characteristic: BlessGATTCharacteristic, **kwargs) -> bytearray:
     logger.debug(f"Reading {characteristic.uuid} - {characteristic.value}")
     return characteristic.value
+    
+def write_request(characteristic: BlessGATTCharacteristic, value: Any):
+    print(f"Writing {characteristic.uuid} - {value}")
+
+    if (characteristic.uuid.upper() == LATENCY_CHARACTERISTIC):
+        sent_time, latency = reconstruct_timestamp(int(value))
+
+        print(f"Client Sent Time (Reconstructed): {sent_time} ms")
+        print(f"Estimated Latency: {latency} ms")
+        
+        characteristic.value = str(latency).encode()
+        
+        # server.update_value(POCKETPAD_SERVICE, LATENCY_CHARACTERISTIC)
+
+        return
+
+    characteristic.value = value
+    
+    if (characteristic.uuid.upper() == PLAYER_ID_CHARACTERISTIC):
+        print(f"Player: {int(characteristic.value)}")
+    
+    if (characteristic.uuid.upper() == INPUT_CHARACTERISTIC):
+        parse_input(characteristic.value)
+
+    if (characteristic.uuid.upper() == CONNECTION_CHARACTERISTIC):
+
+        # encoded as a tuple so we can expand this packet with more information
+
+        data_length_in_bytes = len(characteristic.value)
+        format_str = "B" * data_length_in_bytes
+        connection_information = unpack(format_str, characteristic.value)
+
+        characteristic.value = bytearray(ConnectionMessage.received.value)
+
+        if connection_information[0] == ConnectionMessage.connecting.value:
+            # Perhaps send playerid back here or at least generate it
+            print("player connected")
+        if connection_information[0] == ConnectionMessage.disconnecting.value:
+            print("player disconnected")
 
 
 async def run(loop):
@@ -153,9 +192,10 @@ async def run(loop):
     }
     my_service_name = "PocketPad"
     server = BlessServer(name=my_service_name, loop=loop)
+
     server.read_request_func = read_request
     server.write_request_func = write_request
-
+    
     await server.add_gatt(gatt)
     await server.start(prioritize_local_name=True)
     logger.debug("Advertising")
