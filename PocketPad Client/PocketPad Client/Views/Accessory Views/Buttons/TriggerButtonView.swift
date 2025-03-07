@@ -26,6 +26,7 @@ struct TriggerButtonView: View {
                 let ui8_event : UInt8 = ButtonEvent.pressed.rawValue
                 
                 let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
+                print("PRESS TRIGGER")
                 bluetoothManager.sendInput(data)
             }
         }, onRelease: {
@@ -36,6 +37,7 @@ struct TriggerButtonView: View {
                 let ui8_event : UInt8 = ButtonEvent.released.rawValue
                 
                 let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
+                print("RELEASE TRIGGER")
                 bluetoothManager.sendInput(data)
             }
         })

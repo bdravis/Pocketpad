@@ -88,6 +88,7 @@ struct DirectionalArrow: View {
                 let ui8_dpadDirection : UInt8 = direction.rawValue
                 
                 let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event, ui8_dpadDirection])
+                print("PRESS")
                 bluetoothManager.sendInput(data)
             }
         }, onRelease: {
@@ -100,6 +101,7 @@ struct DirectionalArrow: View {
                 let ui8_dpadDirection : UInt8 = direction.rawValue
                 
                 let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event, ui8_dpadDirection])
+                print("RELEASE")
                 bluetoothManager.sendInput(data)
             }
         })
