@@ -54,6 +54,9 @@ def set_controller_callback(controller_function_callback):
     global controller_function
     controller_function = controller_function_callback
 
+def remove_duplicate_id(player_id):
+    print("Removing Duplicate User")
+
 def reconstruct_timestamp(sent_ms):
     """Reconstruct possible timestamps based on the last 5 digits."""
     cur_ms = int(time.time() * 1000)

@@ -376,6 +376,7 @@ class MainWindow(QMainWindow):
                 #
                 # Update number of connected users
             else:
+                bluetooth_server.remove_duplicate_id(player_id)
                 already_initiated = QMessageBox()
                 already_initiated.setText(f"A player with player_id, {player_id}, already is connected")
                 already_initiated.exec()
