@@ -159,6 +159,12 @@ class MainWindow(QMainWindow):
         if (self.network_server_initiated == False):
             self.network_server_initiated=True
             bluetooth_server.stop_server()
+            # Hardcode player disconnect
+            #
+            for player_id in self.connected_players:
+                self.update_player_connection("disconnect", player_id, enums.ControllerType.Xbox)
+            #
+            # Hardcode player disconnect
         else:
             already_initiated = QMessageBox()
             already_initiated.setText("Network Server is already running")
@@ -189,6 +195,12 @@ class MainWindow(QMainWindow):
         if self.bluetooth_server_initiated:
             self.bluetooth_server_initiated=False
             bluetooth_server.stop_server()
+            # Hardcode player disconnect
+            #
+            for player_id in self.connected_players:
+                self.update_player_connection("disconnect", player_id, enums.ControllerType.Xbox)
+            #
+            # Hardcode player disconnect
         elif self.network_server_initiated:
             self.network_server_initiated=False
             # Network Function
