@@ -83,6 +83,10 @@ def parse_input(raw_data) -> int:
     # Find the input string based on the button type
     if button_type == ButtonType.REGULAR:
         logger.debug(f"Received input from button {input_id} from player {player_id}")
+    elif button_type == ButtonType.BUMPER:
+        logger.debug(f"Received input from bumper {input_id} from player {player_id}")
+    elif button_type == ButtonType.TRIGGER:
+        logger.debug(f"Received input from trigger {input_id} from player {player_id}")
     elif button_type == ButtonType.JOYSTICK:
         # Check if the data contains values for angle and magnitude
         try:

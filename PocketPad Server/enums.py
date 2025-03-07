@@ -18,6 +18,8 @@ class ButtonType(Enum):
     REGULAR = 0
     JOYSTICK = 1
     DPAD = 2
+    BUMPER = 3
+    TRIGGER = 4
 
 class DPadDirection(Enum):
     UP = 0
