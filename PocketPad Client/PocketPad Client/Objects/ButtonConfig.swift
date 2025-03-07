@@ -77,3 +77,12 @@ extension ButtonConfig {
         return fixedPos
     }
 }
+
+// a bad button type config for testing encoding errors
+struct BadButtonTypeConfig: ButtonConfig, ConfigType {
+    // Protocol Properties
+    var position: CGPoint
+    var scale: CGFloat
+    var type: ButtonType
+    var inputId: UInt8
+}

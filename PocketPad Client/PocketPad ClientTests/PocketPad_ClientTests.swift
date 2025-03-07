@@ -15,7 +15,14 @@ struct PocketPad_ClientTests {
         // Write your test here and use APIs like `#expect(...)` to check expected conditions.
     }
     
+    @Test func removeAllLayoutFiles() async throws {
+        try LayoutManager.shared.deleteAllLayouts()
+    }
+    
     @Test func exportBasicControllers() async throws {
+        // remove previous layouts
+        try LayoutManager.shared.deleteAllLayouts()
+        
         // checks export/import of all of the controller types
         for controller in ControllerType.allCases {
             let initialLayout = DefaultLayouts.getLayout(for: controller)

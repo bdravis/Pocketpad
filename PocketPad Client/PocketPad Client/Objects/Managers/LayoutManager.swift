@@ -39,13 +39,42 @@ class LayoutManager {
         print("written to \(url.absoluteString)")
     }
     
-    func loadLayouts() throws {
-        // load the list of file names from layouts
-        availableLayouts.removeAll(keepingCapacity: true)
+    func saveMalformedLayout(_ layout: LayoutConfig) throws {
+        // for testing, malform the file by encoding as a json instead
+        let encoder = JSONEncoder()
+        let data = try encoder.encode(layout)
+        let url = getLayoutsFolder().appendingPathComponent("\(layout.name).plist", conformingTo: .propertyList)
+        try data.write(to: url)
+        print("written to \(url.absoluteString)")
+    }
+    
+    func deleteAllLayouts() throws {
+        // delete the files for all layouts
+        availableLayouts.removeAll(keepingCapacity: false)
         let url = getLayoutsFolder()
         for name in try FileManager.default.contentsOfDirectory(atPath: url.path()) {
-            print("adding \(name)")
-            availableLayouts.append(name)
+            do {
+                try FileManager.default.removeItem(at: url.appendingPathComponent(name, conformingTo: .propertyList))
+                print("removed \(name)")
+            } catch {
+                print("failed to remove \(name): \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    func loadLayouts(includeControllerTypes: Bool = false) throws {
+        // load the list of file names from layouts
+        availableLayouts.removeAll(keepingCapacity: true)
+        // load the controller types enum first
+        if includeControllerTypes {
+            for controllerType in ControllerType.allCases {
+                availableLayouts.append(controllerType.stringValue)
+            }
+        }
+        
+        let url = getLayoutsFolder()
+        for name in try FileManager.default.contentsOfDirectory(atPath: url.path()) {
+            availableLayouts.append(name.replacingOccurrences(of: ".plist", with: ""))
         }
     }
     

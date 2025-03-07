@@ -218,6 +218,94 @@ final class PocketPad_ClientUITests: XCTestCase {
     }
     
     @MainActor
+    func testLayoutSaving() throws {
+        // UI tests must launch the application that they test.
+        let app = XCUIApplication()
+        app.launch()
+        
+        let alertDismiss = app.alerts.element.buttons["AlertCancel"]
+        
+        // open settings
+        let settingsBtn = app.buttons["SettingsGearButton"]
+        guard settingsBtn.waitForExistence(timeout: 2) else {
+            XCTFail()
+            return
+        }
+        settingsBtn.tap()
+        
+        let removeFiles = app.buttons["RemoveLayoutFiles"]
+        XCTAssertTrue(removeFiles.waitForExistence(timeout: 2))
+        removeFiles.tap()
+        
+        // make sure that the buttons don't exist in the list
+        let controllerPicker = app.buttons["ControllerPicker"]
+        guard controllerPicker.waitForExistence(timeout: 2) else {
+            XCTFail()
+            return
+        }
+        controllerPicker.tap()
+        XCTAssertTrue(app.buttons["Xbox"].waitForExistence(timeout: 2))
+        XCTAssertFalse(app.buttons["Xbox Saved"].exists)
+        XCTAssertFalse(app.buttons["Wii Saved"].exists)
+        app.buttons["Xbox"].tap()
+        
+        let chooseTemplate = app.buttons["ChooseTemplate"]
+        XCTAssertTrue(chooseTemplate.exists)
+        chooseTemplate.tap()
+        
+        // try to save malformed
+        let malformedBtn = app.buttons["MalformedLayout"]
+        XCTAssertTrue(malformedBtn.waitForExistence(timeout: 2))
+        malformedBtn.tap()
+        
+        XCTAssertTrue(alertDismiss.waitForExistence(timeout: 4))
+        XCTAssertTrue(app.alerts.element.staticTexts["Failed to save the layout"].exists)
+        alertDismiss.tap()
+        
+        // try to save xbox
+        XCTAssertTrue(chooseTemplate.waitForExistence(timeout: 2))
+        chooseTemplate.tap()
+        let xboxBtn = app.buttons["Xbox Saved"]
+        XCTAssertTrue(xboxBtn.waitForExistence(timeout: 2))
+        xboxBtn.tap()
+        XCTAssertTrue(alertDismiss.waitForExistence(timeout: 4))
+        XCTAssertTrue(app.alerts.element.staticTexts["Layout Successfully Saved"].exists)
+        alertDismiss.tap()
+        // make sure it is in the list
+        guard controllerPicker.waitForExistence(timeout: 2) else {
+            XCTFail()
+            return
+        }
+        controllerPicker.tap()
+        XCTAssertTrue(xboxBtn.waitForExistence(timeout: 2))
+        xboxBtn.tap()
+        
+        // try to save malformed wii
+        let saveMalformed = app.switches["SaveAsMalformed"]
+        XCTAssertTrue(saveMalformed.waitForExistence(timeout: 2))
+        saveMalformed.tap()
+        XCTAssertTrue(chooseTemplate.exists)
+        chooseTemplate.tap()
+        let wiiBtn = app.buttons["Wii Saved"]
+        XCTAssertTrue(wiiBtn.waitForExistence(timeout: 2))
+        wiiBtn.tap()
+        XCTAssertTrue(alertDismiss.waitForExistence(timeout: 4))
+        XCTAssertTrue(app.alerts.element.staticTexts["Layout Successfully Saved"].exists)
+        alertDismiss.tap()
+        // make sure it is in the list
+        guard controllerPicker.waitForExistence(timeout: 2) else {
+            XCTFail()
+            return
+        }
+        controllerPicker.tap()
+        XCTAssertTrue(wiiBtn.waitForExistence(timeout: 2))
+        wiiBtn.tap()
+        XCTAssertTrue(alertDismiss.waitForExistence(timeout: 4))
+        XCTAssertTrue(app.alerts.element.staticTexts["Failed to load layout"].exists)
+        alertDismiss.tap()
+    }
+    
+    @MainActor
     func testHideDPad() throws {
         // tests if the settings view dpad option hides when a gamepad without a dpad is selected
         continueAfterFailure = false
