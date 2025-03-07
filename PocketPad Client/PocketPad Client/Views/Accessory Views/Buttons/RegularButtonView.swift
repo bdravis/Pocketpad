@@ -13,15 +13,7 @@ struct RegularButtonView: View {
     
     var body: some View {
         Button(action: {
-            if let service = bluetoothManager.selectedService {
-                let ui8_playerId: UInt8 = LayoutManager.shared.player_id
-                let ui8_inputId : UInt8 = config.inputId
-                let ui8_buttonType : UInt8 = config.type.rawValue
-                
-                let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType])
-                bluetoothManager.sendInput(data)
-                
-            }
+            //
         }) {
             if let icon = config.style.icon {
                 switch config.style.iconType {
@@ -39,5 +31,28 @@ struct RegularButtonView: View {
             }
         }
         .applyButtonStyle(shape: config.style.shape)
+        .pressAction(onPress: {
+            if let service = bluetoothManager.selectedService {
+                let ui8_playerId: UInt8 = 0 // Assuming one player
+                let ui8_inputId : UInt8 = config.inputId
+                let ui8_buttonType : UInt8 = config.type.rawValue
+                let ui8_event : UInt8 = ButtonEvent.pressed.rawValue
+                
+                let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
+                print("PRESS")
+                bluetoothManager.sendInput(data)
+            }
+        }, onRelease: {
+            if let service = bluetoothManager.selectedService {
+                let ui8_playerId: UInt8 = 0 // Assuming one player
+                let ui8_inputId : UInt8 = config.inputId
+                let ui8_buttonType : UInt8 = config.type.rawValue
+                let ui8_event : UInt8 = ButtonEvent.released.rawValue
+                
+                let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
+                print("RELEASE")
+                bluetoothManager.sendInput(data)
+            }
+        })
     }
 }

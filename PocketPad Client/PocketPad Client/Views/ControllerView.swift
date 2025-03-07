@@ -43,12 +43,22 @@ struct ControllerView: View {
                             switch btn.wrappedValue.type {
                                 case .regular:
                                     RegularButtonView(config: btn.wrappedValue as! RegularButtonConfig)
+                                        .accessibilityAddTraits(.isButton)
+                                        .accessibilityIdentifier("ControllerButton")
                                 case .joystick:
                                     JoystickButtonView(config: btn.wrappedValue as! JoystickConfig)
+                                        .accessibilityAddTraits(.isButton)
+                                        .accessibilityIdentifier("ControllerButton")
                                 case .dpad:
                                     DPadButtonView(config: btn.wrappedValue as! DPadConfig)
                                 case .bumper:
                                     BumperButtonView(config: btn.wrappedValue as! BumperConfig)
+                                        .accessibilityAddTraits(.isButton)
+                                        .accessibilityIdentifier("ControllerButton")
+                                case .trigger:
+                                    TriggerButtonView(config: btn.wrappedValue as! TriggerConfig)
+                                        .accessibilityAddTraits(.isButton)
+                                        .accessibilityIdentifier("ControllerButton")
                             }
                         }
                         .scaleEffect(btn.scale.wrappedValue)

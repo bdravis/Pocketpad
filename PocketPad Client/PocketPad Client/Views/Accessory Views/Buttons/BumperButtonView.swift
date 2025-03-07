@@ -13,14 +13,7 @@ struct BumperButtonView: View {
     
     var body: some View {
         Button(action: {
-            if let service = bluetoothManager.selectedService {
-                let ui8_playerId: UInt8 = 0 // Assuming one player
-                let ui8_inputId : UInt8 = config.inputId
-                let ui8_buttonType : UInt8 = config.type.rawValue
-                
-                let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType])
-                bluetoothManager.sendInput(data)
-            }
+            // 
         }) {
             if let icon = config.style.icon {
                 switch config.style.iconType {
@@ -38,10 +31,31 @@ struct BumperButtonView: View {
             }
         }
         .applyButtonStyle(shape: config.style.shape)
+        .pressAction(onPress: {
+            if let service = bluetoothManager.selectedService {
+                let ui8_playerId: UInt8 = 0 // Assuming one player
+                let ui8_inputId : UInt8 = config.inputId
+                let ui8_buttonType : UInt8 = config.type.rawValue
+                let ui8_event : UInt8 = ButtonEvent.pressed.rawValue
+                
+                let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
+                bluetoothManager.sendInput(data)
+            }
+        }, onRelease: {
+            if let service = bluetoothManager.selectedService {
+                let ui8_playerId: UInt8 = 0 // Assuming one player
+                let ui8_inputId : UInt8 = config.inputId
+                let ui8_buttonType : UInt8 = config.type.rawValue
+                let ui8_event : UInt8 = ButtonEvent.released.rawValue
+                
+                let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
+                bluetoothManager.sendInput(data)
+            }
+        })
     }
 }
 
 
 #Preview {
-    ControllerView(layout: .init(name: "Bumper Debug", landscapeButtons: [BumperConfig(position: CGPoint(x: 100, y: 200), scale: 2, inputId: 4, input: "LeftBumper")], portraitButtons: [BumperConfig(position: CGPoint(x: 100, y: 200), scale: 2, inputId: 4, input: "LeftBumper")]))
+    ControllerView(layout: .init(name: "Bumper Debug", landscapeButtons: [BumperConfig(position: CGPoint(x: 100, y: 200), scale: 2, inputId: 4, input: "LB")], portraitButtons: [BumperConfig(position: CGPoint(x: 100, y: 200), scale: 2, inputId: 4, input: "LB")]))
 }

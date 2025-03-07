@@ -106,6 +106,7 @@ struct ContentView: View {
                         NavigationLink(destination: ControllerView(layout: LayoutManager.shared.currentController)) {
                             Text("Open Debug ControllerView")
                         }
+                        .accessibilityIdentifier("OpenControllerView")
                     }
                     .padding(.horizontal)
                     
@@ -142,6 +143,9 @@ struct ContentView: View {
                         .opacity(isShowingSettings ? 0.6 : 0.0)
                         .animation(.easeOut, value: isShowingSettings)
                         .ignoresSafeArea()
+                        .onTapGesture {
+                            isShowingSettings = false
+                        }
                     
                     SettingsMenuView(isShowingSettings: $isShowingSettings)
                         .offset(y: isShowingSettings ? 0 : -geometry.size.height)

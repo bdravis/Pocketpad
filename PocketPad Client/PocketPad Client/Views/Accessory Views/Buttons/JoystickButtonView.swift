@@ -40,6 +40,8 @@ struct JoystickButtonView: View {
                     let ui8_playerId: UInt8 = LayoutManager.shared.player_id
                     let ui8_inputId : UInt8 = config.inputId
                     let ui8_buttonType : UInt8 = config.type.rawValue
+                    let ui8_event : UInt8 = ButtonEvent.held.rawValue
+                    
                     var degrees = angle * 180 / .pi
                     while degrees < 0 {
                         degrees += 360
@@ -52,7 +54,7 @@ struct JoystickButtonView: View {
                     let normalizedMagnitude = clampedDistance / (DEFAULT_BUTTON_SIZE / 2) * 100
                     let ui8_magnitude: UInt8 = UInt8(min(max(normalizedMagnitude, 0), 255))
                     
-                    let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_angle, ui8_magnitude])
+                    let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event, ui8_angle, ui8_magnitude])
                     bluetoothManager.sendInput(data)
                 }
             }
@@ -61,10 +63,12 @@ struct JoystickButtonView: View {
                     let ui8_playerId: UInt8 = LayoutManager.shared.player_id
                     let ui8_inputId : UInt8 = config.inputId
                     let ui8_buttonType : UInt8 = config.type.rawValue
+                    let ui8_event : UInt8 = ButtonEvent.released.rawValue
+                    
                     let ui8_angle : UInt8 = UInt8(0) // Convert to degrees
                     let ui8_magnitude : UInt8 = UInt8(0) // Convert to percentage
                     
-                    let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_angle, ui8_magnitude])
+                    let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event, ui8_angle, ui8_magnitude])
                     bluetoothManager.sendInput(data)
                 }
                 
