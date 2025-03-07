@@ -5,11 +5,6 @@
 //  Created by Jack Fang on 3/2/25.
 //
 
-enum InvalidFormatError: Error {
-    case badValue(msg: String)
-}
-
-
 // Wrapper struct for button config, used for encoding and decoding
 struct ButtonConfigWrapper: Codable {
     let buttonConfig: ButtonConfig
@@ -50,9 +45,7 @@ struct ButtonConfigWrapper: Codable {
                 self.buttonConfig = try container.decode(BumperConfig.self, forKey: .payload)
             case .triggerConfig:
                 self.buttonConfig = try container.decode(TriggerConfig.self, forKey: .payload)
-            default:
-                throw InvalidFormatError.badValue(msg: "Trying to decode invalid config")
-            }
+        }
     }
     
     // Conform wrapper struct to Encodable
@@ -76,7 +69,7 @@ struct ButtonConfigWrapper: Codable {
                 try container.encode(Base.triggerConfig, forKey: .base)
                 try container.encode(payload, forKey: .payload)
             default:
-                throw InvalidFormatError.badValue(msg: "Trying to encode invalid config")
+                break
         }
     }
 }
