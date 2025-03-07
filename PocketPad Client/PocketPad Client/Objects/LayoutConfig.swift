@@ -81,6 +81,14 @@ struct LayoutConfig: ConfigType {
                 if lhsBtn != rhsBtn {
                     return false
                 }
+            } else if let lhsBtn = lhs.landscapeButtons[i] as? BumperConfig, let rhsBtn = rhs.landscapeButtons[i] as? BumperConfig {
+                if lhsBtn != rhsBtn {
+                    return false
+                }
+            } else if let lhsBtn = lhs.landscapeButtons[i] as? TriggerConfig, let rhsBtn = rhs.landscapeButtons[i] as? TriggerConfig {
+                if lhsBtn != rhsBtn {
+                    return false
+                }
             } else {
                 return false
             }
@@ -97,6 +105,14 @@ struct LayoutConfig: ConfigType {
                     return false
                 }
             } else if let lhsBtn = lhs.portraitButtons[i] as? JoystickConfig, let rhsBtn = rhs.portraitButtons[i] as? JoystickConfig {
+                if lhsBtn != rhsBtn {
+                    return false
+                }
+            } else if let lhsBtn = lhs.portraitButtons[i] as? BumperConfig, let rhsBtn = rhs.portraitButtons[i] as? BumperConfig {
+                if lhsBtn != rhsBtn {
+                    return false
+                }
+            } else if let lhsBtn = lhs.portraitButtons[i] as? TriggerConfig, let rhsBtn = rhs.portraitButtons[i] as? TriggerConfig {
                 if lhsBtn != rhsBtn {
                     return false
                 }

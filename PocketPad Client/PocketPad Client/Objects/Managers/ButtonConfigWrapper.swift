@@ -20,6 +20,8 @@ struct ButtonConfigWrapper: Codable {
         case dPadConfig
         case joystickConfig
         case regularButtonConfig
+        case bumperConfig
+        case triggerConfig
     }
     
     init(_ buttonConfig: ButtonConfig) {
@@ -39,6 +41,10 @@ struct ButtonConfigWrapper: Codable {
                 self.buttonConfig = try container.decode(JoystickConfig.self, forKey: .payload)
             case .regularButtonConfig:
                 self.buttonConfig = try container.decode(RegularButtonConfig.self, forKey: .payload)
+            case .bumperConfig:
+                self.buttonConfig = try container.decode(BumperConfig.self, forKey: .payload)
+            case .triggerConfig:
+                self.buttonConfig = try container.decode(TriggerConfig.self, forKey: .payload)
         }
     }
     
@@ -55,6 +61,12 @@ struct ButtonConfigWrapper: Codable {
                 try container.encode(payload, forKey: .payload)
             case let payload as RegularButtonConfig:
                 try container.encode(Base.regularButtonConfig, forKey: .base)
+                try container.encode(payload, forKey: .payload)
+            case let payload as BumperConfig:
+                try container.encode(Base.bumperConfig, forKey: .base)
+                try container.encode(payload, forKey: .payload)
+            case let payload as TriggerConfig:
+                try container.encode(Base.triggerConfig, forKey: .base)
                 try container.encode(payload, forKey: .payload)
             default:
                 break
