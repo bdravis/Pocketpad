@@ -170,6 +170,7 @@ struct SettingsMenuView: View {
             Section {
                 // Toggle to save layout as malformed
                 Toggle("Save as malformed file", isOn: $saveAsMalformed)
+                    .accessibilityIdentifier("SaveAsMalformed")
                 
                 // Picker to choose a layout to save
                 HStack {
@@ -180,6 +181,7 @@ struct SettingsMenuView: View {
                     }) {
                         Text("Choose Template")
                     }
+                    .accessibilityIdentifier("ChooseTemplate")
                 }
                 
                 // Remove files for layout
@@ -197,6 +199,7 @@ struct SettingsMenuView: View {
                     Text("Remove all file layouts")
                 }
                 .foregroundStyle(.red)
+                .accessibilityIdentifier("RemoveLayoutFiles")
             } header: {
                 Text("Layouts (testing)")
                     .font(.footnote)
@@ -231,11 +234,29 @@ struct SettingsMenuView: View {
         let xboxAction = UIAlertAction(title: "Xbox", style: .default) { (action) in
             saveLayoutFile(for: .Xbox)
         }
+        xboxAction.accessibilityIdentifier = "Xbox Saved"
         alert.addAction(xboxAction)
         let wiiAction = UIAlertAction(title: "Wii", style: .default) { (action) in
             saveLayoutFile(for: .Wii)
         }
+        wiiAction.accessibilityIdentifier = "Wii Saved"
         alert.addAction(wiiAction)
+        let malformedAction = UIAlertAction(title: "Malformed", style: .default) { (action) in
+            // make a malformed layout
+            let badLayout = LayoutConfig.init(name: "Malformed", landscapeButtons: [
+                BadButtonTypeConfig(position: CGPointZero, scale: 0, type: .joystick, inputId: 0)
+            ], portraitButtons: [
+                
+            ])
+            do {
+                try LayoutManager.shared.saveLayout(badLayout)
+                UIApplication.shared.alert(title: "Layout Successfully Saved", body: "It can be found in the \"Controller Type\" menu.")
+            } catch {
+                UIApplication.shared.alert(body: "Failed to save the layout:\n\(error.localizedDescription)")
+            }
+        }
+        malformedAction.accessibilityIdentifier = "MalformedLayout"
+        alert.addAction(malformedAction)
         
         let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel) { (action) in
             // cancels the action

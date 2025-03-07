@@ -17,7 +17,9 @@ extension UIApplication {
     func alert(title: String = errorString, body: String) {
         DispatchQueue.main.async {
             currentUIAlertController = UIAlertController(title: title, message: body, preferredStyle: .alert)
-            currentUIAlertController?.addAction(.init(title: dismissString, style: .cancel))
+            let cancelAction = UIAlertAction(title: dismissString, style: .cancel)
+            cancelAction.accessibilityIdentifier = "AlertCancel"
+            currentUIAlertController?.addAction(cancelAction)
             self.present(alert: currentUIAlertController!)
         }
     }
