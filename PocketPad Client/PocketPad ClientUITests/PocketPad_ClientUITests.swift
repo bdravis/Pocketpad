@@ -165,10 +165,10 @@ final class PocketPad_ClientUITests: XCTestCase {
 
         let validControllers = ["Xbox", "PlayStation", "Switch", "Wii"]
         let controllerBtnCount = [
-            "Xbox": 10,
-            "PlayStation": 9,
-            "Switch": 11,
-            "Wii": 8
+            "Xbox": 14,
+            "PlayStation": 13,
+            "Switch": 15,
+            "Wii": 9
         ]
         
         // Define the buttons
