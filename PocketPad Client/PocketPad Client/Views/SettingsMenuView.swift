@@ -252,7 +252,7 @@ struct SettingsMenuView: View {
                 try LayoutManager.shared.saveLayout(badLayout)
                 UIApplication.shared.alert(title: "Layout Successfully Saved", body: "It can be found in the \"Controller Type\" menu.")
             } catch {
-                UIApplication.shared.alert(body: "Failed to save the layout:\n\(error.localizedDescription)")
+                UIApplication.shared.alert(title: "Failed to save the layout", body: error.localizedDescription)
             }
         }
         malformedAction.accessibilityIdentifier = "MalformedLayout"
