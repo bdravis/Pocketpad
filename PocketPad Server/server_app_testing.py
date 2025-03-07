@@ -1,4 +1,5 @@
 import pytest
+import enums
 from unittest.mock import MagicMock
 from PySide6.QtWidgets import QMessageBox, QListWidgetItem
 from PySide6.QtGui import QIcon, QCloseEvent
@@ -134,14 +135,14 @@ def test_new_player_connection(main_window):
 
     print("Connect User")
     player_ids = ["player_1", "player_2", "player_3"]
-    controller_types = ["switch", "xbox", "playstation"]
+    controller_types = [enums.ControllerType.Switch, enums.ControllerType.Xbox, enums.ControllerType.Playstation]
 
     main_window.get_icon_from_svg = MagicMock(return_value=QIcon())
 
     main_window.update_player_connection("connect", player_ids[0], controller_types[0])
 
     assert player_ids[0] in main_window.connected_players
-    assert f"icons/{controller_types[0]}.svg" in main_window.player_svg_paths_for_icons[player_ids[0]]
+    assert f"icons/switch.svg" in main_window.player_svg_paths_for_icons[player_ids[0]]
     assert main_window.ui.connection_list.count() == 1
     assert main_window.ui.num_connected_label.text() == "1/4"
     assert main_window.player_latency[player_ids[0]] == 0
@@ -157,7 +158,7 @@ def test_new_player_connection(main_window):
     main_window.update_player_connection("connect", player_ids[1], controller_types[1])
 
     assert player_ids[1] in main_window.connected_players
-    assert f"icons/{controller_types[1]}.svg" in main_window.player_svg_paths_for_icons[player_ids[1]]
+    assert f"icons/xbox.svg" in main_window.player_svg_paths_for_icons[player_ids[1]]
     assert main_window.ui.connection_list.count() == 2
     assert main_window.ui.num_connected_label.text() == "2/4"
     assert main_window.player_latency[player_ids[1]] == 0
@@ -173,7 +174,7 @@ def test_new_player_connection(main_window):
     main_window.update_player_connection("connect", player_ids[2], controller_types[2])
 
     assert player_ids[2] in main_window.connected_players
-    assert f"icons/{controller_types[2]}.svg" in main_window.player_svg_paths_for_icons[player_ids[2]]
+    assert f"icons/playstation.svg" in main_window.player_svg_paths_for_icons[player_ids[2]]
     assert main_window.ui.connection_list.count() == 3
     assert main_window.ui.num_connected_label.text() == "3/4"
     assert main_window.player_latency[player_ids[2]] == 0
@@ -198,7 +199,7 @@ def test_existing_player_disconnection(main_window):
 
     print("Connect User")
     player_ids = ["player_1", "player_2", "player_3"]
-    controller_types = ["switch", "xbox", "playstation"]
+    controller_types = [enums.ControllerType.Switch, enums.ControllerType.Xbox, enums.ControllerType.Playstation]
 
     main_window.get_icon_from_svg = MagicMock(return_value=QIcon())
 
@@ -252,9 +253,9 @@ def test_existing_player_connection(main_window, mocker):
         mocker - fixture provided by pytest for testing
     """
     player_id = "player_1"
-    main_window.update_player_connection("connect", player_id, "xbox")
+    main_window.update_player_connection("connect", player_id, enums.ControllerType.Xbox)
     mock_warning = mocker.patch.object(QMessageBox, "exec")
-    main_window.update_player_connection("connect", player_id, "xbox")
+    main_window.update_player_connection("connect", player_id, enums.ControllerType.Xbox)
     mock_warning.assert_called_once()
 
 def test_non_existing_player_disconnection(main_window, mocker):
@@ -268,7 +269,7 @@ def test_non_existing_player_disconnection(main_window, mocker):
     """
     player_id = "Not_Existent"
     mock_warning = mocker.patch.object(QMessageBox, "exec")
-    main_window.update_player_connection("disconnect", player_id, "xbox")
+    main_window.update_player_connection("disconnect", player_id, enums.ControllerType.Xbox)
     mock_warning.assert_called_once()
 
 def test_controller_updates(main_window, monkeypatch):
@@ -295,28 +296,28 @@ def test_controller_updates(main_window, monkeypatch):
     main_window.player_latency = {
         "player_1": 200,
     }
-    main_window.update_controller_type("player_1", "xbox")
+    main_window.update_controller_type("player_1", enums.ControllerType.Xbox)
     main_window.get_icon_from_svg.assert_not_called() 
 
     main_window.player_latency = {
         "player_1": 10,
     }
-    main_window.update_controller_type("player_1", "xbox")
+    main_window.update_controller_type("player_1", enums.ControllerType.Xbox)
     main_window.get_icon_from_svg.assert_called_with("icons/xbox.svg", "#3BB20A") 
     
     main_window.player_latency = {
         "player_1": 105,
     }
-    main_window.update_controller_type("player_1", "playstation")
+    main_window.update_controller_type("player_1", enums.ControllerType.Playstation)
     main_window.get_icon_from_svg.assert_called_with("icons/playstation.svg", "#Ff0000") 
     
     main_window.player_latency = {
         "player_1": 70,
     }
-    main_window.update_controller_type("player_1", "switch")
+    main_window.update_controller_type("player_1", enums.ControllerType.Switch)
     main_window.get_icon_from_svg.assert_called_with("icons/switch.svg", "#e6cc00") 
     
-    main_window.update_controller_type("player_1", "wii")
+    main_window.update_controller_type("player_1", enums.ControllerType.Wii)
     main_window.get_icon_from_svg.assert_called_with("icons/wii.svg", "#e6cc00") 
 
 def test_toggle_controller_input_display(main_window, qtbot):
@@ -328,7 +329,7 @@ def test_toggle_controller_input_display(main_window, qtbot):
         main_window - a testing instance of the MainWindow used to display the PocketPad application
         qtbot - fixture provided by pytest-qt for GUI testing
     """
-    main_window.update_player_connection("connect", "player_1", "xbox")
+    main_window.update_player_connection("connect", "player_1", enums.ControllerType.Xbox)
     player1_checkbox = main_window.player_checkbox_mapping["player_1"]
 
     # Case where player_1 checkbox is unchecked
@@ -341,7 +342,7 @@ def test_toggle_controller_input_display(main_window, qtbot):
     qtbot.wait(100)
     assert main_window.player_controller_input_display["player_1"] is True
 
-    main_window.update_player_connection("connect", "player_2", "switch")
+    main_window.update_player_connection("connect", "player_2", enums.ControllerType.Switch)
     player2_checkbox = main_window.player_checkbox_mapping["player_2"]
 
     # Case where player_1 checkbox is unchecked

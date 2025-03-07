@@ -1,6 +1,7 @@
 import random
 
 import sys
+from pathlib import Path
 
 import bluetooth_server
 import enums
@@ -115,7 +116,7 @@ class MainWindow(QMainWindow):
 
         #self.ui.bluetooth_button.clicked.connect(lambda: self.update_player_connection("disconnect", f"player {self.num_players_connected - 1}", "switch"))
         #self.ui.bluetooth_button.clicked.connect(lambda: self.dev_testing(f"player {self.num_players_connected - 1}", random.randint(1, 4)))
-        #self.ui.network_button.clicked.connect(lambda: self.update_player_connection("connect", f"player {self.num_players_connected}", "switch"))
+        #self.ui.network_button.clicked.connect(lambda: self.update_player_connection("connect", f"player {self.num_players_connected}", enums.ControllerType.Playstation))
         #self.ui.server_close_button.clicked.connect(lambda: self.update_latency(f"player {self.num_players_connected - 1}", random.randint(1, 200)))
 
         #
@@ -299,6 +300,7 @@ class MainWindow(QMainWindow):
                 
                 # Creating icons
                 #
+                #base_path = Path(__file__).resolve().parent 
                 if (controller_type == enums.ControllerType.Playstation):
                     icon_type = "icons/playstation.svg"
                 elif (controller_type == enums.ControllerType.Switch):
@@ -308,7 +310,8 @@ class MainWindow(QMainWindow):
                 elif (controller_type == enums.ControllerType.Xbox):
                     icon_type = "icons/xbox.svg"
 
-
+                #icon_type = icon_type.resolve()
+                #icon_type = str(icon_type)
                 self.player_svg_paths_for_icons[player_id] = icon_type
                 self.player_latency[player_id] = 0
                 if (self.ui.latency_setting_box.isChecked()):
@@ -430,6 +433,7 @@ class MainWindow(QMainWindow):
 
         @return: none
         """
+        #base_path = Path(__file__).resolve().parent 
         if (controller_type == enums.ControllerType.Playstation):
             icon_type = "icons/playstation.svg"
         elif (controller_type == enums.ControllerType.Switch):
@@ -439,6 +443,8 @@ class MainWindow(QMainWindow):
         elif (controller_type == enums.ControllerType.Xbox):
             icon_type = "icons/xbox.svg"
 
+        #icon_type = icon_type.resolve()
+        #icon_type = str(icon_type)
         self.player_svg_paths_for_icons[player_id] = icon_type        
 
         latency = self.player_latency[player_id]
