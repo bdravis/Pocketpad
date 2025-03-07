@@ -75,8 +75,17 @@ class BluetoothManager: NSObject, ObservableObject {
     func pingServer() {
         guard let service = selectedService else { return }
         if let char = discoveredCharacteristics.first(where: { $0.uuid == LATENCY_CHARACTERISTIC }) {
-            let now = Int(Date().timeIntervalSinceReferenceDate * 1000) % 100000
-            service.peripheral?.writeValue(String(now).data(using: .utf8)!, for: char, type: .withResponse)
+            let now = UInt32(min((Date().timeIntervalSinceReferenceDate * 1000).truncatingRemainder(dividingBy: 100000), Double(UInt32.max)))
+            //service.peripheral?.writeValue(String(now).data(using: .utf8)!, for: char, type: .withResponse)
+            
+            let playerIDBytes = withUnsafeBytes(of: LayoutManager.shared.player_id.littleEndian) { Data($0) }
+
+            let timestampBytes = withUnsafeBytes(of: now.littleEndian) { Data($0) }
+
+            // Concatenates, not bitwise add
+            let dataToSend = Data(playerIDBytes + timestampBytes)
+            
+            service.peripheral?.writeValue(dataToSend, for: char, type: .withResponse)
         }
     }
      
@@ -85,7 +94,10 @@ class BluetoothManager: NSObject, ObservableObject {
             
             // This does not currently work because it should wait until it hears back from the server but there is not a callback for that
             if let characteristic = self.discoveredCharacteristics.first(where: { $0.uuid == CONNECTION_CHARACTERISTIC }) {
-                peripheral.writeValue(Data([ConnectionMessage.disconnecting.rawValue]), for: characteristic, type: .withResponse)
+                
+                let response_data = [LayoutManager.shared.player_id, ConnectionMessage.disconnecting.rawValue, 0]
+                
+                peripheral.writeValue(Data(response_data), for: characteristic, type: .withResponse)
                 peripheral.readValue(for: characteristic)
             }
 
@@ -211,7 +223,16 @@ extension BluetoothManager: CBPeripheralDelegate {
         for characteristic in characteristics {
             if characteristic.uuid == CONNECTION_CHARACTERISTIC {
                 // Send the message upon discovering the characteristic
-                peripheral.writeValue(Data([ConnectionMessage.connecting.rawValue]), for: characteristic, type: .withResponse)
+                
+                let selectedController = UserDefaults.standard.string(forKey: "selectedController") ?? "Xbox"
+                
+                let selectedControllerValue = ControllerType(stringValue: selectedController)?.rawValue ?? 0
+                
+                let response_data = [LayoutManager.shared.player_id, ConnectionMessage.connecting.rawValue, UInt8(selectedControllerValue)]
+                
+                peripheral.writeValue(Data(response_data), for: characteristic, type: .withResponse)
+                peripheral.readValue(for: characteristic)
+
             }
         }
     }
@@ -232,22 +253,33 @@ extension BluetoothManager: CBPeripheralDelegate {
         if characteristic.uuid == CONNECTION_CHARACTERISTIC {
             // Process the server's response
             if let value = characteristic.value {
-                let response = value.first ?? 0  // Assuming the response is a single byte
-                print("Server response: \(response)")
+                let newId = value[0] // Assuming the response is a single byte
+                let signal = value[1] // Assuming the response is a single byte
+                print("Server response: \(signal)")
                 
                 // Check if the response is RECIEVED_CONNECTION_INFORMATION
-                if response == ConnectionMessage.recieved.rawValue {
+                if signal == ConnectionMessage.recieved.rawValue {
                     print("Server acknowledged disconnection")
+                    
+                    // Disconnect after receiving the response
+                    centralManager.cancelPeripheralConnection(peripheral)
+                    discoveredServices.removeAll()
+                    discoveredCharacteristics.removeAll()
+                    selectedService = nil
+                    isConnecting = false
+                    connectedDevice = nil
+                }
+                
+                // Check if the response is RECIEVED_CONNECTION_INFORMATION
+                if signal == ConnectionMessage.connecting.rawValue {
+                    print("Server acknowledged connection")
+                    print("player_id: \(value)")
+                    
+                    LayoutManager.shared.player_id = newId
+
                 }
             }
             
-            // Disconnect after receiving the response
-            centralManager.cancelPeripheralConnection(peripheral)
-            discoveredServices.removeAll()
-            discoveredCharacteristics.removeAll()
-            selectedService = nil
-            isConnecting = false
-            connectedDevice = nil
         }
     }
     

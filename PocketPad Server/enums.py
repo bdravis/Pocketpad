@@ -6,6 +6,14 @@
 
 from enum import Enum
 
+class ControllerType(Enum):
+    Xbox = 0
+    Playstation = 1
+    Wii = 2
+    Switch = 3
+    DPadless = 4
+
+
 class ButtonType(Enum):
     REGULAR = 0
     JOYSTICK = 1

@@ -3,9 +3,10 @@ import random
 import sys
 
 import bluetooth_server
+import enums
 
 from PySide6.QtWidgets import QApplication, QMainWindow, QListWidgetItem, QMessageBox, QCheckBox, QVBoxLayout, QWidget, QLabel, QHBoxLayout, QFrame, QGridLayout, QSystemTrayIcon, QMenu
-from PySide6.QtCore import Qt, QSettings, QByteArray, QBuffer, QSize
+from PySide6.QtCore import Qt, QSettings, QByteArray, QBuffer, QSize, Signal
 from PySide6.QtGui import QFont, QIcon, QAction, QPixmap, QPainter, QImage, QColor
 from PySide6.QtSvg import QSvgRenderer
 
@@ -15,6 +16,11 @@ from PySide6.QtSvg import QSvgRenderer
 from ui_form import Ui_MainWindow
 
 class MainWindow(QMainWindow):
+
+    latency_updated = Signal(str, int)
+    connection_updated = Signal(str, str, enums.ControllerType)
+    controller_updated = Signal(str, enums.ControllerType)
+
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -62,21 +68,25 @@ class MainWindow(QMainWindow):
 
         self.ui.latency_setting_box.stateChanged.connect(self.toggle_latency)
 
+        self.latency_updated.connect(self.update_latency)
+        self.connection_updated.connect(self.update_player_connection)
+        self.controller_updated.connect(self.update_controller_type)
+
         # Callback function for updating a given player's latency
         #
-        bluetooth_server.set_latency_callback(self.update_latency)
+        bluetooth_server.set_latency_callback(self.ui.latency_setting_box.isChecked(), self.latency_updated.emit)
         #
         # Callback function for updating a given player's latency 
         
         # Callback function for updating player connection list
         #
-        bluetooth_server.set_connection_callback(self.update_player_connection)
+        bluetooth_server.set_connection_callback(self.connection_updated.emit)
         #
         # Callback function for updating player connection list
 
         # Callback function for updating a given player's controller type (Idk if function name will differ so feel free to change)
         #
-        bluetooth_server.set_controller_callback(self.update_controller_type)
+        bluetooth_server.set_controller_callback(self.controller_updated.emit)
         #
         # Callback function for updating a given player's controller type
 
@@ -115,7 +125,7 @@ class MainWindow(QMainWindow):
 
     # REMOVE AFTER SPRINTS
     def dev_testing(self, player_id, num):
-        options = ["switch", "xbox", "playstation", "wii"]
+        options = [enums.ControllerType.Switch, enums.ControllerType.Xbox, enums.ControllerType.Playstation, enums.ControllerType.Wii]
         selected_option = options[num-1]
         self.update_controller_type(player_id, selected_option)
     # REMOVE AFTER SPRINTS
@@ -245,15 +255,18 @@ class MainWindow(QMainWindow):
         @return: none
         """
         if self.ui.latency_setting_box.isChecked():
+            bluetooth_server.set_latency_callback(self.ui.latency_setting_box.isChecked(), self.latency_updated.emit)
             for player_id in self.player_controller_mapping:
                 # Change latency label visibilty
                 #
+
                 self.player_controller_mapping[player_id]["latency_label"].setVisible(True)
 
                 self.update_latency(player_id, self.player_latency[player_id])
                 #
                 # Change latency label visibilty
         else:
+            bluetooth_server.set_latency_callback(self.ui.latency_setting_box.isChecked(), self.latency_updated.emit)
             for player_id in self.player_controller_mapping:
                 # Change latency label visibilty
                 #
@@ -286,13 +299,13 @@ class MainWindow(QMainWindow):
                 
                 # Creating icons
                 #
-                if (controller_type == "playstation"):
+                if (controller_type == enums.ControllerType.Playstation):
                     icon_type = "icons/playstation.svg"
-                elif (controller_type == "switch"):
+                elif (controller_type == enums.ControllerType.Switch):
                     icon_type = "icons/switch.svg"
-                elif (controller_type == "wii"):
+                elif (controller_type == enums.ControllerType.Wii):
                     icon_type = "icons/wii.svg"
-                elif (controller_type == "xbox"):
+                elif (controller_type == enums.ControllerType.Xbox):
                     icon_type = "icons/xbox.svg"
 
 
@@ -417,13 +430,13 @@ class MainWindow(QMainWindow):
 
         @return: none
         """
-        if (controller_type == "playstation"):
+        if (controller_type == enums.ControllerType.Playstation):
             icon_type = "icons/playstation.svg"
-        elif (controller_type == "switch"):
+        elif (controller_type == enums.ControllerType.Switch):
             icon_type = "icons/switch.svg"
-        elif (controller_type == "wii"):
+        elif (controller_type == enums.ControllerType.Wii):
             icon_type = "icons/wii.svg"
-        elif (controller_type == "xbox"):
+        elif (controller_type == enums.ControllerType.Xbox):
             icon_type = "icons/xbox.svg"
 
         self.player_svg_paths_for_icons[player_id] = icon_type        

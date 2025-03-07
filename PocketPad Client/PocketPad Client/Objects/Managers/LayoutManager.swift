@@ -10,6 +10,8 @@ import Foundation
 class LayoutManager {
     static let shared = LayoutManager() // create a data singleton
     
+    var player_id: UInt8 = 0
+    
     var availableLayouts: [String] = []
     
     // Current Layout Information
@@ -57,7 +59,7 @@ class LayoutManager {
     
     private func getControllerType(for name: String) -> ControllerType? {
         for controller in ControllerType.allCases {
-            if name == controller.rawValue {
+            if name == controller.stringValue {
                 return controller
             }
         }

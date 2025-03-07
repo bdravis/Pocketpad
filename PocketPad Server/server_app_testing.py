@@ -1,8 +1,8 @@
 import pytest
 from unittest.mock import MagicMock
-from PySide6.QtWidgets import QApplication, QMessageBox, QListWidgetItem
-from PySide6.QtGui import QIcon
-from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QMessageBox, QListWidgetItem
+from PySide6.QtGui import QIcon, QCloseEvent
+from PySide6.QtCore import Qt, QSettings
 from server_app import MainWindow  # Import your main application file
 
 @pytest.fixture
@@ -31,6 +31,68 @@ def test_app_launch(main_window):
         main_window - a testing instance of the MainWindow used to display the PocketPad application
     """
     assert main_window.isVisible()
+
+def test_load_application_settings(main_window):
+    """
+    Test if load_application_settings correctly loads the saved settings into the UI elements and
+    different variables
+    
+    @param:
+        main_window - a testing instance of the MainWindow used to display the PocketPad application.
+    """
+    # Ensure QSettings is using a test-specific scope
+    main_window.settings = QSettings("test_organization", "test_application")
+
+    main_window.settings.beginGroup("Checkbox Settings")
+    main_window.settings.setValue("latency_checkbox", True)
+    main_window.settings.endGroup()
+
+    main_window.settings.beginGroup("Color Settings")
+    main_window.settings.setValue("background_color", "#242424")
+    main_window.settings.setValue("widget_color", "#474747")
+    main_window.settings.setValue("font_color", "#ffffff")
+    main_window.settings.endGroup()
+
+    # Call the function under test
+    main_window.load_application_settings(None)
+
+    # Verify if values were loaded correctly
+    assert main_window.ui.latency_setting_box.isChecked() is True
+    assert main_window.application_background_color == "#242424"
+    assert main_window.application_widgets_color == "#474747"
+    assert main_window.application_font_color == "#ffffff"
+
+def test_closeEvent_saves_settings(main_window):
+    """
+    Test if closeEvent correctly saves the proper UI settings into QSettings to be reloaded at a later date
+    to keep the application uniform with user preferences 
+    
+    @param:
+        main_window - a testing instance of the MainWindow used to display the PocketPad application.
+    """
+    test_settings = QSettings("test_organization", "test_application")
+    main_window.settings = test_settings
+    
+    main_window.ui.latency_setting_box.setChecked(False)
+    main_window.application_background_color = "#242424"
+    main_window.application_widgets_color = "#474747"
+    main_window.application_font_color = "#ffffff"
+
+    event = QCloseEvent()
+    main_window.closeEvent(event)
+
+    # Re-load settings and verify they were saved correctly
+    settings = QSettings("test_organization", "test_application")
+    
+    settings.beginGroup("Checkbox Settings")
+    assert settings.value("latency_checkbox", type=bool) is False
+    settings.endGroup()
+
+    settings.beginGroup("Color Settings")
+    assert settings.value("background_color", type=str) == "#242424"
+    assert settings.value("widget_color", type=str) == "#474747"
+    assert settings.value("font_color", type=str) == "#ffffff"
+    settings.endGroup()
 
 # NEEDS TO BE REVISED WHEN BLUETOOTH SERVER SHUTDOWN IS PROPERLY FIXED
 def test_bluetooth_button_click(main_window, qtbot):

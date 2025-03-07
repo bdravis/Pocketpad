@@ -18,7 +18,7 @@ struct SettingsMenuView: View {
     @Binding var isShowingSettings: Bool
     
     @AppStorage("splitDPad") var splitDPad: Bool = false
-    @AppStorage("selectedController") var selectedController: ControllerType = .Xbox
+    @AppStorage("selectedController") var selectedController: String = ControllerType.Xbox.stringValue
     @AppStorage("controllerColor") var controllerColor: Color = .blue
     @AppStorage("controllerName") var controllerName: String = "Controller"
     
@@ -99,7 +99,7 @@ struct SettingsMenuView: View {
                 Spacer()
                 Picker("Controller Type", selection: $selectedController) {
                     ForEach(ControllerType.allCases, id: \.self) { type in
-                        Label(type.rawValue, image: type.rawValue).tag(type)
+                        Label(type.stringValue, image: type.stringValue).tag(type.stringValue)
                     }
                 }
                 .pickerStyle(.menu)
@@ -107,7 +107,7 @@ struct SettingsMenuView: View {
                 .onChange(of: selectedController, initial: false) {
                     // update the controller layout
                     do {
-                        try LayoutManager.shared.setCurrentLayout(to: selectedController.rawValue)
+                        try LayoutManager.shared.setCurrentLayout(to: selectedController)
                         showDPadStyle = LayoutManager.shared.hasDPad
                     } catch {
                         print(error.localizedDescription)
