@@ -38,7 +38,7 @@ controller_function = None
 class BlessServer(BlessServer):
 
     async def add_new_descriptor(self, service_uuid, char_uuid, desc_uuid, properties, value, permissions):
-        #print(f"Adding descriptor {desc_uuid} to {char_uuid} in {service_uuid}")
+        print(f"Adding descriptor {desc_uuid} to {char_uuid} in {service_uuid}")
         return super().add_new_descriptor(service_uuid, char_uuid, desc_uuid, properties, value, permissions)
 
 def set_latency_callback(send_latency_callback, latency_function_callback):
@@ -69,11 +69,11 @@ def reconstruct_timestamp(sent_ms):
 
 
 def read_request(characteristic: BlessGATTCharacteristic, **kwargs) -> bytearray:
-    #logger.debug(f"Reading {characteristic.uuid} - {characteristic.value}")
+    logger.debug(f"Reading {characteristic.uuid} - {characteristic.value}")
     return characteristic.value
     
 def write_request(characteristic: BlessGATTCharacteristic, value: Any):
-    #print(f"Writing {characteristic.uuid} - {value}")
+    print(f"Writing {characteristic.uuid} - {value}")
     
     characteristic.value = value
 
@@ -91,8 +91,8 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
 
         sent_time, latency = reconstruct_timestamp(int(now))
 
-        #print(f"Client Sent Time (Reconstructed): {sent_time} ms")
-        #print(f"Estimated Latency for player {player_id}: {latency} ms")
+        print(f"Client Sent Time (Reconstructed): {sent_time} ms")
+        print(f"Estimated Latency for player {player_id}: {latency} ms")
         
         characteristic.value = str(latency).encode()
         
@@ -105,8 +105,8 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
 
     characteristic.value = value
     
-    #if (characteristic.uuid.upper() == PLAYER_ID_CHARACTERISTIC):
-        #print(f"Player: {int(characteristic.value)}")
+    if (characteristic.uuid.upper() == PLAYER_ID_CHARACTERISTIC):
+        print(f"Player: {int(characteristic.value)}")
     
     if (characteristic.uuid.upper() == INPUT_CHARACTERISTIC):
         parse_input(characteristic.value)
