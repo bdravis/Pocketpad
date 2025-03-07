@@ -25,7 +25,9 @@ let DEBUG_BUTTONS: [ButtonConfig] = [ // Example buttons
         inputs: [
             .up: "DPadUp", .right: "DPadRight", .down: "DPadDown", .left: "DPadLeft"
         ]
-    )
+    ),
+    
+    TriggerConfig(position: CGPoint(x: 300, y: 0), scale: 1.0, inputId: 10, input: "RT", side: .right)
 ]
 
 // MARK: Main Controller View
