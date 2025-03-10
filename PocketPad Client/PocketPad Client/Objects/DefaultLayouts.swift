@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SwiftUI
 
 class DefaultLayouts {
     // MARK: Switch Configuration
@@ -245,9 +246,6 @@ class DefaultLayouts {
         
         // Home/Screenshot
         RegularButtonConfig(position: CGPoint(x: 350, y: 140), scale: 0.6, inputId: 7, input: "Home", style: .init(shape: .Circle, iconType: .SFSymbol, icon: "house")),
-        
-        // Triggers
-        TriggerConfig(position: CGPoint(x: 100, y: 50), scale: 1.5, inputId: 8, input: "T", side: .left),
     ], portraitButtons: [
         // DPad
         DPadConfig(
@@ -259,7 +257,7 @@ class DefaultLayouts {
         
         // A/B
         RegularButtonConfig(position: CGPoint(x: 200, y: 260), scale: 1.5, inputId: 1, input: "A"),
-        RegularButtonConfig(position: CGPoint(x: 350, y: 260), scale: 1.0, inputId: 2, input: "B"),
+        TriggerConfig(position: CGPoint(x: 320, y: 260), scale: 1.5, inputId: 2, input: "B", side: .middle),
         
         // Pause/Home/Select
         RegularButtonConfig(position: CGPoint(x: 150, y: 400), scale: 0.6, inputId: 3, input: "Minus", style: .init(shape: .Circle, iconType: .Text, icon: "-")),
@@ -269,9 +267,6 @@ class DefaultLayouts {
         // 1/2
         RegularButtonConfig(position: CGPoint(x: 200, y: 575), scale: 0.75, inputId: 6, input: "1"),
         RegularButtonConfig(position: CGPoint(x: 200, y: 650), scale: 0.75, inputId: 7, input: "2"),
-        
-        // Triggers
-        TriggerConfig(position: CGPoint(x: 70, y: 260), scale: 1.5, inputId: 8, input: "T", side: .left),
     ])
     
     // MARK: DPad-less Test
@@ -310,4 +305,8 @@ class DefaultLayouts {
             return DPadlessTest
         }
     }
+}
+
+#Preview {
+    ControllerView(layout: DefaultLayouts.getLayout(for: .Wii))
 }
