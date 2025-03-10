@@ -104,7 +104,7 @@ struct SettingsMenuView: View {
 //                        Label(type.stringValue, image: type.stringValue).tag(type.stringValue)
 //                    }
                     ForEach(availableControllers, id: \.self) { layout in
-                        Label(layout, image: layout).tag(layout)
+                        Label(layout, image: layout.lowercased()).tag(layout)
                     }
                 }
                 .pickerStyle(.menu)
