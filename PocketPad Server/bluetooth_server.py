@@ -34,6 +34,7 @@ latency_function = None
 send_latency = None
 connection_function = None
 controller_function = None
+input_function = None
 
 class BlessServer(BlessServer):
 
@@ -53,6 +54,13 @@ def set_connection_callback(connection_function_callback):
 def set_controller_callback(controller_function_callback):
     global controller_function
     controller_function = controller_function_callback
+
+def set_input_callback(input_function_callback):
+    global input_function
+    input_function = input_function_callback
+
+def remove_duplicate_id(player_id):
+    print("Removing Duplicate User")
 
 def reconstruct_timestamp(sent_ms):
     """Reconstruct possible timestamps based on the last 5 digits."""
@@ -109,7 +117,18 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
         print(f"Player: {int(characteristic.value)}")
     
     if (characteristic.uuid.upper() == INPUT_CHARACTERISTIC):
+        # Implement a way to extract a value corresponding to player characteristic
+        #
         parse_input(characteristic.value)
+        input = None # Fix this to have it be the input 
+        #
+        # Implement a way to extract a value corresponding to player characteristic
+
+        player_id = connection_information[0]
+
+        input_function(player_id, input)
+
+
 
     if (characteristic.uuid.upper() == CONNECTION_CHARACTERISTIC):
 

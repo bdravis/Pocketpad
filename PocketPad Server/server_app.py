@@ -6,10 +6,13 @@ from pathlib import Path
 import bluetooth_server
 import enums
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QListWidgetItem, QMessageBox, QCheckBox, QVBoxLayout, QWidget, QLabel, QHBoxLayout, QFrame, QGridLayout, QSystemTrayIcon, QMenu
-from PySide6.QtCore import Qt, QSettings, QByteArray, QBuffer, QSize, Signal
+from PySide6.QtWidgets import (QApplication, QMainWindow, QListWidgetItem, QMessageBox, QCheckBox, QVBoxLayout,
+                                QWidget, QLabel, QHBoxLayout, QFrame, QGridLayout, QSystemTrayIcon, QMenu, QDialog,
+                                QPushButton)
+from PySide6.QtCore import Qt, QSettings, Signal
 from PySide6.QtGui import QFont, QIcon, QAction, QPixmap, QPainter, QImage, QColor
 from PySide6.QtSvg import QSvgRenderer
+
 
 # Important:
 # You need to run the following command to generate the ui_form.py file
@@ -21,6 +24,8 @@ class MainWindow(QMainWindow):
     latency_updated = Signal(str, int)
     connection_updated = Signal(str, str, enums.ControllerType)
     controller_updated = Signal(str, enums.ControllerType)
+    controller_updated = Signal(str, enums.ControllerType)
+    input_updated = Signal(str, int) # Edit the type depending on how it is sent
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -72,6 +77,7 @@ class MainWindow(QMainWindow):
         self.latency_updated.connect(self.update_latency)
         self.connection_updated.connect(self.update_player_connection)
         self.controller_updated.connect(self.update_controller_type)
+        self.input_updated.connect(self.display_controller_input)
 
         # Callback function for updating a given player's latency
         #
@@ -88,6 +94,12 @@ class MainWindow(QMainWindow):
         # Callback function for updating a given player's controller type (Idk if function name will differ so feel free to change)
         #
         bluetooth_server.set_controller_callback(self.controller_updated.emit)
+        #
+        # Callback function for updating a given player's controller type
+
+        # Callback function for updating a given player's controller type (Idk if function name will differ so feel free to change)
+        #
+        bluetooth_server.set_input_callback(self.input_updated.emit)
         #
         # Callback function for updating a given player's controller type
 
@@ -159,6 +171,12 @@ class MainWindow(QMainWindow):
         if (self.network_server_initiated == False):
             self.network_server_initiated=True
             bluetooth_server.stop_server()
+            # Hardcode player disconnect
+            #
+            for player_id in self.connected_players:
+                self.update_player_connection("disconnect", player_id, enums.ControllerType.Xbox)
+            #
+            # Hardcode player disconnect
         else:
             already_initiated = QMessageBox()
             already_initiated.setText("Network Server is already running")
@@ -189,6 +207,12 @@ class MainWindow(QMainWindow):
         if self.bluetooth_server_initiated:
             self.bluetooth_server_initiated=False
             bluetooth_server.stop_server()
+            # Hardcode player disconnect
+            #
+            for player_id in self.connected_players:
+                self.update_player_connection("disconnect", player_id, enums.ControllerType.Xbox)
+            #
+            # Hardcode player disconnect
         elif self.network_server_initiated:
             self.network_server_initiated=False
             # Network Function
@@ -376,6 +400,7 @@ class MainWindow(QMainWindow):
                 #
                 # Update number of connected users
             else:
+                bluetooth_server.remove_duplicate_id(player_id)
                 already_initiated = QMessageBox()
                 already_initiated.setText(f"A player with player_id, {player_id}, already is connected")
                 already_initiated.exec()
@@ -470,6 +495,7 @@ class MainWindow(QMainWindow):
         # Implement Updating controller mockups (later sprint)
 
     def display_controller_input(self, player_id, input):
+        print("Player id: " + player_id + "\n Input: " + str(input))
         if self.player_controller_input_display[player_id]:
             print("Display Controller Input")
             # Implement in later sprint
@@ -585,6 +611,33 @@ class MainWindow(QMainWindow):
         self.settings.setValue("font_color", self.application_font_color)
         self.settings.endGroup()
         super().closeEvent(event)
+
+#class ColorPickerPopup(QDialog):
+#    def __init__(self):
+#        super().__init_()
+
+#        self.setWindowIcon(QIcon("icons/logo.png"))
+#        self.setWindowTitle("Customize PocketPad Application")
+#        self.setGeometry(100, 100, 200, 200)
+
+#        self.top_layout = QHBoxLayout()
+
+#        self.background_button = QPushButton("Set Background Color")
+#        self.widget_button = QPushButton("Set Widgets Color")
+#        self.font_button = QPushButton("Set Font Color")
+
+#        self.top_layout.addWidget(self.background_button)
+#        self.top_layout.addWidget(self.widget_button)
+#        self.top_layout.addWidget(self.font_button)
+
+#        self.bottom_layout = QHBoxLayout()
+
+#        self.test_button = QPushButton("Test Changes")
+#        self.confirm_button = QPushButton("Confirm Changes")
+
+#        self.bottom_layout.addWidget(self.test_button)
+#        self.bottom_layout.addWidget(self.confirm_button)
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
