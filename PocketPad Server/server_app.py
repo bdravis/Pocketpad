@@ -6,10 +6,13 @@ from pathlib import Path
 import bluetooth_server
 import enums
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QListWidgetItem, QMessageBox, QCheckBox, QVBoxLayout, QWidget, QLabel, QHBoxLayout, QFrame, QGridLayout, QSystemTrayIcon, QMenu
-from PySide6.QtCore import Qt, QSettings, QByteArray, QBuffer, QSize, Signal
+from PySide6.QtWidgets import (QApplication, QMainWindow, QListWidgetItem, QMessageBox, QCheckBox, QVBoxLayout,
+                                QWidget, QLabel, QHBoxLayout, QFrame, QGridLayout, QSystemTrayIcon, QMenu, QDialog,
+                                QPushButton)
+from PySide6.QtCore import Qt, QSettings, Signal
 from PySide6.QtGui import QFont, QIcon, QAction, QPixmap, QPainter, QImage, QColor
 from PySide6.QtSvg import QSvgRenderer
+
 
 # Important:
 # You need to run the following command to generate the ui_form.py file
@@ -88,6 +91,12 @@ class MainWindow(QMainWindow):
         # Callback function for updating a given player's controller type (Idk if function name will differ so feel free to change)
         #
         bluetooth_server.set_controller_callback(self.controller_updated.emit)
+        #
+        # Callback function for updating a given player's controller type
+
+        # Callback function for updating a given player's controller type (Idk if function name will differ so feel free to change)
+        #
+        bluetooth_server.set_input_callback(self.display_controller_input.emit)
         #
         # Callback function for updating a given player's controller type
 
@@ -483,6 +492,7 @@ class MainWindow(QMainWindow):
         # Implement Updating controller mockups (later sprint)
 
     def display_controller_input(self, player_id, input):
+        print("Player id: " + player_id + "\n Input: " + str(input))
         if self.player_controller_input_display[player_id]:
             print("Display Controller Input")
             # Implement in later sprint
@@ -598,6 +608,33 @@ class MainWindow(QMainWindow):
         self.settings.setValue("font_color", self.application_font_color)
         self.settings.endGroup()
         super().closeEvent(event)
+
+#class ColorPickerPopup(QDialog):
+#    def __init__(self):
+#        super().__init_()
+
+#        self.setWindowIcon(QIcon("icons/logo.png"))
+#        self.setWindowTitle("Customize PocketPad Application")
+#        self.setGeometry(100, 100, 200, 200)
+
+#        self.top_layout = QHBoxLayout()
+
+#        self.background_button = QPushButton("Set Background Color")
+#        self.widget_button = QPushButton("Set Widgets Color")
+#        self.font_button = QPushButton("Set Font Color")
+
+#        self.top_layout.addWidget(self.background_button)
+#        self.top_layout.addWidget(self.widget_button)
+#        self.top_layout.addWidget(self.font_button)
+
+#        self.bottom_layout = QHBoxLayout()
+
+#        self.test_button = QPushButton("Test Changes")
+#        self.confirm_button = QPushButton("Confirm Changes")
+
+#        self.bottom_layout.addWidget(self.test_button)
+#        self.bottom_layout.addWidget(self.confirm_button)
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
