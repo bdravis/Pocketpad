@@ -24,6 +24,8 @@ class MainWindow(QMainWindow):
     latency_updated = Signal(str, int)
     connection_updated = Signal(str, str, enums.ControllerType)
     controller_updated = Signal(str, enums.ControllerType)
+    controller_updated = Signal(str, enums.ControllerType)
+    input_updated = Signal(str, int) # Edit the type depending on how it is sent
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -75,6 +77,7 @@ class MainWindow(QMainWindow):
         self.latency_updated.connect(self.update_latency)
         self.connection_updated.connect(self.update_player_connection)
         self.controller_updated.connect(self.update_controller_type)
+        self.input_updated.connect(self.display_controller_input)
 
         # Callback function for updating a given player's latency
         #
@@ -96,7 +99,7 @@ class MainWindow(QMainWindow):
 
         # Callback function for updating a given player's controller type (Idk if function name will differ so feel free to change)
         #
-        bluetooth_server.set_input_callback(self.display_controller_input.emit)
+        bluetooth_server.set_input_callback(self.input_updated.emit)
         #
         # Callback function for updating a given player's controller type
 
