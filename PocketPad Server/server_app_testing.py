@@ -1,10 +1,11 @@
 import pytest
 import enums
-from unittest.mock import MagicMock
-from PySide6.QtWidgets import QMessageBox, QListWidgetItem
-from PySide6.QtGui import QIcon, QCloseEvent
+from unittest.mock import MagicMock, patch
+from PySide6.QtWidgets import QMessageBox, QListWidgetItem, QColorDialog, QDialog
+from PySide6.QtGui import QIcon, QCloseEvent, QColor
 from PySide6.QtCore import Qt, QSettings
-from server_app import MainWindow  # Import your main application file
+from server_app import MainWindow
+from server_app import ColorPickerPopup
 
 @pytest.fixture
 def main_window(qtbot):
@@ -387,7 +388,7 @@ def test_toggle_latency(main_window, monkeypatch):
     if (main_window.ui.latency_setting_box.isChecked()) and (need_test):
         need_test = False
         main_window.ui.latency_setting_box.toggle()
-        main_window.get_icon_from_svg.assert_called_once_with("icons/player1.svg", "#ffffff")
+        main_window.get_icon_from_svg.assert_called_once_with("icons/player1.svg", main_window.application_font_color)
     assert main_window.player_controller_mapping[player_id]["latency_label"].isHidden()
 
     main_window.ui.latency_setting_box.toggle()
@@ -510,3 +511,198 @@ def test_latency_display_changes(main_window, monkeypatch):
     main_window.player_controller_mapping["player_1"]["latency_label"].text.return_value = "170 ms"
     assert main_window.player_controller_mapping["player_1"]["latency_label"].text() == "170 ms"
     assert main_window.player_latency["player_1"] == 170
+
+def fake_get_color_valid_1():
+    return QColor("#1aa7ea")
+
+def fake_get_color_valid_2():
+    return QColor("#1aa7eb")
+
+def fake_get_color_valid_3():
+    return QColor("#1aa7ec")
+
+def fake_get_color_invalid():
+    return QColor()
+
+@pytest.fixture
+def popup(qtbot):
+    # Create an instance of ColorPickerPopup with initial colors
+    popup = ColorPickerPopup(QColor("#000000"), QColor("#111111"), QColor("#222222"))
+    qtbot.addWidget(popup)
+    return popup
+
+def test_reset_colors(popup):
+    popup.reset_color()
+
+    assert popup.application_color == "#242424"
+    assert popup.widget_color == "#474747"
+    assert popup.font_color == "#ffffff"
+
+    assert "background-color: #242424;" in popup.styleSheet()
+    assert "background-color: #474747;" in popup.styleSheet()
+    assert "color: #ffffff;" in popup.styleSheet()
+
+    
+@patch.object(QColorDialog, 'getColor', side_effect=fake_get_color_valid_1)
+def test_update_background(mock_get_color, popup, qtbot):
+    qtbot.mouseClick(popup.background_button, Qt.LeftButton)
+    assert "#1aa7ea" in popup.styleSheet()
+
+@patch.object(QColorDialog, 'getColor', side_effect=fake_get_color_valid_2)
+def test_update_widget(mock_get_color, popup, qtbot):
+    qtbot.mouseClick(popup.widget_button, Qt.LeftButton)
+    assert "#1aa7eb" in popup.styleSheet()
+
+@patch.object(QColorDialog, 'getColor', side_effect=fake_get_color_valid_3)
+def test_update_font(mock_get_color, popup, qtbot):
+    qtbot.mouseClick(popup.font_button, Qt.LeftButton)
+    assert "#1aa7ec" in popup.styleSheet()
+
+@patch.object(QColorDialog, 'getColor', side_effect=fake_get_color_invalid)
+def test_invalid_color_background(mock_get_color, popup, qtbot, mocker):
+    mock_warning = mocker.patch.object(QMessageBox, "exec")
+    qtbot.mouseClick(popup.background_button, Qt.LeftButton)
+    mock_warning.assert_called_once()
+
+@patch.object(QColorDialog, 'getColor', side_effect=fake_get_color_invalid)
+def test_invalid_color_widget(mock_get_color, popup, qtbot, mocker):
+    mock_warning = mocker.patch.object(QMessageBox, "exec")
+    qtbot.mouseClick(popup.widget_button, Qt.LeftButton)
+    mock_warning.assert_called_once()
+
+@patch.object(QColorDialog, 'getColor', side_effect=fake_get_color_invalid)
+def test_invalid_color_font(mock_get_color, popup, qtbot, mocker):
+    mock_warning = mocker.patch.object(QMessageBox, "exec")
+    qtbot.mouseClick(popup.font_button, Qt.LeftButton)
+    mock_warning.assert_called_once()
+
+def test_return_values(popup):
+    captured_colors = []
+
+    def color_handler(app_color, widget_color, font_color):
+        captured_colors.extend([app_color, widget_color, font_color])
+
+    popup.color_updated.connect(color_handler)
+    popup.confirm_color()
+
+    assert len(captured_colors) == 3
+
+    assert captured_colors[0] == popup.application_color
+    assert captured_colors[1] == popup.widget_color
+    assert captured_colors[2] == popup.font_color
+
+    assert popup.result() == QDialog.Accepted
+
+    try:
+        popup.color_updated.disconnect(color_handler)
+    except TypeError:
+        pass
+
+def test_apply_background(main_window, qtbot):
+    background_color = "#1aa7ec"
+    widget_color = "#dadedf"
+    font_color = "#0f0f0f"
+
+    # Call the method with string values
+    main_window.update_application_color(background_color, widget_color, font_color)
+    
+    # Verify that the attributes are QColors and their values match the input strings
+    assert isinstance(main_window.application_background_color, QColor)
+    assert main_window.application_background_color.name() == background_color
+
+    assert isinstance(main_window.application_widgets_color, QColor)
+    assert main_window.application_widgets_color.name() == widget_color
+
+    assert isinstance(main_window.application_font_color, QColor)
+    assert main_window.application_font_color.name() == font_color
+
+    assert f"background-color: {background_color};" in main_window.styleSheet()
+    assert f"color: {font_color};" in main_window.styleSheet()
+
+    darker_widget_color = QColor(widget_color).darker(140).name()
+    darkest_widget_color = QColor(widget_color).darker(180).name()
+    lighter_widget_color = QColor(widget_color).lighter(140).name()
+
+    assert f"background-color: {darker_widget_color};" in main_window.ui.connection_list_area.styleSheet()
+    assert f"color: {font_color};" in main_window.ui.connection_list_area.styleSheet()
+
+    assert f"background-color: {widget_color};" in main_window.ui.connection_list.styleSheet()
+    assert f"color: {font_color};" in main_window.ui.connection_list.styleSheet()
+
+    settings_darker_color = main_window.application_widgets_color.darker(110).name()
+    settings_lighter_color = main_window.application_widgets_color.lighter(120).name()
+    settings_hover_color = main_window.application_widgets_color.lighter(140).name()
+    settings_pressed_color = main_window.application_widgets_color.darker(130).name()
+    
+    assert f"QTabWidget {{" in main_window.ui.settings_selection.styleSheet()
+    assert f"background-color: {widget_color};" in main_window.ui.settings_selection.styleSheet()
+    assert f"color: {font_color};" in main_window.ui.settings_selection.styleSheet()
+    
+    assert f"QTabWidget::pane {{" in main_window.ui.settings_selection.styleSheet()
+    assert f"background-color: {widget_color};" in main_window.ui.settings_selection.styleSheet()
+    
+    assert f"QTabBar {{" in main_window.ui.settings_selection.styleSheet()
+    assert f"background-color: {widget_color};" in main_window.ui.settings_selection.styleSheet()
+    assert f"color: {font_color};" in main_window.ui.settings_selection.styleSheet()
+    
+    assert f"QTabBar::tab {{" in main_window.ui.settings_selection.styleSheet()
+    assert f"background-color: {settings_darker_color};" in main_window.ui.settings_selection.styleSheet()
+    
+    assert f"QTabBar::tab:selected {{" in main_window.ui.settings_selection.styleSheet()
+    assert f"background-color: {settings_lighter_color};" in main_window.ui.settings_selection.styleSheet()
+    assert f"font-weight: bold;" in main_window.ui.settings_selection.styleSheet()
+    
+    assert f"QTabBar::tab:hover {{" in main_window.ui.settings_selection.styleSheet()
+    assert f"background-color: {settings_hover_color};" in main_window.ui.settings_selection.styleSheet()
+    
+    assert f"QTabBar::tab:pressed {{" in main_window.ui.settings_selection.styleSheet()
+    assert f"background-color: {settings_pressed_color};" in main_window.ui.settings_selection.styleSheet()
+    
+    assert "QWidget {" in main_window.ui.settings_selection.styleSheet()
+    assert f"background-color: {widget_color};" in main_window.ui.settings_selection.styleSheet()    
+
+    assert f"background-color: {darker_widget_color};" in main_window.ui.controller_checkboxes.styleSheet()
+    assert f"color: {font_color};" in main_window.ui.controller_checkboxes.styleSheet()
+
+    assert f"background-color: {darker_widget_color};" in main_window.ui.bluetooth_button.styleSheet()
+
+    assert f"QPushButton:hover {{" in main_window.ui.bluetooth_button.styleSheet()
+    assert f"background-color: {lighter_widget_color};" in main_window.ui.bluetooth_button.styleSheet()
+
+    assert f"QPushButton:pressed {{" in main_window.ui.bluetooth_button.styleSheet()
+    assert f"background-color: {darkest_widget_color};" in main_window.ui.bluetooth_button.styleSheet()     
+
+    assert f"background-color: {darker_widget_color};" in main_window.ui.network_button.styleSheet()
+
+    assert f"QPushButton:hover {{" in main_window.ui.network_button.styleSheet()
+    assert f"background-color: {lighter_widget_color};" in main_window.ui.network_button.styleSheet()
+
+    assert f"QPushButton:pressed {{" in main_window.ui.network_button.styleSheet()
+    assert f"background-color: {darkest_widget_color};" in main_window.ui.network_button.styleSheet()  
+    
+    assert f"background-color: {darker_widget_color};" in main_window.ui.server_close_button.styleSheet()
+
+    assert f"QPushButton:hover {{" in main_window.ui.server_close_button.styleSheet()
+    assert f"background-color: {lighter_widget_color};" in main_window.ui.server_close_button.styleSheet()
+
+    assert f"QPushButton:pressed {{" in main_window.ui.server_close_button.styleSheet()
+    assert f"background-color: {darkest_widget_color};" in main_window.ui.server_close_button.styleSheet()
+    
+    assert f"background-color: {widget_color};" in main_window.ui.connection_code_box.styleSheet()
+    assert f"color: {font_color};" in main_window.ui.connection_code_box.styleSheet()   
+    
+    assert f"background-color: {widget_color};" in main_window.ui.controller_mockup_area.styleSheet()
+    assert f"color: {font_color};" in main_window.ui.controller_mockup_area.styleSheet() 
+    
+    assert f"QPushButton {{" in main_window.ui.customizer_button.styleSheet()
+    assert "background-color: transparent;" in main_window.ui.customizer_button.styleSheet()
+    assert "border: none;" in main_window.ui.customizer_button.styleSheet() 
+
+    assert f"QPushButton:hover {{" in main_window.ui.customizer_button.styleSheet()
+    assert f"background-color: {lighter_widget_color};" in main_window.ui.customizer_button.styleSheet()
+
+    assert f"QPushButton:pressed {{" in main_window.ui.customizer_button.styleSheet()
+    assert f"background-color: {darker_widget_color};" in main_window.ui.customizer_button.styleSheet()
+
+    assert "QPushButton { background-color: transparent; border: none; }" in main_window.ui.view_code_button.styleSheet() 
+    

@@ -8,8 +8,8 @@ import enums
 
 from PySide6.QtWidgets import (QApplication, QMainWindow, QListWidgetItem, QMessageBox, QCheckBox, QVBoxLayout,
                                 QWidget, QLabel, QHBoxLayout, QFrame, QGridLayout, QSystemTrayIcon, QMenu, QDialog,
-                                QPushButton)
-from PySide6.QtCore import Qt, QSettings, Signal
+                                QPushButton, QColorDialog)
+from PySide6.QtCore import Qt, QSettings, Signal, QSize
 from PySide6.QtGui import QFont, QIcon, QAction, QPixmap, QPainter, QImage, QColor
 from PySide6.QtSvg import QSvgRenderer
 
@@ -38,7 +38,7 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(QIcon("icons/logo.png"))
         self.application_background_color = "#242424"
         self.application_widgets_color = "#474747"
-        self.application_font_color = "#FFFFFF"
+        self.application_font_color = "#ffffff"
         
         # Set the Application Icon  with correct image to appear in the tray
         #
@@ -64,6 +64,8 @@ class MainWindow(QMainWindow):
         
         self.hazard_icon = self.get_icon_from_svg("icons/hazard.svg", "#Ff0000")
 
+        self.ui.customizer_button.clicked.connect(self.display_color_picker)
+
         self.ui.bluetooth_button.clicked.connect(self.start_bluetooth_server)
         self.bluetooth_server_initiated=False
 
@@ -71,6 +73,9 @@ class MainWindow(QMainWindow):
         self.network_server_initiated=False
 
         self.ui.server_close_button.clicked.connect(self.stop_server)
+
+        self.ui.view_code_button.clicked.connect(self.toggle_pair_code)
+        self.view_code = True
 
         self.ui.latency_setting_box.stateChanged.connect(self.toggle_latency)
 
@@ -144,28 +149,6 @@ class MainWindow(QMainWindow):
     # REMOVE AFTER SPRINTS
     
     # NEEDS WORK
-    def update_application_color(self):
-        """
-        This function will update the style sheet of the different widgets based on the
-        color preferences of the user as stored in different variables
-    
-        @param: self - the instance of the PocketPadWindow
-     
-        @return: none
-        """
-        self.setStyleSheet(f"""QMainWindow {{background-color: {self.application_background_color}}}""")
-        self.ui.connection_list_area.setStyleSheet(f"""QFrame {{background-color: {self.application_widgets_color}}};
-                                                    border-radius: 10px;
-                                                    border: none;""")
-        self.ui.settings_area.setStyleSheet(f"""QFrame {{background-color: {self.application_widgets_color}}};
-                                            border-radius: 20px;""")
-        self.ui.connection_code_box.setStyleSheet(f"""QFrame {{background-color: {self.application_widgets_color}}};
-                                                  border-radius: 20px;""")
-        self.ui.controller_mockup_area.setStyleSheet(f"""QFrame {{background-color: {self.application_widgets_color}}};
-                                                     border-radius: 20px;""")
-    # NEEDS WORK
-
-    # NEEDS WORK
     def start_network_server(self):
         self.bluetooth_server_initiated=False
         if (self.network_server_initiated == False):
@@ -224,88 +207,6 @@ class MainWindow(QMainWindow):
             already_initiated = QMessageBox()
             already_initiated.setText("The is no server currently running")
             already_initiated.exec()
-
-    def update_latency(self, player_id, latency):
-        """
-        This function will update the different labels and icons for the a player's device latency. This function
-        takes in a player identifier and the device latency, and it will update the corresponding widgets on the
-        PocketPadWindow that are used to display representations of device latency by updating the text and color
-        of those different widgets. 
-     
-        @param: self - the instance of the PocketPadWindow
-                player_id - a string storing a data identifier corresponding to a given player/device
-                latency - a float containing the latency of the connected device 
-     
-        @return: none
-        """
-        if self.ui.latency_setting_box.isChecked():
-            if player_id in self.player_controller_mapping:
-                self.player_latency[player_id] = latency
-                
-                # Text change for latency
-                #
-                self.player_controller_mapping[player_id]["latency_label"].setText(f"{latency} ms")
-                #
-                # Text change for latency
-
-                # Color change for latency
-                #
-                new_icon_svg = self.player_svg_paths_for_icons[player_id]
-                if (latency <= 50):
-                    player_icon = self.get_icon_from_svg(new_icon_svg, "#3BB20A")
-                elif ((latency > 50) and (latency <= 100)):
-                    player_icon = self.get_icon_from_svg(new_icon_svg, "#e6cc00")
-                elif ((latency > 100) and (latency <= 150)):
-                    player_icon = self.get_icon_from_svg(new_icon_svg, "#Ff0000")
-                else:
-                    player_icon = self.hazard_icon
-
-                for player_index in range(self.ui.connection_list.count()):
-                    player_connection = self.ui.connection_list.item(player_index)
-
-                    if ((player_connection != None) and (player_connection.text() == player_id)):
-                        player_connection.setIcon(player_icon)
-                #
-                # Color change for latency
-
-    def toggle_latency(self):
-        """
-        This function will update the visibilty of the different labels and icons used to display
-        device latency. This function will update visibility of the corresponding widgets on the
-        PocketPadWindow that are used to display representations of the device latency depending on
-        state of the latency setting checkbox
-     
-        @param: self - the instance of the PocketPadWindow
-     
-        @return: none
-        """
-        if self.ui.latency_setting_box.isChecked():
-            bluetooth_server.set_latency_callback(self.ui.latency_setting_box.isChecked(), self.latency_updated.emit)
-            for player_id in self.player_controller_mapping:
-                # Change latency label visibilty
-                #
-
-                self.player_controller_mapping[player_id]["latency_label"].setVisible(True)
-
-                self.update_latency(player_id, self.player_latency[player_id])
-                #
-                # Change latency label visibilty
-        else:
-            bluetooth_server.set_latency_callback(self.ui.latency_setting_box.isChecked(), self.latency_updated.emit)
-            for player_id in self.player_controller_mapping:
-                # Change latency label visibilty
-                #
-                self.player_controller_mapping[player_id]["latency_label"].setVisible(False)
-
-                player_icon = self.get_icon_from_svg(self.player_svg_paths_for_icons[player_id], self.application_font_color)
-
-                for player_index in range(self.ui.connection_list.count()):
-                    player_connection = self.ui.connection_list.item(player_index)
-
-                    if ((player_connection != None) and (player_connection.text() == player_id)):
-                        player_connection.setIcon(player_icon)
-                #
-                # Change latency label visibilty
     
     def update_player_connection(self, connection, player_id, controller_type):
         if (connection == "connect"):
@@ -447,6 +348,88 @@ class MainWindow(QMainWindow):
                 already_initiated.setText(f"A player with player_id, {player_id}, does not exist")
                 already_initiated.exec()
 
+    def update_latency(self, player_id, latency):
+        """
+        This function will update the different labels and icons for the a player's device latency. This function
+        takes in a player identifier and the device latency, and it will update the corresponding widgets on the
+        PocketPadWindow that are used to display representations of device latency by updating the text and color
+        of those different widgets. 
+     
+        @param: self - the instance of the PocketPadWindow
+                player_id - a string storing a data identifier corresponding to a given player/device
+                latency - a float containing the latency of the connected device 
+     
+        @return: none
+        """
+        if self.ui.latency_setting_box.isChecked():
+            if player_id in self.player_controller_mapping:
+                self.player_latency[player_id] = latency
+                
+                # Text change for latency
+                #
+                self.player_controller_mapping[player_id]["latency_label"].setText(f"{latency} ms")
+                #
+                # Text change for latency
+
+                # Color change for latency
+                #
+                new_icon_svg = self.player_svg_paths_for_icons[player_id]
+                if (latency <= 50):
+                    player_icon = self.get_icon_from_svg(new_icon_svg, "#3BB20A")
+                elif ((latency > 50) and (latency <= 100)):
+                    player_icon = self.get_icon_from_svg(new_icon_svg, "#e6cc00")
+                elif ((latency > 100) and (latency <= 150)):
+                    player_icon = self.get_icon_from_svg(new_icon_svg, "#Ff0000")
+                else:
+                    player_icon = self.hazard_icon
+
+                for player_index in range(self.ui.connection_list.count()):
+                    player_connection = self.ui.connection_list.item(player_index)
+
+                    if ((player_connection != None) and (player_connection.text() == player_id)):
+                        player_connection.setIcon(player_icon)
+                #
+                # Color change for latency
+
+    def toggle_latency(self):
+        """
+        This function will update the visibilty of the different labels and icons used to display
+        device latency. This function will update visibility of the corresponding widgets on the
+        PocketPadWindow that are used to display representations of the device latency depending on
+        state of the latency setting checkbox
+     
+        @param: self - the instance of the PocketPadWindow
+     
+        @return: none
+        """
+        if self.ui.latency_setting_box.isChecked():
+            bluetooth_server.set_latency_callback(self.ui.latency_setting_box.isChecked(), self.latency_updated.emit)
+            for player_id in self.player_controller_mapping:
+                # Change latency label visibilty
+                #
+
+                self.player_controller_mapping[player_id]["latency_label"].setVisible(True)
+
+                self.update_latency(player_id, self.player_latency[player_id])
+                #
+                # Change latency label visibilty
+        else:
+            bluetooth_server.set_latency_callback(self.ui.latency_setting_box.isChecked(), self.latency_updated.emit)
+            for player_id in self.player_controller_mapping:
+                # Change latency label visibilty
+                #
+                self.player_controller_mapping[player_id]["latency_label"].setVisible(False)
+
+                player_icon = self.get_icon_from_svg(self.player_svg_paths_for_icons[player_id], self.application_font_color)
+
+                for player_index in range(self.ui.connection_list.count()):
+                    player_connection = self.ui.connection_list.item(player_index)
+
+                    if ((player_connection != None) and (player_connection.text() == player_id)):
+                        player_connection.setIcon(player_icon)
+                #
+                # Change latency label visibilty
+
     def update_controller_type(self, player_id, controller_type):
         """
         Update the icon for the player whose player id is passed as a parameter to the function. Depending on
@@ -541,8 +524,284 @@ class MainWindow(QMainWindow):
         #    if column == 2:
         #        column = 0
         #        row += 1
-
     # NEEDS WORKS
+
+    def display_color_picker(self):
+        color_picker = ColorPickerPopup(self.application_background_color, self.application_widgets_color, self.application_font_color)
+        color_picker.color_updated.connect(self.update_application_color)
+        color_picker.exec()
+
+    def update_application_color(self, background_color, widget_color, font_color):
+        """
+        This function will update the style sheet of the different widgets based on the
+        color preferences of the user as stored in different variables
+    
+        @param: self - the instance of the PocketPadWindow
+     
+        @return: none
+        """
+        self.application_background_color = background_color
+        self.application_widgets_color = widget_color
+        self.application_font_color = font_color
+
+        if not isinstance(self.application_background_color, QColor):
+            self.application_background_color = QColor(self.application_background_color)
+        if not isinstance(self.application_widgets_color, QColor):
+            self.application_widgets_color = QColor(self.application_widgets_color)
+        if not isinstance(self.application_font_color, QColor):
+            self.application_font_color = QColor(self.application_font_color)
+        
+        self.setStyleSheet(f"""
+        QMainWindow {{
+            background-color: {self.application_background_color.name()};
+            color: {self.application_font_color.name()};
+        }}
+        QLabel, QPushButton, QLineEdit, QTextEdit, QCheckBox, QRadioButton, QListView {{
+            color: {self.application_font_color.name()};
+        }}
+        """)
+
+        self.ui.connection_list_area.setStyleSheet(f"""
+            QFrame {{
+                background-color: {self.application_widgets_color.darker(140).name()};
+                border-radius: 7px;
+                color: {self.application_font_color.name()};
+            }}
+        """)
+
+        self.ui.connection_list.setStyleSheet(f"""
+            QListWidget {{
+                background-color: {self.application_widgets_color.name()};
+                border-radius: 7px;
+                color: {self.application_font_color.name()};
+            }}
+        """)
+        
+        self.ui.settings_area.setStyleSheet(f"""
+            QFrame {{
+                background-color: {self.application_widgets_color.darker(140).name()};
+                border-radius: 7px;
+                color: {self.application_font_color.name()};
+            }}
+        """)
+
+        self.ui.settings_selection.setStyleSheet(f"""
+            QTabWidget {{
+                background-color: {self.application_widgets_color.name()};
+                border-radius: 7px;
+                color: {self.application_font_color.name()};
+            }}
+
+            /* Style the pane (content area) */
+            QTabWidget::pane {{
+                background-color: {self.application_widgets_color.name()};
+                border-radius: 7px;
+            }}
+
+            /* Ensure the tab bar gets the correct color */
+            QTabBar {{
+                background-color: {self.application_widgets_color.name()};
+                color: {self.application_font_color.name()};
+                border-radius: 7px;
+            }}
+
+            /* Default tab styling */
+            QTabBar::tab {{
+                background-color: {self.application_widgets_color.darker(110).name()};
+                color: {self.application_font_color.name()};
+                padding: 8px;
+                min-width: 80px;
+                min-height: 10px;
+                border-top-left-radius: 7px;
+                border-top-right-radius: 7px;
+            }}
+
+            /* Selected (active) tab */
+            QTabBar::tab:selected {{
+                background-color: {self.application_widgets_color.lighter(120).name()};
+                color: {self.application_font_color.name()};
+                font-weight: bold;
+            }}
+
+            /* Hover effect */
+            QTabBar::tab:hover {{
+                background-color: {self.application_widgets_color.lighter(140).name()};
+            }}
+
+            /* Pressed (clicked) effect */
+            QTabBar::tab:pressed {{
+                background-color: {self.application_widgets_color.darker(130).name()};
+            }}
+
+            /* Ensure the tab content updates */
+            QWidget {{
+                background-color: {self.application_widgets_color.name()};
+                border-bottom-left-radius: 7px;
+                border-bottom-right-radius: 7px;
+                border-top-right-radius: 7px;
+            }}
+        """)
+
+        self.ui.controller_checkboxes.setStyleSheet(f"""
+            QScrollArea {{
+                background-color: {self.application_widgets_color.darker(140).name()};
+                border-radius: 5px;
+                color: {self.application_font_color.name()};
+            }}
+
+            QScrollArea QWidget {{
+                background-color: {self.application_widgets_color.darker(140).name()};
+                border-top-left-radius: 5px;
+                color: {self.application_font_color.name()};
+            }}
+        """)
+
+        self.ui.bluetooth_button.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {self.application_widgets_color.darker(140).name()};
+                border-top-left-radius: 7px;
+            }}
+
+            QPushButton:hover {{
+                background-color: {self.application_widgets_color.lighter(140).name()};
+            }}
+
+            QPushButton:pressed {{
+                background-color: {self.application_widgets_color.darker(180).name()};
+            }}
+        """)
+
+        self.ui.network_button.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {self.application_widgets_color.darker(140).name()};
+                border-top-left-radius: 7px;
+            }}
+
+            QPushButton:hover {{
+                background-color: {self.application_widgets_color.lighter(140).name()};
+            }}
+
+            QPushButton:pressed {{
+                background-color: {self.application_widgets_color.darker(180).name()};
+            }}
+        """)
+
+        self.ui.server_close_button.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {self.application_widgets_color.darker(140).name()};
+                border-top-left-radius: 7px;
+            }}
+
+            QPushButton:hover {{
+                background-color: {self.application_widgets_color.lighter(140).name()};
+            }}
+
+            QPushButton:pressed {{
+                background-color: {self.application_widgets_color.darker(180).name()};
+            }}
+        """)
+
+        self.ui.connection_code_box.setStyleSheet(f"""
+            QFrame {{
+                background-color: {self.application_widgets_color.name()};
+                border-radius: 7px;
+                color: {self.application_font_color.name()};
+            }}
+        """)
+
+        self.ui.controller_mockup_area.setStyleSheet(f"""
+            QFrame {{
+                background-color: {self.application_widgets_color.name()};
+                border-radius: 7px;
+                color: {self.application_font_color.name()};
+            }}
+        """)
+
+        self.ui.customizer_button.setStyleSheet(f"""
+            QPushButton {{
+                border-radius: 7px;
+                background-color: transparent;
+                border: none;
+            }}
+
+            QPushButton:hover {{
+                background-color: {self.application_widgets_color.lighter(140).name()};
+            }}
+
+            QPushButton:pressed {{
+                background-color: {self.application_widgets_color.darker(140).name()};
+            }}
+        """)
+        
+        icon_size = QSize((self.ui.customizer_button.size() * 0.70))
+        pixmap = self.ui.customizer_button.icon().pixmap(icon_size)
+
+        colored_pixmap = QPixmap(icon_size)
+        colored_pixmap.fill(Qt.transparent)
+
+        painter = QPainter(colored_pixmap)
+        painter.setCompositionMode(QPainter.CompositionMode_Source)
+        painter.drawPixmap(0, 0, pixmap)
+
+        # Apply a color overlay
+        painter.setCompositionMode(QPainter.CompositionMode_SourceIn)
+        painter.fillRect(colored_pixmap.rect(), self.application_font_color)
+        painter.end()
+
+        self.ui.customizer_button.setIcon(QIcon(colored_pixmap))
+        self.ui.customizer_button.setIconSize(icon_size)
+
+        self.ui.view_code_button.setStyleSheet("QPushButton { background-color: transparent; border: none; }")
+        self.toggle_pair_code(None)
+    
+    # NEEDS WORK
+    def toggle_pair_code(self, event):
+        if self.view_code:
+            self.view_code = False
+            
+            icon_size = QSize((self.ui.view_code_button.size() * 0.70))
+            icon = self.get_icon_from_svg("icons/eye-slash.svg", '#ffffff')
+            pixmap = icon.pixmap(icon_size)
+
+            colored_pixmap = QPixmap(icon_size)
+            colored_pixmap.fill(Qt.transparent)
+
+            painter = QPainter(colored_pixmap)
+            painter.setCompositionMode(QPainter.CompositionMode_Source)
+            painter.drawPixmap(0, 0, pixmap)
+
+            # Apply a color overlay
+            painter.setCompositionMode(QPainter.CompositionMode_SourceIn)
+            painter.fillRect(colored_pixmap.rect(), self.application_font_color)
+            painter.end()
+
+            self.ui.view_code_button.setIcon(QIcon(colored_pixmap))
+            self.ui.view_code_button.setIconSize(icon_size)
+
+            self.ui.pair_code_label.setText("--- ---")
+        else:
+            self.view_code = True
+
+            icon_size = QSize((self.ui.view_code_button.size() * 0.70))
+            icon = self.get_icon_from_svg("icons/eye.svg", '#ffffff')
+            pixmap = icon.pixmap(icon_size)
+
+            colored_pixmap = QPixmap(icon_size)
+            colored_pixmap.fill(Qt.transparent)
+
+            painter = QPainter(colored_pixmap)
+            painter.setCompositionMode(QPainter.CompositionMode_Source)
+            painter.drawPixmap(0, 0, pixmap)
+
+            # Apply a color overlay
+            painter.setCompositionMode(QPainter.CompositionMode_SourceIn)
+            painter.fillRect(colored_pixmap.rect(), self.application_font_color)
+            painter.end()
+
+            self.ui.view_code_button.setIcon(QIcon(colored_pixmap))
+            self.ui.view_code_button.setIconSize(icon_size)
+
+            self.ui.pair_code_label.setText("123 456")
 
     def get_icon_from_svg(self, svg_path, color):
         """
@@ -568,7 +827,6 @@ class MainWindow(QMainWindow):
 
         return player_icon
         
-    
     def load_application_settings(self, event):
         """
         Loads the players saved data/state into the format/look of the application
@@ -590,7 +848,7 @@ class MainWindow(QMainWindow):
         self.application_font_color = self.settings.value("font_color", "#ffffff", type=str)
         self.settings.endGroup()
 
-        #self.update_application_color()
+        self.update_application_color(self.application_background_color, self.application_widgets_color, self.application_font_color)
 
     def closeEvent(self, event):
         """
@@ -612,31 +870,193 @@ class MainWindow(QMainWindow):
         self.settings.endGroup()
         super().closeEvent(event)
 
-#class ColorPickerPopup(QDialog):
-#    def __init__(self):
-#        super().__init_()
+class ColorPickerPopup(QDialog):
 
-#        self.setWindowIcon(QIcon("icons/logo.png"))
-#        self.setWindowTitle("Customize PocketPad Application")
-#        self.setGeometry(100, 100, 200, 200)
+    color_updated = Signal(QColor, QColor, QColor)
 
-#        self.top_layout = QHBoxLayout()
+    def __init__(self, background_color, widget_color, font_color):
+        super().__init__()
 
-#        self.background_button = QPushButton("Set Background Color")
-#        self.widget_button = QPushButton("Set Widgets Color")
-#        self.font_button = QPushButton("Set Font Color")
+        self.setWindowIcon(QIcon("icons/logo.png"))
+        self.setWindowTitle("Customize PocketPad Application")
+        self.setGeometry(100, 100, 200, 200)
 
-#        self.top_layout.addWidget(self.background_button)
-#        self.top_layout.addWidget(self.widget_button)
-#        self.top_layout.addWidget(self.font_button)
+        self.application_color = background_color
+        self.widget_color = widget_color
+        self.font_color = font_color
 
-#        self.bottom_layout = QHBoxLayout()
+        self.total_layout = QVBoxLayout()
 
-#        self.test_button = QPushButton("Test Changes")
-#        self.confirm_button = QPushButton("Confirm Changes")
+        self.instructions = QLabel()
+        self.instructions.setTextFormat(Qt.MarkdownText)
+        self.instructions.setText(
+            "<h1>Customize The Application Color Scheme:</h1>"
+            "<ul>"
+            "  <li>Use the buttons below to customize different aspects of the application.</li>"
+            "</ul>"
+        )
+        self.total_layout.addWidget(self.instructions)
 
-#        self.bottom_layout.addWidget(self.test_button)
-#        self.bottom_layout.addWidget(self.confirm_button)
+        self.top_layout = QHBoxLayout()
+
+        self.background_button = QPushButton("Set Background Color")
+        self.background_button.clicked.connect(self.choose_background)
+
+        self.widget_button = QPushButton("Set Widgets Color")
+        self.widget_button.clicked.connect(self.choose_widgets)
+
+        self.font_button = QPushButton("Set Font Color")
+        self.font_button.clicked.connect(self.choose_font)
+
+        self.top_layout.addWidget(self.background_button)
+        self.top_layout.addWidget(self.widget_button)
+        self.top_layout.addWidget(self.font_button)
+
+        self.total_layout.addLayout(self.top_layout)
+
+        self.total_layout.addSpacing(20)
+
+        self.bottom_layout = QVBoxLayout()
+
+        self.reset_button = QPushButton("Reset Colors")
+        self.reset_button.clicked.connect(self.reset_color)
+
+        self.confirm_button = QPushButton("Confirm Changes")
+        self.confirm_button.clicked.connect(self.confirm_color)
+
+        self.bottom_layout.addWidget(self.reset_button)
+        self.bottom_layout.addWidget(self.confirm_button)
+
+        self.total_layout.addLayout(self.bottom_layout)
+
+        self.setLayout(self.total_layout)
+
+        self.test_coloring()
+
+    def reset_color(self):
+        self.application_color = "#242424"
+        self.widget_color = "#474747"
+        self.font_color = "#ffffff"
+        self.test_coloring()
+
+    def choose_background(self):
+        """
+        Generate a QColorDialog window allowing the uesr to select a new color value for the background of the application.
+        Upon selection of a color, it will check whether it is a valid color or not, and if it is a valid color
+        it will update the ColorPickerPopup window with the new value for the background
+        
+        @pararm: self - the current instance of ColorPickerPopup
+        """
+        self.application_color = QColorDialog.getColor()
+        if self.application_color.isValid():
+            if ((self.application_color.name().lower() == "#3bb20a") or (self.application_color.name().lower() == "#e6cc00") or (self.application_color.name().lower()  == "#ff0000")):
+                invalid_color = QMessageBox()
+                invalid_color.setText(f"Invalid Color: Please select a color that will not affect the display in latency")
+                invalid_color.exec()
+            elif ((self.application_color == self.widget_color) or (self.application_color == self.font_color)):
+                invalid_color = QMessageBox()
+                invalid_color.setText(f"Invalid Color: Please select a color that will not affect the display of other features")
+                invalid_color.exec()
+            else:
+                self.test_coloring()
+        else:
+            invalid_color = QMessageBox()
+            invalid_color.setText(f"Invalid Color: Please select a valid color")
+            invalid_color.exec()
+    
+    def choose_widgets(self):
+        """
+        Generate a QColorDialog window allowing the uesr to select a new color value for the widgets of the application.
+        Upon selection of a color, it will check whether it is a valid color or not, and if it is a valid color
+        it will update the ColorPickerPopup window with the new value for widgets
+        
+        @pararm: self - the current instance of ColorPickerPopup
+        """
+        self.widget_color = QColorDialog.getColor()
+        if self.widget_color.isValid():
+            if ((self.widget_color.name().lower() == "#3bb20a") or (self.widget_color.name().lower()  == "#e6cc00") or (self.widget_color.name().lower()  == "#ff0000")):
+                invalid_color = QMessageBox()
+                invalid_color.setText(f"Invalid Color: Please select a color that will not affect the display in latency")
+                invalid_color.exec()
+            elif ((self.widget_color == self.application_color) or (self.widget_color == self.font_color)):
+                invalid_color = QMessageBox()
+                invalid_color.setText(f"Invalid Color: Please select a color that will not affect the display of other features")
+                invalid_color.exec()
+            else:
+                self.test_coloring()
+        else:
+            invalid_color = QMessageBox()
+            invalid_color.setText(f"Invalid Color: Please select a valid color")
+            invalid_color.exec()
+
+    def choose_font(self):
+        """
+        Generate a QColorDialog window allowing the uesr to select a new color value for the font of the application.
+        Upon selection of a color, it will check whether it is a valid color or not, and if it is a valid color
+        it will update the ColorPickerPopup window with the new value for font
+        
+        @pararm: self - the current instance of ColorPickerPopup
+        """
+        self.font_color = QColorDialog.getColor()
+        if self.font_color.isValid():
+            if ((self.font_color.name().lower()  == "#3bb20a") or (self.font_color.name().lower()  == "#e6cc00") or (self.font_color.name().lower()  == "#ff0000")):
+                invalid_color = QMessageBox()
+                invalid_color.setText(f"Invalid Color: Please select a color that will not affect the display in latency")
+                invalid_color.exec()
+            elif ((self.font_color == self.application_color) or (self.font_color == self.widget_color)):
+                invalid_color = QMessageBox()
+                invalid_color.setText(f"Invalid Color: Please select a color that will not affect the display of other features")
+                invalid_color.exec()
+            else:
+                self.test_coloring()
+        else:
+            invalid_color = QMessageBox()
+            invalid_color.setText(f"Invalid Color: Please select a valid color")
+            invalid_color.exec()
+
+    def test_coloring(self):
+        """
+        Updates the style sheet of the instance of ColorPickerPopup to match the values chosen by
+        the user, allowing them to test different color combinations for the main application window
+        
+        @pararm: self - the current instance of ColorPickerPopup
+        """
+        if isinstance(self.application_color, QColor):
+            app_color = f"background-color: {self.application_color.name()};"
+        else:
+            app_color = f"background-color: {self.application_color};"
+            
+        if isinstance(self.widget_color, QColor):
+            widget_color = f"background-color: {self.widget_color.name()};"
+        else:
+            widget_color = f"background-color: {self.widget_color};"
+            
+        if isinstance(self.font_color, QColor):
+            font_color = f"color: {self.font_color.name()};"
+        else:
+            font_color = f"color: {self.font_color};"
+        
+        style_sheet = f"""
+        QDialog {{
+            {app_color}
+        }}
+        QWidget {{
+            {font_color}
+        }}
+        QPushButton {{
+            {widget_color}
+        }}
+        """
+        self.setStyleSheet(style_sheet)
+
+    def confirm_color(self):
+        """
+        Returns the color values selected by the user to the PocketPad window
+        
+        @pararm: self - the current instance of ColorPickerPopup
+        """
+        self.color_updated.emit(self.application_color, self.widget_color, self.font_color)
+        self.accept()
 
 
 if __name__ == "__main__":
