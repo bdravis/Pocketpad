@@ -346,8 +346,8 @@
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>73</width>
-                   <height>16</height>
+                   <width>231</width>
+                   <height>139</height>
                   </rect>
                  </property>
                 </widget>
@@ -545,7 +545,7 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QPushButton" name="view_code">
+                 <widget class="QPushButton" name="view_code_button">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                     <horstretch>0</horstretch>
@@ -554,18 +554,18 @@
                   </property>
                   <property name="minimumSize">
                    <size>
-                    <width>0</width>
+                    <width>25</width>
                     <height>25</height>
                    </size>
                   </property>
                   <property name="maximumSize">
                    <size>
                     <width>50</width>
-                    <height>16777215</height>
+                    <height>50</height>
                    </size>
                   </property>
                   <property name="text">
-                   <string>Button</string>
+                   <string/>
                   </property>
                  </widget>
                 </item>
@@ -589,7 +589,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLabel" name="label_2">
+              <widget class="QLabel" name="pair_code_label">
                <property name="font">
                 <font>
                  <pointsize>30</pointsize>
@@ -658,7 +658,81 @@
       </property>
       <property name="sizeHint" stdset="0">
        <size>
-        <width>50</width>
+        <width>10</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
+     <widget class="QWidget" name="widget_2" native="true">
+      <layout class="QVBoxLayout" name="verticalLayout_9">
+       <item>
+        <widget class="QPushButton" name="customizer_button">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>30</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: none;
+border-color: none;</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset>
+           <normaloff>../../pencil.svg</normaloff>../../pencil.svg</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>497</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <spacer name="horizontalSpacer_5">
+      <property name="orientation">
+       <enum>Qt::Orientation::Horizontal</enum>
+      </property>
+      <property name="sizeType">
+       <enum>QSizePolicy::Policy::Fixed</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>10</width>
         <height>20</height>
        </size>
       </property>

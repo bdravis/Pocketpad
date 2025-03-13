@@ -190,7 +190,7 @@ class Ui_MainWindow(object):
         self.controller_checkboxes.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 73, 16))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 231, 139))
         self.controller_checkboxes.setWidget(self.scrollAreaWidgetContents)
 
         self.verticalLayout_5.addWidget(self.controller_checkboxes)
@@ -274,17 +274,17 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_3.addWidget(self.label_3)
 
-        self.view_code = QPushButton(self.widget)
-        self.view_code.setObjectName(u"view_code")
+        self.view_code_button = QPushButton(self.widget)
+        self.view_code_button.setObjectName(u"view_code_button")
         sizePolicy5 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
         sizePolicy5.setHorizontalStretch(0)
         sizePolicy5.setVerticalStretch(0)
-        sizePolicy5.setHeightForWidth(self.view_code.sizePolicy().hasHeightForWidth())
-        self.view_code.setSizePolicy(sizePolicy5)
-        self.view_code.setMinimumSize(QSize(0, 25))
-        self.view_code.setMaximumSize(QSize(50, 16777215))
+        sizePolicy5.setHeightForWidth(self.view_code_button.sizePolicy().hasHeightForWidth())
+        self.view_code_button.setSizePolicy(sizePolicy5)
+        self.view_code_button.setMinimumSize(QSize(25, 25))
+        self.view_code_button.setMaximumSize(QSize(50, 50))
 
-        self.horizontalLayout_3.addWidget(self.view_code)
+        self.horizontalLayout_3.addWidget(self.view_code_button)
 
         self.horizontalSpacer_3 = QSpacerItem(60, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
@@ -293,16 +293,16 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_8.addWidget(self.widget)
 
-        self.label_2 = QLabel(self.connection_code_box)
-        self.label_2.setObjectName(u"label_2")
+        self.pair_code_label = QLabel(self.connection_code_box)
+        self.pair_code_label.setObjectName(u"pair_code_label")
         font2 = QFont()
         font2.setPointSize(30)
         font2.setBold(True)
-        self.label_2.setFont(font2)
-        self.label_2.setTextFormat(Qt.TextFormat.PlainText)
-        self.label_2.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.pair_code_label.setFont(font2)
+        self.pair_code_label.setTextFormat(Qt.TextFormat.PlainText)
+        self.pair_code_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.verticalLayout_8.addWidget(self.label_2)
+        self.verticalLayout_8.addWidget(self.pair_code_label)
 
 
         self.horizontalLayout_2.addWidget(self.connection_code_box)
@@ -321,9 +321,42 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout.addWidget(self.main_application_area)
 
-        self.main_layout_spacer_right = QSpacerItem(50, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+        self.main_layout_spacer_right = QSpacerItem(10, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout.addItem(self.main_layout_spacer_right)
+
+        self.widget_2 = QWidget(self.centralwidget)
+        self.widget_2.setObjectName(u"widget_2")
+        self.verticalLayout_9 = QVBoxLayout(self.widget_2)
+        self.verticalLayout_9.setObjectName(u"verticalLayout_9")
+        self.customizer_button = QPushButton(self.widget_2)
+        self.customizer_button.setObjectName(u"customizer_button")
+        sizePolicy6 = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        sizePolicy6.setHorizontalStretch(0)
+        sizePolicy6.setVerticalStretch(0)
+        sizePolicy6.setHeightForWidth(self.customizer_button.sizePolicy().hasHeightForWidth())
+        self.customizer_button.setSizePolicy(sizePolicy6)
+        self.customizer_button.setMinimumSize(QSize(20, 20))
+        self.customizer_button.setMaximumSize(QSize(30, 30))
+        self.customizer_button.setStyleSheet(u"background-color: none;\n"
+"border-color: none;")
+        icon = QIcon()
+        icon.addFile(u"../../pencil.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.customizer_button.setIcon(icon)
+        self.customizer_button.setIconSize(QSize(20, 20))
+
+        self.verticalLayout_9.addWidget(self.customizer_button)
+
+        self.verticalSpacer_2 = QSpacerItem(20, 497, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.verticalLayout_9.addItem(self.verticalSpacer_2)
+
+
+        self.horizontalLayout.addWidget(self.widget_2)
+
+        self.horizontalSpacer_5 = QSpacerItem(10, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout.addItem(self.horizontalSpacer_5)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
@@ -355,7 +388,8 @@ class Ui_MainWindow(object):
         self.settings_selection.setTabText(self.settings_selection.indexOf(self.network_tab), QCoreApplication.translate("MainWindow", u"Networks", None))
         self.settings_selection.setTabText(self.settings_selection.indexOf(self.controller_tab), QCoreApplication.translate("MainWindow", u"Controllers", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:14pt; font-weight:700;\">Pair Code:</span></p></body></html>", None))
-        self.view_code.setText(QCoreApplication.translate("MainWindow", u"Button", None))
-        self.label_2.setText(QCoreApplication.translate("MainWindow", u"123 456", None))
+        self.view_code_button.setText("")
+        self.pair_code_label.setText(QCoreApplication.translate("MainWindow", u"123 456", None))
+        self.customizer_button.setText("")
     # retranslateUi
 
