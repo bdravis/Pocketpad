@@ -18,9 +18,6 @@ jobs:
             fail-fast: false
             matrix:
                 os: [windows-latest, macos-latest]
-
-        env:
-            QT_QPA_PLATFORM: "offscreen"
                 
         defaults:
             run:
