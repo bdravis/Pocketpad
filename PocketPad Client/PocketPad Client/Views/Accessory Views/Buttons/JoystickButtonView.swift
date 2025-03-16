@@ -18,9 +18,16 @@ struct JoystickButtonView: View {
     private var STICK_SIZE: CGFloat {
         return DEFAULT_BUTTON_SIZE / 3
     }
+    
+    private var deadzoneRadius: Double {
+//        return (DEFAULT_BUTTON_SIZE / 2) * 0.4 // hardcoded 40% deadzone for testing
+        
+        return (DEFAULT_BUTTON_SIZE / 2) * config.deadzone
+        
+    }
 
     var joyDrag: some Gesture {
-        DragGesture()
+        DragGesture(minimumDistance: 0)
             .onChanged { value in
                 let dx = value.translation.width
                 let dy = value.translation.height
@@ -28,34 +35,47 @@ struct JoystickButtonView: View {
                 let angle = atan2(dy, dx)
 
                 let clampedDistance = min(dist, DEFAULT_BUTTON_SIZE / 2)
-                offset = CGSize(
-                    width: cos(angle) * clampedDistance,
-                    height: sin(angle) * clampedDistance
-                )
+                
 #if DEBUG
-                print("Joystick moved: \(offset)") // Debugging output
+                    print("Joystick moved distance: \(clampedDistance)")
 #endif
                 
-                if let service = bluetoothManager.selectedService {
-                    let ui8_playerId: UInt8 = LayoutManager.shared.player_id
-                    let ui8_inputId : UInt8 = config.inputId
-                    let ui8_buttonType : UInt8 = config.type.rawValue
-                    let ui8_event : UInt8 = ButtonEvent.held.rawValue
+                if (clampedDistance >= deadzoneRadius) {
+                    offset = CGSize(
+                        width: cos(angle) * clampedDistance,
+                        height: sin(angle) * clampedDistance
+                    )
                     
-                    var degrees = angle * 180 / .pi
-                    while degrees < 0 {
-                        degrees += 360
+#if DEBUG
+                    print("Joystick moved: \(offset)") // Debugging output
+#endif
+                    
+                    if let service = bluetoothManager.selectedService {
+                        let ui8_playerId: UInt8 = LayoutManager.shared.player_id
+                        let ui8_inputId : UInt8 = config.inputId
+                        let ui8_buttonType : UInt8 = config.type.rawValue
+                        let ui8_event : UInt8 = ButtonEvent.held.rawValue
+                        
+                        var degrees = angle * 180 / .pi
+                        while degrees < 0 {
+                            degrees += 360
+                        }
+                        while degrees > 360 {
+                            degrees -= 360
+                        }
+                        let ui8_angle: UInt8 = UInt8(Int((degrees * 256 / 360)) & 255) // Convert to degrees in range of 255. will be scaled back in server
+                        
+                        let normalizedMagnitude = (clampedDistance - deadzoneRadius) / (DEFAULT_BUTTON_SIZE / 2 - deadzoneRadius) * 100
+#if DEBUG
+                    print("Normalized magnitude: \(normalizedMagnitude)")
+#endif
+                        let ui8_magnitude: UInt8 = UInt8(min(max(normalizedMagnitude, 0), 255))
+                        
+                        let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event, ui8_angle, ui8_magnitude])
+                        bluetoothManager.sendInput(data)
                     }
-                    while degrees > 360 {
-                        degrees -= 360
-                    }
-                    let ui8_angle: UInt8 = UInt8(Int((degrees * 256 / 360)) & 255) // Convert to degrees in range of 255. will be scaled back in server
-                    
-                    let normalizedMagnitude = clampedDistance / (DEFAULT_BUTTON_SIZE / 2) * 100
-                    let ui8_magnitude: UInt8 = UInt8(min(max(normalizedMagnitude, 0), 255))
-                    
-                    let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event, ui8_angle, ui8_magnitude])
-                    bluetoothManager.sendInput(data)
+                } else {
+                    offset = .zero
                 }
             }
             .onEnded { _ in

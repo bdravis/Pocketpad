@@ -124,9 +124,9 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
         #
         # Implement a way to extract a value corresponding to player characteristic
 
-        player_id = connection_information[0]
+        # player_id = connection_information[0]
 
-        input_function(player_id, input)
+        # input_function(player_id, input)
 
 
 
