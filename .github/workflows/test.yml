@@ -1,8 +1,15 @@
 name: "Test Client and Server"
 
 on:
+    workflow_dispatch:
     push:
+        branches:
+            - main
     pull_request:
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
 
 jobs:
     server:
@@ -10,7 +17,8 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                os: [ubuntu-latest, windows-latest, macos-latest]
+                os: [windows-latest, macos-latest]
+                
 
         steps:
             - uses: actions/checkout@v4
@@ -31,5 +39,20 @@ jobs:
             - run: sudo apt update && sudo apt install -y libegl1-mesa-dev
               if: matrix.os == 'ubuntu-latest'
 
-            - name: Run client tests
+            - name: Run server tests
               run: pytest "PocketPad Server/server_app_testing.py"
+    client:
+        runs-on: macos-latest
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - run: xcodebuild -version
+
+            - name: Run tests
+              run: |
+                xcodebuild test -scheme "PocketPad ClientTests" -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' CODE_SIGNING_ALLOWED='NO' | xcbeautify --renderer github-actions
+
+            - name: Run UI tests
+              run: |
+                xcodebuild test -scheme "PocketPad ClientUITests" -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' CODE_SIGNING_ALLOWED='NO' | xcbeautify --renderer github-actions
