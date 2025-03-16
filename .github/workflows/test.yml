@@ -1,0 +1,33 @@
+name: "Test Client and Server"
+
+on:
+    push:
+    pull_request:
+
+jobs:
+    server:
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [ubuntu-latest, windows-latest, macos-latest]
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Set up Python
+              uses: actions/setup-python@v4
+              with:
+                  python-version: '3.11'
+
+            - name: Install dependencies
+              run: |
+                  python -m pip install --upgrade pip
+                  pip install -r requirements.txt
+                  pip install -r requirements-dev.txt
+
+            - run: |
+                cd "PocketPad Server"
+
+            - name: Run client tests
+              run: pytest server_app_testing.py
