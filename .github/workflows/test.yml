@@ -44,7 +44,7 @@ jobs:
               if: matrix.os == 'ubuntu-latest'
 
             - name: Run server tests
-              run: pytest server_app_testing.py || pkill -f PySide6 || true
+              run: pytest server_app_testing.py -vv -s
     client:
         runs-on: macos-latest
 
