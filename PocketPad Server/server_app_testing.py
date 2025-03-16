@@ -706,3 +706,5 @@ def test_apply_background(main_window, qtbot):
 
     assert "QPushButton { background-color: transparent; border: none; }" in main_window.ui.view_code_button.styleSheet() 
     
+    main_window.close()
+    
