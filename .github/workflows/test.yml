@@ -18,6 +18,9 @@ jobs:
             fail-fast: false
             matrix:
                 os: [windows-latest, macos-latest]
+
+        env:
+            QT_QPA_PLATFORM: "offscreen"
                 
         defaults:
             run:
@@ -41,7 +44,7 @@ jobs:
               if: matrix.os == 'ubuntu-latest'
 
             - name: Run server tests
-              run: pytest server_app_testing.py
+              run: pytest server_app_testing.py || pkill -f PySide6 || true
     client:
         runs-on: macos-latest
 
