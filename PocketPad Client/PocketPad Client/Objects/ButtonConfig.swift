@@ -26,11 +26,23 @@ enum ButtonEvent: UInt8, ConfigType {
     case held = 2
 }
 
+// Position information for a button, including side override
+struct ButtonPosition: ConfigType {
+    var scaledPos: CGPoint // scaled position of btn on screen (0.0 to 1.0 multiplied by screen size)
+    var offset: CGPoint // the exact offset of btn from position as the center point
+    
+    // Override information (for the opposite orientation)
+    var defaultIsPortrait: Bool? // whether or not the default position is for portrait, keep nil if not overriding
+    var overrideScaledPos: CGPoint? // the overridden scaled position for the opposite orientation
+    var overrideOffset: CGPoint? // the overriden offset for the opposite orientation
+}
+
 // Protocol for configuration of the buttons for the layout
 protocol ButtonConfig: Codable {
     var id: UUID { get }
-    var position: CGPoint { get set } // position of btn on screen
+    var position: ButtonPosition { get set } // scaled position of btn on screen (0.0 to 1.0 multiplied by screen size)
     var scale: CGFloat { get set } // % scale of the button (1.0 = 100% scale)
+    var rotation: Double { get set } // rotation of the button in degrees
     
     var type: ButtonType { get set } // what type of button it is
     
@@ -43,46 +55,48 @@ extension ButtonConfig {
         return UUID()
     }
     
-    mutating func getScaledPosition(bounds: CGRect? = nil) -> CGPoint {
-        // Position the button so that it is not clipped by the edge of the screen
-        let scaledSize = (DEFAULT_BUTTON_SIZE * self.scale) / 2
-        var fixedPos = self.position
-        
-        if let frame = bounds {
-            // prevent from going off the right/bottom of the screen if bounds are supplied
-            if fixedPos.x + scaledSize > frame.maxX {
-                fixedPos.x = frame.maxX - scaledSize
-            }
-            if fixedPos.y + scaledSize > frame.maxY {
-                fixedPos.y = frame.maxY - scaledSize
-            }
-            
-            // prevent from going off the left/top of the screen if bounds are supplied
-            if fixedPos.x - scaledSize < frame.minX {
-                fixedPos.x = frame.minX + scaledSize
-            }
-            if fixedPos.y - scaledSize < frame.minY {
-                fixedPos.y = frame.minY + scaledSize
-            }
-        } else {
-            // prevent from going off the left/top of the screen without provided bounds (position 0)
-            if fixedPos.x - scaledSize < 0.0 {
-                fixedPos.x = scaledSize
-            }
-            if fixedPos.y - scaledSize < 0.0 {
-                fixedPos.y = scaledSize
-            }
-        }
-        
-        return fixedPos
-    }
+    // TODO: Fix later for position
+//    mutating func getScaledPosition(bounds: CGRect? = nil) -> CGPoint {
+//        // Position the button so that it is not clipped by the edge of the screen
+//        let scaledSize = (DEFAULT_BUTTON_SIZE * self.scale) / 2
+//        var fixedPos = self.position
+//        
+//        if let frame = bounds {
+//            // prevent from going off the right/bottom of the screen if bounds are supplied
+//            if fixedPos.x + scaledSize > frame.maxX {
+//                fixedPos.x = frame.maxX - scaledSize
+//            }
+//            if fixedPos.y + scaledSize > frame.maxY {
+//                fixedPos.y = frame.maxY - scaledSize
+//            }
+//            
+//            // prevent from going off the left/top of the screen if bounds are supplied
+//            if fixedPos.x - scaledSize < frame.minX {
+//                fixedPos.x = frame.minX + scaledSize
+//            }
+//            if fixedPos.y - scaledSize < frame.minY {
+//                fixedPos.y = frame.minY + scaledSize
+//            }
+//        } else {
+//            // prevent from going off the left/top of the screen without provided bounds (position 0)
+//            if fixedPos.x - scaledSize < 0.0 {
+//                fixedPos.x = scaledSize
+//            }
+//            if fixedPos.y - scaledSize < 0.0 {
+//                fixedPos.y = scaledSize
+//            }
+//        }
+//        
+//        return fixedPos
+//    }
 }
 
 // a bad button type config for testing encoding errors
 struct BadButtonTypeConfig: ButtonConfig, ConfigType {
     // Protocol Properties
-    var position: CGPoint
+    var position: ButtonPosition
     var scale: CGFloat
+    var rotation: Double
     var type: ButtonType
     var inputId: UInt8
 }
