@@ -16,15 +16,22 @@ private let maxHeightFraction: CGFloat = 0.9
 struct SettingsMenuView: View {
     // MARK: - Bound Properties
     @Binding var isShowingSettings: Bool
+    @Binding var exitAllMenusCallback: (() -> Void)?
     
     @AppStorage("splitDPad") var splitDPad: Bool = false
     @AppStorage("selectedController") var selectedController: String = ControllerType.Xbox.stringValue
     @AppStorage("controllerColor") var controllerColor: Color = .blue
     @AppStorage("controllerName") var controllerName: String = "Controller"
+    @AppStorage("leftJoystickDeadzone") var leftJoystickDeadzone: Double = 0.0
+    @AppStorage("rightJoystickDeadzone") var rightJoystickDeadzone: Double = 0.0
+    
     
     @State private var showDPadStyle: Bool = false
     @State private var saveAsMalformed: Bool = false
     @State private var availableControllers: [String] = [] // TODO: Change this to a VM later
+    
+    @State private var showingLeftDeadzoneView: Bool = false
+    @State private var showingRightDeadzoneView: Bool = false
     
     // MARK: - Body
     var body: some View {
@@ -50,23 +57,40 @@ struct SettingsMenuView: View {
                     )
                 
                 // Menu Content
-                VStack(spacing: 0) {
-                    headerView
-                    Divider()
-                        .padding(.bottom, 6)
-                    ScrollView {
-                        settingsContent
-                            .padding(.bottom, 20)
+                if !showingLeftDeadzoneView && !showingRightDeadzoneView {
+                    VStack(spacing: 0) {
+                        headerView
+                        Divider()
+                            .padding(.bottom, 6)
+                        ScrollView {
+                            settingsContent
+                                .padding(.bottom, 20)
+                        }
+                        Spacer()
                     }
-                    Spacer()
+                    .frame(width: menuWidth, height: menuHeight)
                 }
-                .frame(width: menuWidth, height: menuHeight)
+                
+                if showingLeftDeadzoneView {
+                    JoystickDeadzoneView(
+                        isShowingDeadzoneView: $showingLeftDeadzoneView,
+                        deadzoneValue: $leftJoystickDeadzone,
+                        joystickName: .constant("Left Joystick"))
+                }
+                
+                if showingRightDeadzoneView {
+                    JoystickDeadzoneView(
+                        isShowingDeadzoneView: $showingRightDeadzoneView,
+                        deadzoneValue: $rightJoystickDeadzone,
+                        joystickName: .constant("Right Joystick"))
+                }
             }
             // Center the menu on the screen
             .position(
                 x: geometry.size.width / 2,
                 y: geometry.size.height / 2
             )
+
         }
     }
     
@@ -120,6 +144,7 @@ struct SettingsMenuView: View {
                     }
                 }
                 .onAppear {
+                    exitAllMenusCallback = exitAllMenus
                     showDPadStyle = LayoutManager.shared.hasDPad
                     availableControllers = LayoutManager.shared.availableLayouts
                 }
@@ -163,6 +188,42 @@ struct SettingsMenuView: View {
                 TextField("Enter controller name", text: $controllerName)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .accessibilityIdentifier("NameField")
+            }
+            .padding(.horizontal, 16)
+            
+            // MARK: - Joystick deadzone
+            Section {
+                // Left joystick
+                HStack {
+                    Text("Left Joystick Deadzone")
+                    Spacer()
+                    Button(action: {
+                        showingLeftDeadzoneView = true // pulls up a sheet
+                    }) {
+                        Text("\(Int(leftJoystickDeadzone * 100))%")
+                            .foregroundColor(.blue)
+                    }
+                    .accessibilityIdentifier("LeftDeadzoneButton")
+                }
+                .padding(.horizontal, 16)
+                
+                // Right joystick
+                HStack {
+                    Text("Right Joystick Deadzone")
+                    Spacer()
+                    Button(action: {
+                        showingRightDeadzoneView = true // pulls up a sheet
+                    }) {
+                        Text("\(Int(rightJoystickDeadzone * 100))%")
+                            .foregroundColor(.blue)
+                    }
+                    .accessibilityIdentifier("RightDeadzoneButton")
+                }
+                .padding(.horizontal, 16)
+            } header: {
+                Text("Joystick Settings")
+                    .font(.footnote)
+                    .foregroundStyle(Color(uiColor: .secondaryLabel))
             }
             .padding(.horizontal, 16)
             
@@ -271,12 +332,18 @@ struct SettingsMenuView: View {
         // present the alert
         UIApplication.shared.windows.first?.rootViewController?.present(alert, animated: true)
     }
+    
+    func exitAllMenus() {
+        showingLeftDeadzoneView = false
+        showingRightDeadzoneView = false
+    }
 }
 
 // MARK: - Preview
 #Preview {
     SettingsMenuView(
-        isShowingSettings: .constant(true)
+        isShowingSettings: .constant(true),
+        exitAllMenusCallback: .constant(nil)
     )
 }
 
