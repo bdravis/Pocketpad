@@ -38,22 +38,24 @@ jobs:
         uses: Nuitka/Nuitka-Action@main
         with:
           nuitka-version: main
-          script-name: "${{ github.workspace }}/PocketPad Server/server_app.py"
+          script-name: server_app.py
           mode: app
+          enable-plugins: pyside6
           product-name: PocketPad
           product-version: 1.0
-          windows-icon-from-ico: "${{ github.workspace }}/PocketPad Server/icons/logo.png"
-          macos-app-icon: "${{ github.workspace }}/PocketPad Server/icons/logo.png"
-          macos-signed-app-name: "com.leemin.PocketPad-Server"
-          macos-app-name: "PocketPad"
+          windows-icon-from-ico: icons/logo.png
+          macos-app-icon: icons/logo.png
+          macos-signed-app-name: com.leemin.PocketPad-Server
+          macos-app-name: PocketPad
           macos-app-mode: gui
           macos-app-version: 1.0
           macos-app-protected-resource: "NSBluetoothAlwaysUsageDescription:We use Bluetooth to connect with your mobile device"
+          working-directory: "PocketPad Server"
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ runner.os }} Build
+          name: PocketPad ${{ runner.os }}
           path: |
             build/*.exe
             build/*.bin
