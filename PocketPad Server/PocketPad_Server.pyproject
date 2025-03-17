@@ -1,6 +1,6 @@
 {
     "files": [
-        "mainwindow.py",
-        "form.ui"
+        "server_app.py",
+        "PocketPad.ui"
     ]
 }

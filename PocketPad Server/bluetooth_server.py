@@ -308,6 +308,7 @@ def start_server():
     global logger, trigger, thread, loop
     logging.basicConfig(level=logging.DEBUG)
     logger = logging.getLogger(__name__)
+    logger.info("Starting Server")
 
     #if sys.platform in ["darwin", "win32"]:
     #    trigger = threading.Event()
