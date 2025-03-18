@@ -57,7 +57,7 @@ jobs:
         with:
           name: PocketPad ${{ runner.os }}
           path: |
-            build/*.exe
-            build/*.bin
-            build/*.app/**/*
+            PocketPad Server/build/*.exe
+            PocketPad Server/build/*.bin
+            PocketPad Server/build/*.app/**/*
           include-hidden-files: true
