@@ -35,6 +35,8 @@ tags
 Makefile*
 *.prl
 *.app
+*.build
+*.dist
 moc_*.cpp
 ui_*.h
 qrc_*.cpp

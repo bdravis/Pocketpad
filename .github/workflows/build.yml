@@ -50,6 +50,7 @@ jobs:
           macos-app-mode: gui
           macos-app-version: 1.0
           macos-app-protected-resource: "NSBluetoothAlwaysUsageDescription:We use Bluetooth to connect with your mobile device"
+          include-data-dir: icons=icons
           output-file: "PocketPad"
           working-directory: "PocketPad Server"
 

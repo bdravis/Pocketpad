@@ -13,6 +13,8 @@ from PySide6.QtCore import Qt, QSettings, Signal, QSize
 from PySide6.QtGui import QFont, QIcon, QAction, QPixmap, QPainter, QImage, QColor
 from PySide6.QtSvg import QSvgRenderer
 
+import os
+import sys
 
 # Important:
 # You need to run the following command to generate the ui_form.py file
@@ -34,15 +36,21 @@ class MainWindow(QMainWindow):
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        
+        if getattr(sys, 'frozen', False):
+            application_path = Path(sys.executable).parent
+        else:
+            application_path = Path(__file__).resolve().parent
+        logo_path = os.path.join(application_path, "icons/logo.png")
 
-        self.setWindowIcon(QIcon("icons/logo.png"))
+        self.setWindowIcon(QIcon(logo_path))
         self.application_background_color = "#242424"
         self.application_widgets_color = "#474747"
         self.application_font_color = "#FFFFFF"
         
         # Set the Application Icon  with correct image to appear in the tray
         #
-        self.tray_icon = QSystemTrayIcon(QIcon("icons/logo.png"), self)
+        self.tray_icon = QSystemTrayIcon(QIcon(logo_path), self)
         self.tray_icon.setToolTip("PocketPad")
 
         tray_menu = QMenu()
@@ -814,6 +822,12 @@ class MainWindow(QMainWindow):
 
         @return: player_icon - a QIcon representing the player's connected controller type
         """
+        if getattr(sys, 'frozen', False):
+            application_path = Path(sys.executable).parent
+        else:
+            application_path = Path(__file__).resolve().parent
+        svg_path = os.path.join(application_path, svg_path)
+        
         renderer = QSvgRenderer(svg_path)
         image = QImage(32, 32, QImage.Format_ARGB32)
         image.fill(0) 
