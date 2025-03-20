@@ -38,7 +38,7 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(QIcon("icons/logo.png"))
         self.application_background_color = "#242424"
         self.application_widgets_color = "#474747"
-        self.application_font_color = "#ffffff"
+        self.application_font_color = "#FFFFFF"
         
         # Set the Application Icon  with correct image to appear in the tray
         #
@@ -843,9 +843,9 @@ class MainWindow(QMainWindow):
         self.ui.latency_setting_box.setChecked(latency_checkbox_state)
 
         self.settings.beginGroup("Color Settings")
-        self.application_background_color = self.settings.value("background_color", "#ffffff", type=str)
-        self.application_widgets_color = self.settings.value("widget_color", "#ffffff", type=str)
-        self.application_font_color = self.settings.value("font_color", "#ffffff", type=str)
+        self.application_background_color = self.settings.value("background_color", "#242424", type=str)
+        self.application_widgets_color = self.settings.value("widget_color", "#474747", type=str)
+        self.application_font_color = self.settings.value("font_color", "#FFFFFF", type=str)
         self.settings.endGroup()
 
         self.update_application_color(self.application_background_color, self.application_widgets_color, self.application_font_color)

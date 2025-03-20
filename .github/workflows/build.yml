@@ -50,7 +50,12 @@ jobs:
           macos-app-mode: gui
           macos-app-version: 1.0
           macos-app-protected-resource: "NSBluetoothAlwaysUsageDescription:We use Bluetooth to connect with your mobile device"
+          output-file: "PocketPad"
           working-directory: "PocketPad Server"
+
+      - run: mv server_app.app PocketPad.app
+        if: matrix.os == 'macos-latest'
+        working-directory: "PocketPad Server/build"
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
