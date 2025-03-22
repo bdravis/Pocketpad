@@ -29,7 +29,7 @@ enum ButtonEvent: UInt8, ConfigType {
 // Position information for a button, including side override
 struct ButtonPosition: ConfigType {
     var scaledPos: CGPoint // scaled position of btn on screen (0.0 to 1.0 multiplied by screen size)
-    var offset: CGPoint // the exact offset of btn from position as the center point
+    var offset: CGPoint = CGPointZero // the exact offset of btn from position as the center point
     
     // Override information (for the opposite orientation)
     var defaultIsPortrait: Bool? // whether or not the default position is for portrait, keep nil if not overriding

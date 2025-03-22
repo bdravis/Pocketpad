@@ -21,7 +21,7 @@ struct BumperConfig: ButtonConfig, ConfigType {
     
     // Object Initializer
     init(
-        position: ButtonPosition, scale: CGFloat, rotation: Double, inputId: UInt8,
+        position: ButtonPosition, scale: CGFloat, rotation: Double = 0.0, inputId: UInt8,
         input: String, style: RegularButtonStyle? = nil, turbo: Bool = false
     ) {
         self.type = .bumper

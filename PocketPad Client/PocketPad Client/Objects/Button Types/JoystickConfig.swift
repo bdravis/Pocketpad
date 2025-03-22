@@ -21,7 +21,7 @@ struct JoystickConfig: ButtonConfig, ConfigType {
     
     // Object Initializer
     init(
-        position: ButtonPosition, scale: CGFloat, rotation: Double, inputId: UInt8,
+        position: ButtonPosition, scale: CGFloat, rotation: Double = 0.0, inputId: UInt8,
         input: String, sensitivity: Double = 0.0, deadzone: Double = 0.0
     ) {
         self.type = .joystick

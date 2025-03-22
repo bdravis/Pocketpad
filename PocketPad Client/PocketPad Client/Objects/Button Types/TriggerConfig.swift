@@ -28,7 +28,7 @@ struct TriggerConfig: ButtonConfig, ConfigType {
     
     // Object Initializer
     init(
-        position: ButtonPosition, scale: CGFloat, rotation: Double, inputId: UInt8,
+        position: ButtonPosition, scale: CGFloat, rotation: Double = 0.0, inputId: UInt8,
         input: String, turbo: Bool = false,
         side: TriggerSide
     ) {
