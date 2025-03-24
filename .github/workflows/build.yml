@@ -5,7 +5,7 @@ on:
     push:
         branches:
             - main
-    pull_request: # will remove after testing
+    # pull_request: # will remove after testing
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
