@@ -243,10 +243,8 @@ struct SettingsMenuView: View {
         alert.addAction(wiiAction)
         let malformedAction = UIAlertAction(title: "Malformed", style: .default) { (action) in
             // make a malformed layout
-            let badLayout = LayoutConfig.init(name: "Malformed", landscapeButtons: [
-                BadButtonTypeConfig(position: CGPointZero, scale: 0, type: .joystick, inputId: 0)
-            ], portraitButtons: [
-                
+            let badLayout = LayoutConfig.init(name: "Malformed", buttons: [
+//                BadButtonTypeConfig(position: CGPointZero, scale: 0, type: .joystick, inputId: 0)
             ])
             do {
                 try LayoutManager.shared.saveLayout(badLayout)

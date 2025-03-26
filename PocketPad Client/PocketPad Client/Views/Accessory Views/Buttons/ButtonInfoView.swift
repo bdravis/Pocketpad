@@ -21,14 +21,14 @@ struct ButtonInfoView: View {
                 .frame(width: INFO_OVERLAY_SIZE, height: INFO_OVERLAY_SIZE)
             
             // Position tag
-            HStack {
-                Spacer()
-                Text("(\(Int(config.position.x)), \(Int(config.position.y)))")
-                    .frame(height: 10)
-                    .font(.system(size: 8))
-                    .offset(y: INFO_OVERLAY_SIZE / 2 + 8)
-            }
-            .frame(maxWidth: INFO_OVERLAY_SIZE)
+//            HStack {
+//                Spacer()
+//                Text("(\(Int(config.position.x)), \(Int(config.position.y)))")
+//                    .frame(height: 10)
+//                    .font(.system(size: 8))
+//                    .offset(y: INFO_OVERLAY_SIZE / 2 + 8)
+//            }
+//            .frame(maxWidth: INFO_OVERLAY_SIZE)
             
             // Scale tag
             HStack {

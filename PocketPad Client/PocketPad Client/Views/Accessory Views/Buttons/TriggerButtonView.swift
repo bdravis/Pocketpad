@@ -44,41 +44,41 @@ struct TriggerButtonView: View {
     }
 }
 
-
-#Preview {
-    ControllerView(layout: .init(
-        name: "Trigger Debug",
-        landscapeButtons: [
-            TriggerConfig(
-                position: CGPoint(x: 100, y: 200),
-                scale: 1.5,
-                inputId: 4,
-                input: "LT",
-                side: .left
-            ),
-            TriggerConfig(
-                position: CGPoint(x: 200, y: 200),
-                scale: 1.5,
-                inputId: 4,
-                input: "RT",
-                side: .right
-            )
-        ],
-        portraitButtons: [
-            TriggerConfig(
-                position: CGPoint(x: 100, y: 200),
-                scale: 1.5,
-                inputId: 4,
-                input: "LT",
-                side: .left
-            ),
-            TriggerConfig(
-                position: CGPoint(x: 200, y: 200),
-                scale: 1.5,
-                inputId: 4,
-                input: "RT",
-                side: .right
-            )
-        ]
-    ))
-}
+//
+//#Preview {
+//    ControllerView(layout: .init(
+//        name: "Trigger Debug",
+//        landscapeButtons: [
+//            TriggerConfig(
+//                position: CGPoint(x: 100, y: 200),
+//                scale: 1.5,
+//                inputId: 4,
+//                input: "LT",
+//                side: .left
+//            ),
+//            TriggerConfig(
+//                position: CGPoint(x: 200, y: 200),
+//                scale: 1.5,
+//                inputId: 4,
+//                input: "RT",
+//                side: .right
+//            )
+//        ],
+//        portraitButtons: [
+//            TriggerConfig(
+//                position: CGPoint(x: 100, y: 200),
+//                scale: 1.5,
+//                inputId: 4,
+//                input: "LT",
+//                side: .left
+//            ),
+//            TriggerConfig(
+//                position: CGPoint(x: 200, y: 200),
+//                scale: 1.5,
+//                inputId: 4,
+//                input: "RT",
+//                side: .right
+//            )
+//        ]
+//    ))
+//}

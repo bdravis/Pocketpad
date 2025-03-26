@@ -10,17 +10,15 @@ typealias ConfigType = Codable & Equatable
 // The configuration of the layout to be saved and loaded from the file
 struct LayoutConfig: ConfigType {
     var name: String // name of the config to show in settings
-    var landscapeButtons: [ButtonConfig] // the list of landscape buttons
-    var portraitButtons: [ButtonConfig] // the list of portrait orientation buttons
+    var buttons: [ButtonConfig] // the list of the buttons
     
     private enum CodingKeys: String, CodingKey { // the keys in which the items are stored in the file
-        case name, wrappedLandscapeButtons, wrappedPortraitButtons
+        case name, wrappedButtons
     }
     
-    init(name: String, landscapeButtons: [ButtonConfig], portraitButtons: [ButtonConfig]) {
+    init(name: String, buttons: [ButtonConfig]) {
         self.name = name;
-        self.landscapeButtons = landscapeButtons;
-        self.portraitButtons = portraitButtons;
+        self.buttons = buttons;
     }
     
     // Wrappers are used because protocols (i.e. ButtonConfig) cannot conform to Codable
@@ -31,13 +29,9 @@ struct LayoutConfig: ConfigType {
         // decode name
         name = try container.decode(String.self, forKey: .name)
         
-        // decode landscape buttons
-        let wrappedLandscapeButtons = try container.decode([ButtonConfigWrapper].self, forKey: .wrappedLandscapeButtons)
-        landscapeButtons = wrappedLandscapeButtons.map({ $0.buttonConfig })
-        
-        // decode portrait buttons
-        let wrappedPortraitButtons = try container.decode([ButtonConfigWrapper].self, forKey: .wrappedPortraitButtons)
-        portraitButtons = wrappedPortraitButtons.map({ $0.buttonConfig })
+        // decode buttons
+        let wrappedButtons = try container.decode([ButtonConfigWrapper].self, forKey: .wrappedButtons)
+        buttons = wrappedButtons.map({ $0.buttonConfig })
     }
     
     func encode(to encoder: any Encoder) throws {
@@ -46,13 +40,9 @@ struct LayoutConfig: ConfigType {
         // encode name
         try container.encode(name, forKey: .name)
         
-        // encode landscape buttons
-        let wrappedLandscapeButtons = landscapeButtons.map(ButtonConfigWrapper.init)
-        try container.encode(wrappedLandscapeButtons, forKey: .wrappedLandscapeButtons)
-        
-        // encode portrait buttons
-        let wrappedPortraitButtons = portraitButtons.map(ButtonConfigWrapper.init)
-        try container.encode(wrappedPortraitButtons, forKey: .wrappedPortraitButtons)
+        // encode buttons
+        let wrappedButtons = buttons.map(ButtonConfigWrapper.init)
+        try container.encode(wrappedButtons, forKey: .wrappedButtons)
     }
     
     // conform to equatable
@@ -61,58 +51,29 @@ struct LayoutConfig: ConfigType {
             return false
         }
         
-        if lhs.landscapeButtons.count != rhs.landscapeButtons.count {
-            return false
-        } else if lhs.portraitButtons.count != rhs.portraitButtons.count {
+        if lhs.buttons.count != rhs.buttons.count {
             return false
         }
         
-        // check landscape
-        for i in 0..<lhs.landscapeButtons.count {
-            if let lhsBtn = lhs.landscapeButtons[i] as? RegularButtonConfig, let rhsBtn = rhs.landscapeButtons[i] as? RegularButtonConfig {
+        // check buttons
+        for i in 0..<lhs.buttons.count {
+            if let lhsBtn = lhs.buttons[i] as? RegularButtonConfig, let rhsBtn = rhs.buttons[i] as? RegularButtonConfig {
                 if lhsBtn != rhsBtn {
                     return false
                 }
-            } else if let lhsBtn = lhs.landscapeButtons[i] as? DPadConfig, let rhsBtn = rhs.landscapeButtons[i] as? DPadConfig {
+            } else if let lhsBtn = lhs.buttons[i] as? DPadConfig, let rhsBtn = rhs.buttons[i] as? DPadConfig {
                 if lhsBtn != rhsBtn {
                     return false
                 }
-            } else if let lhsBtn = lhs.landscapeButtons[i] as? JoystickConfig, let rhsBtn = rhs.landscapeButtons[i] as? JoystickConfig {
+            } else if let lhsBtn = lhs.buttons[i] as? JoystickConfig, let rhsBtn = rhs.buttons[i] as? JoystickConfig {
                 if lhsBtn != rhsBtn {
                     return false
                 }
-            } else if let lhsBtn = lhs.landscapeButtons[i] as? BumperConfig, let rhsBtn = rhs.landscapeButtons[i] as? BumperConfig {
+            } else if let lhsBtn = lhs.buttons[i] as? BumperConfig, let rhsBtn = rhs.buttons[i] as? BumperConfig {
                 if lhsBtn != rhsBtn {
                     return false
                 }
-            } else if let lhsBtn = lhs.landscapeButtons[i] as? TriggerConfig, let rhsBtn = rhs.landscapeButtons[i] as? TriggerConfig {
-                if lhsBtn != rhsBtn {
-                    return false
-                }
-            } else {
-                return false
-            }
-        }
-        
-        // check portrait
-        for i in 0..<lhs.portraitButtons.count {
-            if let lhsBtn = lhs.portraitButtons[i] as? RegularButtonConfig, let rhsBtn = rhs.portraitButtons[i] as? RegularButtonConfig {
-                if lhsBtn != rhsBtn {
-                    return false
-                }
-            } else if let lhsBtn = lhs.portraitButtons[i] as? DPadConfig, let rhsBtn = rhs.portraitButtons[i] as? DPadConfig {
-                if lhsBtn != rhsBtn {
-                    return false
-                }
-            } else if let lhsBtn = lhs.portraitButtons[i] as? JoystickConfig, let rhsBtn = rhs.portraitButtons[i] as? JoystickConfig {
-                if lhsBtn != rhsBtn {
-                    return false
-                }
-            } else if let lhsBtn = lhs.portraitButtons[i] as? BumperConfig, let rhsBtn = rhs.portraitButtons[i] as? BumperConfig {
-                if lhsBtn != rhsBtn {
-                    return false
-                }
-            } else if let lhsBtn = lhs.portraitButtons[i] as? TriggerConfig, let rhsBtn = rhs.portraitButtons[i] as? TriggerConfig {
+            } else if let lhsBtn = lhs.buttons[i] as? TriggerConfig, let rhsBtn = rhs.buttons[i] as? TriggerConfig {
                 if lhsBtn != rhsBtn {
                     return false
                 }

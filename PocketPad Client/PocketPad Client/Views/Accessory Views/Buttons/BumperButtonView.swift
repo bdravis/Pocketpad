@@ -57,7 +57,7 @@ struct BumperButtonView: View {
     }
 }
 
-
-#Preview {
-    ControllerView(layout: .init(name: "Bumper Debug", landscapeButtons: [BumperConfig(position: CGPoint(x: 100, y: 200), scale: 2, inputId: 4, input: "LB")], portraitButtons: [BumperConfig(position: CGPoint(x: 100, y: 200), scale: 2, inputId: 4, input: "LB")]))
-}
+//
+//#Preview {
+//    ControllerView(layout: .init(name: "Bumper Debug", landscapeButtons: [BumperConfig(position: CGPoint(x: 100, y: 200), scale: 2, inputId: 4, input: "LB")], portraitButtons: [BumperConfig(position: CGPoint(x: 100, y: 200), scale: 2, inputId: 4, input: "LB")]))
+//}

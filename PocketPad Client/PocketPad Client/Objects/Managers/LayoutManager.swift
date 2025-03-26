@@ -15,7 +15,7 @@ class LayoutManager {
     var availableLayouts: [String] = []
     
     // Current Layout Information
-    var currentController: LayoutConfig = .init(name: "DEBUG", landscapeButtons: [], portraitButtons: [])
+    var currentController: LayoutConfig = .init(name: "DEBUG", buttons: [])
     var hasDPad: Bool = false
     
     func getLayoutsFolder() -> URL {
@@ -103,9 +103,7 @@ class LayoutManager {
             self.currentController = try loadLayout(for: "\(name).plist")
         }
         // check if it has a d-pad
-        if currentController.landscapeButtons.enumerated().filter({ $0.element.type == ButtonType.dpad }).count > 0 {
-            self.hasDPad = true
-        } else if currentController.portraitButtons.enumerated().filter({ $0.element.type == ButtonType.dpad }).count > 0 {
+        if currentController.buttons.enumerated().filter({ $0.element.type == ButtonType.dpad }).count > 0 {
             self.hasDPad = true
         } else {
             self.hasDPad = false

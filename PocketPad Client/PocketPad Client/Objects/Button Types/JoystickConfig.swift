@@ -9,8 +9,9 @@ import UIKit
 
 struct JoystickConfig: ButtonConfig, ConfigType {
     // Protocol Properties
-    var position: CGPoint
+    var position: ButtonPosition
     var scale: CGFloat
+    var rotation: Double
     var type: ButtonType
     var inputId: UInt8
     
@@ -20,13 +21,14 @@ struct JoystickConfig: ButtonConfig, ConfigType {
     
     // Object Initializer
     init(
-        position: CGPoint, scale: CGFloat, inputId: UInt8,
+        position: ButtonPosition, scale: CGFloat, rotation: Double = 0.0, inputId: UInt8,
         input: String, sensitivity: Double = 0.0, deadzone: Double = 0.0
     ) {
         self.type = .joystick
         
         self.position = position
         self.scale = scale
+        self.rotation = rotation
         
         self.inputId = inputId
         
