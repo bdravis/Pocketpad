@@ -26,6 +26,9 @@ struct SettingsMenuView: View {
     @State private var saveAsMalformed: Bool = false
     @State private var availableControllers: [String] = [] // TODO: Change this to a VM later
     
+    @State private var makingNewLayout: Bool = false
+    @State private var newLayoutName: String = ""
+    
     // MARK: - Body
     var body: some View {
         GeometryReader { geometry in
@@ -96,10 +99,10 @@ struct SettingsMenuView: View {
         VStack(alignment: .leading, spacing: 14) {
             // Controller Type Picker
             HStack {
-                Text("Controller Type")
+                Text("Current Layout")
                     .foregroundColor(.primary)
                 Spacer()
-                Picker("Controller Type", selection: $selectedController) {
+                Picker("Current Layout", selection: $selectedController) {
 //                    ForEach(ControllerType.allCases, id: \.self) { type in
 //                        Label(type.stringValue, image: type.stringValue).tag(type.stringValue)
 //                    }
@@ -125,6 +128,34 @@ struct SettingsMenuView: View {
                 }
             }
             .padding(.horizontal, 16)
+            Button(action: {
+                newLayoutName = ""
+                makingNewLayout.toggle()
+            }) {
+                Text("Create New Layout")
+            }
+            .padding(.horizontal, 16)
+            .alert("New Layout", isPresented: $makingNewLayout) {
+                TextField("Name", text: $newLayoutName)
+                Button("OK", action: {
+                    if newLayoutName != "" {
+                        // TODO: Make sure the name does not already exist
+                        do {
+                            let newLayout: LayoutConfig = .init(name: newLayoutName, buttons: [])
+                            try LayoutManager.shared.saveLayout(newLayout)
+                            try LayoutManager.shared.setCurrentLayout(to: newLayoutName)
+                            selectedController = newLayoutName
+                            showDPadStyle = false
+                        } catch {
+                            // TODO: Add error message
+                            print(error.localizedDescription)
+                        }
+                    }
+                })
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text("What will the name of the layout be?")
+            }
             //Picker for D-PAD (Split (True) vs Conjoined (False))
             if showDPadStyle {
                 HStack {
