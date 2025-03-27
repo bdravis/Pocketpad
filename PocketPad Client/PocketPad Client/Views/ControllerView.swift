@@ -36,6 +36,10 @@ struct ControllerView: View {
     @State private var orientation = UIDeviceOrientation.unknown
     @State var layout: LayoutConfig
     
+    let isEditor: Bool
+    
+    @State private var showAddPopup: Bool = false
+    
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .topLeading) {
@@ -73,19 +77,20 @@ struct ControllerView: View {
                             x: btn.position.offset.x.wrappedValue,
                             y: btn.position.offset.y.wrappedValue
                         )
-#if DEBUG
-                        ButtonInfoView(config: btn.wrappedValue)
-                            .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE)
-                            .scaleEffect(btn.scale.wrappedValue)
-                            .position(
-                                x: btn.position.scaledPos.x.wrappedValue * geometry.size.width,
-                                y: btn.position.scaledPos.y.wrappedValue * geometry.size.height
-                            )
-                            .offset(
-                                x: btn.position.offset.x.wrappedValue,
-                                y: btn.position.offset.y.wrappedValue
-                            )
-#endif
+                        .disabled(isEditor)
+                        if isEditor {
+                            ButtonInfoView(config: btn.wrappedValue)
+                                .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE)
+                                .scaleEffect(btn.scale.wrappedValue)
+                                .position(
+                                    x: btn.position.scaledPos.x.wrappedValue * geometry.size.width,
+                                    y: btn.position.scaledPos.y.wrappedValue * geometry.size.height
+                                )
+                                .offset(
+                                    x: btn.position.offset.x.wrappedValue,
+                                    y: btn.position.offset.y.wrappedValue
+                                )
+                        }
                     }
                 }
             }
@@ -95,6 +100,31 @@ struct ControllerView: View {
             .onAppear {
                 orientation = UIDevice.current.orientation
             }
+            .onDisappear {
+                // save controller
+                if isEditor {
+                    do {
+                        try LayoutManager.shared.saveLayout(layout)
+                    } catch {
+                        print(error.localizedDescription)
+                        // TODO: Add error message
+                    }
+                }
+            }
+            .toolbar {
+                if isEditor {
+                    ToolbarItem(placement: .topBarTrailing, content: {
+                        Button(action: {
+                            showAddPopup.toggle()
+                        }) {
+                            Image(systemName: "plus")
+                        }
+                    })
+                }
+            }
+            .sheet(isPresented: $showAddPopup) {
+                AddButtonView(layout: $layout)
+            }
         }
         .navigationTitle("Controller")
         .navigationBarTitleDisplayMode(.inline)
@@ -102,5 +132,5 @@ struct ControllerView: View {
 }
 //
 #Preview {
-    ControllerView(layout: .init(name: "Debug", buttons: DEBUG_BUTTONS))
+    ControllerView(layout: .init(name: "Debug", buttons: DEBUG_BUTTONS), isEditor: false)
 }

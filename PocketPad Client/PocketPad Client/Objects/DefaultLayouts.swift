@@ -175,5 +175,5 @@ class DefaultLayouts {
 }
 
 #Preview {
-    ControllerView(layout: DefaultLayouts.getLayout(for: .Xbox))
+    ControllerView(layout: DefaultLayouts.getLayout(for: .Xbox), isEditor: false)
 }

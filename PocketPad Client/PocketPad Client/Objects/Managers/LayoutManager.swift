@@ -37,6 +37,15 @@ class LayoutManager {
         let url = getLayoutsFolder().appendingPathComponent("\(layout.name).plist", conformingTo: .propertyList)
         try data.write(to: url)
         print("written to \(url.absoluteString)")
+        // update the current layout if needed
+        if currentController.name == layout.name {
+            currentController = layout
+            if currentController.buttons.enumerated().filter({ $0.element.type == ButtonType.dpad }).count > 0 {
+                self.hasDPad = true
+            } else {
+                self.hasDPad = false
+            }
+        }
     }
     
     func saveMalformedLayout(_ layout: LayoutConfig) throws {

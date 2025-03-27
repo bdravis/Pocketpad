@@ -11,7 +11,7 @@ import UIKit
 let DEFAULT_BUTTON_SIZE: CGFloat = 50.0
 
 // Enum for the type of button it is
-enum ButtonType: UInt8, ConfigType {
+enum ButtonType: UInt8, ConfigType, CaseIterable {
     case regular = 0
     case joystick = 1
     case dpad = 2

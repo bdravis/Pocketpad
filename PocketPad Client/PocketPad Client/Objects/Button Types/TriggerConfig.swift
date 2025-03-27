@@ -7,10 +7,10 @@
 
 import UIKit
 
-enum TriggerSide: UInt8, ConfigType {
-    case right = 0
-    case left = 1
-    case middle = 2
+enum TriggerSide: UInt8, ConfigType, CaseIterable {
+    case left = 0
+    case middle = 1
+    case right = 2
 }
 
 struct TriggerConfig: ButtonConfig, ConfigType {
