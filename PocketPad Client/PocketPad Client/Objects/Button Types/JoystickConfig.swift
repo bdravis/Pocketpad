@@ -15,14 +15,14 @@ struct JoystickConfig: ButtonConfig, ConfigType {
     var type: ButtonType
     var inputId: UInt8
     
-    var input: String // which joystick button it will correlate to
+    var input: ButtonInput // which joystick button it will correlate to
     var sensitivity: Double // the sensitivity of the controller
     var deadzone: Double // how far it needs to move before it starts accepting inputs
     
     // Object Initializer
     init(
         position: ButtonPosition, scale: CGFloat, rotation: Double = 0.0, inputId: UInt8,
-        input: String, sensitivity: Double = 0.0, deadzone: Double = 0.0
+        input: ButtonInput, sensitivity: Double = 0.0, deadzone: Double = 0.0
     ) {
         self.type = .joystick
         

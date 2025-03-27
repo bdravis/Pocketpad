@@ -15,14 +15,14 @@ struct BumperConfig: ButtonConfig, ConfigType {
     var type: ButtonType
     var inputId: UInt8
     
-    var input: String // the button it is bound to
+    var input: ButtonInput // the button it is bound to
     var style: RegularButtonStyle // style configuration of the button
     var turbo: Bool // whether or not it is a turbo tap
     
     // Object Initializer
     init(
         position: ButtonPosition, scale: CGFloat, rotation: Double = 0.0, inputId: UInt8,
-        input: String, style: RegularButtonStyle? = nil, turbo: Bool = false
+        input: ButtonInput, style: RegularButtonStyle? = nil, turbo: Bool = false
     ) {
         self.type = .bumper
         
@@ -39,7 +39,7 @@ struct BumperConfig: ButtonConfig, ConfigType {
             self.style = style
         } else {
             // create a default style configuration
-            self.style = .init(shape: .Pill, iconType: .Text, icon: input)
+            self.style = .init(shape: .Pill, iconType: .Text, icon: input.rawValue)
         }
     }
 }

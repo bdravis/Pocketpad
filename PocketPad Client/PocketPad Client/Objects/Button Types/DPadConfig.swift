@@ -23,12 +23,12 @@ struct DPadConfig: ButtonConfig, ConfigType {
     var type: ButtonType
     var inputId: UInt8
     
-    var inputs: [DPadDirection: String] // what the buttons of the dpad are
+    var inputs: [DPadDirection: ButtonInput] // what the buttons of the dpad are
     
     // Object Initializer
     init(
         position: ButtonPosition, scale: CGFloat, rotation: Double = 0.0, inputId: UInt8,
-        inputs: [DPadDirection: String]
+        inputs: [DPadDirection: ButtonInput]
     ) {
         self.type = .dpad
         
