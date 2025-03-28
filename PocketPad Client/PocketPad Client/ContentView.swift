@@ -103,7 +103,7 @@ struct ContentView: View {
                     
                     // NavigationLink to ControllerView for Debugging
                     HStack {
-                        NavigationLink(destination: ControllerView(layout: LayoutManager.shared.currentController, isEditor: false)) {
+                        NavigationLink(destination: ControllerView(isEditor: false)) {
                             Text("Open Debug ControllerView")
                         }
                         .accessibilityIdentifier("OpenControllerView")
@@ -111,7 +111,7 @@ struct ContentView: View {
                     .padding(.horizontal)
                     
                     // TODO: Move to settings page (was greyed out so had to add here)
-                    NavigationLink(destination: ControllerView(layout: LayoutManager.shared.currentController, isEditor: true), label: {
+                    NavigationLink(destination: ControllerView(isEditor: true), label: {
                         Text("Modify Layout")
                     })
                     

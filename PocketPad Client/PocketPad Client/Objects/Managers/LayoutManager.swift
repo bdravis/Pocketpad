@@ -5,18 +5,18 @@
 //  Created by lemin on 3/4/25.
 //
 
-import Foundation
+import SwiftUI
 
-class LayoutManager {
+class LayoutManager: ObservableObject {
     static let shared = LayoutManager() // create a data singleton
     
     var player_id: UInt8 = 0
     
-    var availableLayouts: [String] = []
+    @Published var availableLayouts: [String] = []
     
     // Current Layout Information
-    var currentController: LayoutConfig = .init(name: "DEBUG", buttons: [])
-    var hasDPad: Bool = false
+    @Published var currentController: LayoutConfig = .init(name: "DEBUG", buttons: [])
+    @Published var hasDPad: Bool = false
     
     func getLayoutsFolder() -> URL {
         // get a url for the layouts directory in the app's save files
@@ -46,6 +46,10 @@ class LayoutManager {
                 self.hasDPad = false
             }
         }
+    }
+    
+    func saveCurrentLayout() throws {
+        try saveLayout(self.currentController)
     }
     
     func saveMalformedLayout(_ layout: LayoutConfig) throws {

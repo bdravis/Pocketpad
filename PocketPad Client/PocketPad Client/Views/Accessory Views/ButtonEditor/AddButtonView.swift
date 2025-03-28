@@ -10,7 +10,7 @@ import SwiftUI
 struct AddButtonView: View {
     @Environment(\.dismiss) var dismiss
     
-    @Binding var layout: LayoutConfig
+    @ObservedObject private var layoutManager = LayoutManager.shared
     @State var buttonType: ButtonType = .regular
     @State var buttonInput: ButtonInput = .A
     @State var triggerSide: TriggerSide = .left
@@ -63,18 +63,18 @@ struct AddButtonView: View {
             }
             // MARK: Add/Cancel Buttons
             Button(action: {
-                let inputId: UInt8 = 0 // TODO: Get a new input id
+                let inputId: UInt8 = UInt8(layoutManager.currentController.buttons.count)
                 switch buttonType {
                 case .regular:
-                    layout.buttons.append(RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.5)), scale: 1.0, inputId: inputId, input: buttonInput))
+                    layoutManager.currentController.buttons.append(RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.5)), scale: 1.0, inputId: inputId, input: buttonInput))
                 case .joystick:
-                    layout.buttons.append(JoystickConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.5)), scale: 1.0, inputId: inputId, input: buttonInput))
+                    layoutManager.currentController.buttons.append(JoystickConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.5)), scale: 1.0, inputId: inputId, input: buttonInput))
                 case .dpad:
-                    layout.buttons.append(DPadConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.5)), scale: 1.0, inputId: inputId, inputs: [.up: .DPadUp, .right: .DPadRight, .down: .DPadDown, .left: .DPadLeft]))
+                    layoutManager.currentController.buttons.append(DPadConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.5)), scale: 1.0, inputId: inputId, inputs: [.up: .DPadUp, .right: .DPadRight, .down: .DPadDown, .left: .DPadLeft]))
                 case .bumper:
-                    layout.buttons.append(BumperConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.5)), scale: 1.0, inputId: inputId, input: buttonInput))
+                    layoutManager.currentController.buttons.append(BumperConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.5)), scale: 1.0, inputId: inputId, input: buttonInput))
                 case .trigger:
-                    layout.buttons.append(TriggerConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.5)), scale: 1.0, inputId: inputId, input: buttonInput, side: triggerSide))
+                    layoutManager.currentController.buttons.append(TriggerConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.5)), scale: 1.0, inputId: inputId, input: buttonInput, side: triggerSide))
                 }
                 dismiss()
             }) {

@@ -34,62 +34,79 @@ let DEBUG_BUTTONS: [ButtonConfig] = [ // Example buttons
 struct ControllerView: View {
     // TODO: Make a View Model with the buttons
     @State private var orientation = UIDeviceOrientation.unknown
-    @State var layout: LayoutConfig
+    @ObservedObject private var layoutManager = LayoutManager.shared
     
     let isEditor: Bool
     
     @State private var showAddPopup: Bool = false
+    @State private var selectedBtn: UInt8? = nil
+    @State private var btnEditViewPos: CGFloat = 1.0
     
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .topLeading) {
-                ForEach($layout.buttons, id: \.wrappedValue.id) { btn in
+                ForEach(Array(layoutManager.currentController.buttons.enumerated()), id: \.element.id) { idx, btn in
                     ZStack {
                         Group {
-                            switch btn.wrappedValue.type {
+                            switch btn.type {
                                 case .regular:
-                                    RegularButtonView(config: btn.wrappedValue as! RegularButtonConfig)
+                                    RegularButtonView(config: btn as! RegularButtonConfig)
                                         .accessibilityAddTraits(.isButton)
                                         .accessibilityIdentifier("ControllerButton")
                                 case .joystick:
-                                    JoystickButtonView(config: btn.wrappedValue as! JoystickConfig)
+                                    JoystickButtonView(config: btn as! JoystickConfig)
                                         .accessibilityAddTraits(.isButton)
                                         .accessibilityIdentifier("ControllerButton")
                                 case .dpad:
-                                    DPadButtonView(config: btn.wrappedValue as! DPadConfig)
+                                    DPadButtonView(config: btn as! DPadConfig)
                                 case .bumper:
-                                    BumperButtonView(config: btn.wrappedValue as! BumperConfig)
+                                    BumperButtonView(config: btn as! BumperConfig)
                                         .accessibilityAddTraits(.isButton)
                                         .accessibilityIdentifier("ControllerButton")
                                 case .trigger:
-                                    TriggerButtonView(config: btn.wrappedValue as! TriggerConfig)
+                                    TriggerButtonView(config: btn as! TriggerConfig)
                                         .accessibilityAddTraits(.isButton)
                                         .accessibilityIdentifier("ControllerButton")
                             }
                         }
-                        .scaleEffect(btn.scale.wrappedValue)
+                        .scaleEffect(btn.scale)
                         .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE)
                         .position(
-                            x: btn.position.scaledPos.x.wrappedValue * geometry.size.width,
-                            y: btn.position.scaledPos.y.wrappedValue * geometry.size.height
+                            x: btn.position.scaledPos.x * geometry.size.width,
+                            y: btn.position.scaledPos.y * geometry.size.height
                         )
                         .offset(
-                            x: btn.position.offset.x.wrappedValue,
-                            y: btn.position.offset.y.wrappedValue
+                            x: btn.position.offset.x,
+                            y: btn.position.offset.y
                         )
+                        .rotationEffect(.degrees(btn.rotation))
                         .disabled(isEditor)
-                        if isEditor {
-                            ButtonInfoView(config: btn.wrappedValue)
+                        if isEditor && selectedBtn == btn.inputId {
+                            ButtonInfoView(config: btn)
                                 .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE)
-                                .scaleEffect(btn.scale.wrappedValue)
+                                .scaleEffect(btn.scale)
                                 .position(
-                                    x: btn.position.scaledPos.x.wrappedValue * geometry.size.width,
-                                    y: btn.position.scaledPos.y.wrappedValue * geometry.size.height
+                                    x: btn.position.scaledPos.x * geometry.size.width,
+                                    y: btn.position.scaledPos.y * geometry.size.height
                                 )
                                 .offset(
-                                    x: btn.position.offset.x.wrappedValue,
-                                    y: btn.position.offset.y.wrappedValue
+                                    x: btn.position.offset.x,
+                                    y: btn.position.offset.y
                                 )
+                        }
+                    }
+                    .onTapGesture {
+                        if selectedBtn == btn.inputId {
+                            selectedBtn = nil
+                        } else {
+                            selectedBtn = btn.inputId
+                        }
+                    }
+                    .overlay {
+                        if selectedBtn == btn.inputId {
+                            EditButtonView(buttonId: idx)
+                                .frame(maxHeight: geometry.size.height * 0.3)
+                                .position(x: 0.5 * geometry.size.width, y: (btnEditViewPos * geometry.size.height) - (geometry.size.height * 0.15))
                         }
                     }
                 }
@@ -104,7 +121,7 @@ struct ControllerView: View {
                 // save controller
                 if isEditor {
                     do {
-                        try LayoutManager.shared.saveLayout(layout)
+                        try LayoutManager.shared.saveCurrentLayout()
                     } catch {
                         print(error.localizedDescription)
                         // TODO: Add error message
@@ -123,7 +140,7 @@ struct ControllerView: View {
                 }
             }
             .sheet(isPresented: $showAddPopup) {
-                AddButtonView(layout: $layout)
+                AddButtonView()
             }
         }
         .navigationTitle("Controller")
@@ -131,6 +148,6 @@ struct ControllerView: View {
     }
 }
 //
-#Preview {
-    ControllerView(layout: .init(name: "Debug", buttons: DEBUG_BUTTONS), isEditor: false)
-}
+//#Preview {
+//    ControllerView(layout: .init(name: "Debug", buttons: DEBUG_BUTTONS), isEditor: false)
+//}

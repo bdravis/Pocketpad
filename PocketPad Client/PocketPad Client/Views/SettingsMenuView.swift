@@ -16,16 +16,14 @@ private let maxHeightFraction: CGFloat = 0.9
 struct SettingsMenuView: View {
     // MARK: - Bound Properties
     @Binding var isShowingSettings: Bool
+    @ObservedObject private var layoutManager = LayoutManager.shared
     
     @AppStorage("splitDPad") var splitDPad: Bool = false
     @AppStorage("selectedController") var selectedController: String = ControllerType.Xbox.stringValue
     @AppStorage("controllerColor") var controllerColor: Color = .blue
     @AppStorage("controllerName") var controllerName: String = "Controller"
     
-    @State private var showDPadStyle: Bool = false
     @State private var saveAsMalformed: Bool = false
-    @State private var availableControllers: [String] = [] // TODO: Change this to a VM later
-    
     @State private var makingNewLayout: Bool = false
     @State private var newLayoutName: String = ""
     
@@ -106,7 +104,7 @@ struct SettingsMenuView: View {
 //                    ForEach(ControllerType.allCases, id: \.self) { type in
 //                        Label(type.stringValue, image: type.stringValue).tag(type.stringValue)
 //                    }
-                    ForEach(availableControllers, id: \.self) { layout in
+                    ForEach(layoutManager.availableLayouts, id: \.self) { layout in
                         Label(layout, image: layout.lowercased()).tag(layout)
                     }
                 }
@@ -116,15 +114,10 @@ struct SettingsMenuView: View {
                     // update the controller layout
                     do {
                         try LayoutManager.shared.setCurrentLayout(to: selectedController)
-                        showDPadStyle = LayoutManager.shared.hasDPad
                     } catch {
                         UIApplication.shared.alert(title: "Failed to load layout", body: error.localizedDescription)
                         selectedController = ControllerType.Xbox.stringValue
                     }
-                }
-                .onAppear {
-                    showDPadStyle = LayoutManager.shared.hasDPad
-                    availableControllers = LayoutManager.shared.availableLayouts
                 }
             }
             .padding(.horizontal, 16)
@@ -145,7 +138,6 @@ struct SettingsMenuView: View {
                             try LayoutManager.shared.saveLayout(newLayout)
                             try LayoutManager.shared.setCurrentLayout(to: newLayoutName)
                             selectedController = newLayoutName
-                            showDPadStyle = false
                         } catch {
                             // TODO: Add error message
                             print(error.localizedDescription)
@@ -157,7 +149,7 @@ struct SettingsMenuView: View {
                 Text("What will the name of the layout be?")
             }
             //Picker for D-PAD (Split (True) vs Conjoined (False))
-            if showDPadStyle {
+            if layoutManager.hasDPad {
                 HStack {
                     Text("DPad Style")
                         .foregroundColor(.primary)
@@ -222,7 +214,6 @@ struct SettingsMenuView: View {
                         try LayoutManager.shared.deleteAllLayouts()
                         try LayoutManager.shared.loadLayouts(includeControllerTypes: true)
                         selectedController = ControllerType.Xbox.stringValue
-                        availableControllers = LayoutManager.shared.availableLayouts
                     } catch {
                         UIApplication.shared.alert(body: error.localizedDescription)
                     }
@@ -250,7 +241,6 @@ struct SettingsMenuView: View {
                 try LayoutManager.shared.saveLayout(layout)
             }
             try LayoutManager.shared.loadLayouts(includeControllerTypes: true)
-            availableControllers = LayoutManager.shared.availableLayouts
             UIApplication.shared.alert(title: "Layout Successfully Saved", body: "It can be found in the \"Controller Type\" menu.")
         } catch {
             UIApplication.shared.alert(body: "Failed to save the layout:\n\(error.localizedDescription)")
