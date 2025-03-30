@@ -139,6 +139,8 @@ struct SettingsMenuView: View {
                     do {
                         try LayoutManager.shared.setCurrentLayout(to: selectedController)
                         showDPadStyle = LayoutManager.shared.hasDPad
+                        leftJoystickDeadzone = LayoutManager.shared.getLeftJoystickDeadzone()
+                        rightJoystickDeadzone = LayoutManager.shared.getRightJoystickDeadzone()
                     } catch {
                         UIApplication.shared.alert(title: "Failed to load layout", body: error.localizedDescription)
                         selectedController = ControllerType.Xbox.stringValue

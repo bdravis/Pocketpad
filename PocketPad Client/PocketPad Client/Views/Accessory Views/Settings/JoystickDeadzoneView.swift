@@ -105,7 +105,7 @@ struct JoystickDeadzoneView: View {
                 
                 // Inner circle (joystick deadzone)
                 Circle()
-                    .fill(Color.blue.opacity(0.4))
+                    .fill(Color.blue.opacity(0.5))
                     .frame(width: circleSize * deadzoneValue, height: circleSize * deadzoneValue)
                 
                 // Point for center
