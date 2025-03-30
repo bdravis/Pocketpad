@@ -6,46 +6,54 @@
 //
 
 import Foundation
-import CoreMotion // framework to acces motion data
-import Combine // we needed to automaticcly update swifdt ui views
+import CoreMotion      // Framework to access motion data
+import Combine         // Needed to automatically update SwiftUI views
 
 class MotionManager: ObservableObject {
     private let motionManager = CMMotionManager()
 
-    @Published var pitch: Double = 0.0 // pitch will automatically refresh any swiftuo view observing motion manager
-
+    @Published var pitch: Double = 0.0   // Pitch will automatically refresh any SwiftUI view observing this manager
     @Published var roll: Double = 0.0
     @Published var yaw: Double = 0.0
 
     func startUpdates() {
-        guard motionManager.isDeviceMotionAvailable else { //check if device can do motion control
+        // Check if the device supports motion control
+        guard motionManager.isDeviceMotionAvailable else {
             print("Device motion is not available on this device.")
             return
         }
         
-  
-        motionManager.deviceMotionUpdateInterval = 1.0 / 60.0 //get updates 60 times per second
+        // Set the update interval to 60 times per second
+        motionManager.deviceMotionUpdateInterval = 1.0 / 60.0
         
- 
-        motionManager.startDeviceMotionUpdates(to: .main) { [weak self] motionData, error in //tells the motion manager to start sending updates to a closure on the main thread
- 
-        if let error = error {
-            print("Motion update error: \(error)")
-            return
-        }
+        // Start device motion updates on the main thread
+        motionManager.startDeviceMotionUpdates(to: .main) { [weak self] motionData, error in
+            if let error = error {
+                print("Motion update error: \(error)")
+                return
+            }
             
-
-        if let data = motionData { // If motion data is successfully received, we parse it
-            //gets device’s pitch, roll, and yaw, this automatically updates SwiftUI views due to @Published
-            let pitchVal = data.attitude.pitch
-            let rollVal  = data.attitude.roll
-            let yawVal   = data.attitude.yaw
-            self?.pitch = pitchVal
-            self?.roll  = rollVal
-            self?.yaw   = yawVal
-            // Print values to the console
-            print(String(format: "Motion updated → Pitch: %.2f, Roll: %.2f, Yaw: %.2f",
-                         pitchVal, rollVal, yawVal))
+            if let data = motionData {  // Parse motion data if received successfully
+                let pitchVal = data.attitude.pitch
+                let rollVal  = data.attitude.roll
+                let yawVal   = data.attitude.yaw
+                
+                // Update published properties (automatically updates SwiftUI views)
+                self?.pitch = pitchVal
+                self?.roll  = rollVal
+                self?.yaw   = yawVal
+                
+                // Print the motion data for debugging
+                print(String(format: "Motion updated → Pitch: %.2f, Roll: %.2f, Yaw: %.2f",
+                             pitchVal, rollVal, yawVal))
+                
+                // Send the motion data to the server
+                BluetoothManager.shared.sendMotionData(
+                    playerId: LayoutManager.shared.player_id,
+                    pitch: Float(pitchVal),
+                    roll:  Float(rollVal),
+                    yaw:   Float(yawVal)
+                )
             }
         }
     }
