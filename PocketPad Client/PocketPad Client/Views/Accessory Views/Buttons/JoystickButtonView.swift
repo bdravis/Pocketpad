@@ -40,15 +40,17 @@ struct JoystickButtonView: View {
                     print("Joystick moved distance: \(clampedDistance)")
 #endif
                 
-                if (clampedDistance >= deadzoneRadius) {
-                    offset = CGSize(
-                        width: cos(angle) * clampedDistance,
-                        height: sin(angle) * clampedDistance
-                    )
-                    
+                offset = CGSize(
+                    width: cos(angle) * clampedDistance,
+                    height: sin(angle) * clampedDistance
+                )
+                
 #if DEBUG
-                    print("Joystick moved: \(offset)") // Debugging output
+                print("Joystick moved: \(offset)") // Debugging output
+                print("deadzone value is \(config.deadzone)")
 #endif
+                
+                if (clampedDistance >= deadzoneRadius) {
                     
                     if let service = bluetoothManager.selectedService {
                         let ui8_playerId: UInt8 = LayoutManager.shared.player_id
@@ -74,8 +76,6 @@ struct JoystickButtonView: View {
                         let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event, ui8_angle, ui8_magnitude])
                         bluetoothManager.sendInput(data)
                     }
-                } else {
-                    offset = .zero
                 }
             }
             .onEnded { _ in
@@ -104,6 +104,11 @@ struct JoystickButtonView: View {
                 .fill(Color(uiColor: .secondarySystemFill))
                 .strokeBorder(Color(uiColor: .secondaryLabel), lineWidth: 3)
                 .contentShape(Rectangle())
+            
+            // Circle indicating deadzone
+            Circle()
+                .fill(Color(uiColor: .gray).opacity(0.5))
+                .frame(width: 2 * deadzoneRadius, height: 2 * deadzoneRadius)
 
             Circle()
                 .foregroundStyle(Color(uiColor: .darkGray))

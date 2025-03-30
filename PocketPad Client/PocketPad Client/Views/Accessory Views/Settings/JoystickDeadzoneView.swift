@@ -56,6 +56,13 @@ struct JoystickDeadzoneView: View {
                 .frame(width: menuWidth, height: menuHeight)
                 
             }
+            .onChange(of: deadzoneValue) { newValue in
+                if joystickName == "Left Joystick" {
+                    LayoutManager.shared.updateLeftJoystickDeadzone(newValue)
+                } else if joystickName == "Right Joystick" {
+                    LayoutManager.shared.updateRightJoystickDeadzone(newValue)
+                }
+            }
             // Center the menu on the screen
             .position(
                 x: geometry.size.width / 2,
@@ -137,6 +144,8 @@ struct JoystickDeadzoneView: View {
         }
         .padding(.vertical, 20)
     }
+    
+    
 }
 
 #Preview {

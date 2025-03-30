@@ -111,4 +111,45 @@ class LayoutManager {
             self.hasDPad = false
         }
     }
+    
+    
+    // Helper functions for accessing and updating left and right joystick deadzone values
+    // MARK: Update from landscapeButtons to buttons to reflect new LayoutConfig struct
+    func getLeftJoystickDeadzone() -> Double {
+        return (currentController.landscapeButtons.first(where: {
+            ($0 as? JoystickConfig)?.input == "LeftJoystick"
+        }) as? JoystickConfig)?.deadzone ?? 0.0
+    }
+    
+    func getRightJoystickDeadzone() -> Double {
+        return (currentController.landscapeButtons.first(where: {
+            ($0 as? JoystickConfig)?.input == "LeftJoystick"
+        }) as? JoystickConfig)?.deadzone ?? 0.0
+    }
+    
+    func updateLeftJoystickDeadzone(_ newDeadzone: Double) {
+        for i in 0..<currentController.landscapeButtons.count {
+            // find joystick
+            if var joystickButton = currentController.landscapeButtons[i] as? JoystickConfig {
+                if (joystickButton.input == "LeftJoystick") {
+                    // update deadzone
+                    joystickButton.deadzone = newDeadzone
+                    currentController.landscapeButtons[i] = joystickButton
+                }
+            }
+        }
+    }
+    
+    func updateRightJoystickDeadzone(_ newDeadzone: Double) {
+        for i in 0..<currentController.landscapeButtons.count {
+            // find joystick
+            if var joystickButton = currentController.landscapeButtons[i] as? JoystickConfig {
+                if (joystickButton.input == "RightJoystick") {
+                    // update deadzone
+                    joystickButton.deadzone = newDeadzone
+                    currentController.landscapeButtons[i] = joystickButton
+                }
+            }
+        }
+    }
 }

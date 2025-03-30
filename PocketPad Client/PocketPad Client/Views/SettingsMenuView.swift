@@ -22,8 +22,6 @@ struct SettingsMenuView: View {
     @AppStorage("selectedController") var selectedController: String = ControllerType.Xbox.stringValue
     @AppStorage("controllerColor") var controllerColor: Color = .blue
     @AppStorage("controllerName") var controllerName: String = "Controller"
-    @AppStorage("leftJoystickDeadzone") var leftJoystickDeadzone: Double = 0.0
-    @AppStorage("rightJoystickDeadzone") var rightJoystickDeadzone: Double = 0.0
     
     
     @State private var showDPadStyle: Bool = false
@@ -32,6 +30,9 @@ struct SettingsMenuView: View {
     
     @State private var showingLeftDeadzoneView: Bool = false
     @State private var showingRightDeadzoneView: Bool = false
+    @State private var leftJoystickDeadzone: Double = LayoutManager.shared.getLeftJoystickDeadzone()
+    @State private var rightJoystickDeadzone: Double = LayoutManager.shared.getRightJoystickDeadzone()
+
     
     // MARK: - Body
     var body: some View {
