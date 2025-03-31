@@ -21,21 +21,13 @@ from PySide6.QtSvg import QSvgRenderer
 #     pyside6-uic PocketPad.ui -o ui_form.py
 from ui_form import Ui_MainWindow
 
-TYPE_MAP = {
-    "RegularButtonConfig": "regularButton",
-    "JoystickConfig": "joystick",
-    "DPadConfig": "dPad",
-    "BumperConfig": "bumper",
-    "TriggerConfig": "trigger"
-}
-
 class MainWindow(QMainWindow):
 
     latency_updated = Signal(str, int)
     connection_updated = Signal(str, str, enums.ControllerType)
     controller_updated = Signal(str, enums.ControllerType)
     controller_updated = Signal(str, enums.ControllerType)
-    input_updated = Signal(str, int) # Edit the type depending on how it is sent
+    input_updated = Signal(str, int, enums.ButtonEvent)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -66,6 +58,7 @@ class MainWindow(QMainWindow):
 
         self.player_latency = {}
         self.connected_players = []
+        self.player_color_mapping = {}
         self.player_checkbox_mapping = {}
         self.player_controller_mapping = {}
         self.player_controller_location_mapping = {}
@@ -130,7 +123,6 @@ class MainWindow(QMainWindow):
 
         # Widget and widget layout for controller mockups
         #
-        
         self.ui.controller_mockup_area.setFrameShape(QFrame.StyledPanel)
         self.controller_grid_layout = QGridLayout(self.ui.controller_mockup_area)
         self.controller_grid_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -138,19 +130,22 @@ class MainWindow(QMainWindow):
         self.ui.controller_mockup_area.setLayout(self.controller_grid_layout)
         self.ui.controller_mockup_area.setContentsMargins(10, 10, 10, 10)
         self.controller_grid_layout.setContentsMargins(10, 10, 10, 10)
-
         #
         # Widget and widget layout for controller mockups
 
         # Dev testing function calls
         #
 
-        #self.ui.bluetooth_button.clicked.connect(lambda: self.update_player_connection("disconnect", f"player {self.num_players_connected - 1}", "switch", "sample.json"))
-        self.ui.bluetooth_button.clicked.connect(lambda: self.dev_testing(f"player {self.num_players_connected - 1}", random.randint(1, 4)))
+        #self.ui.bluetooth_button.clicked.connect(lambda: self.update_player_connection("disconnect", f"player {self.num_players_connected - 3}", "switch", "sample.json"))
+        #self.ui.bluetooth_button.clicked.connect(lambda: self.dev_testing(f"player {self.num_players_connected - 1}", random.randint(1, 4)))
         self.ui.network_button.clicked.connect(lambda: self.update_player_connection("connect", f"player {self.num_players_connected}", enums.ControllerType.Playstation, "sample.json"))
         #self.ui.server_close_button.clicked.connect(lambda: self.update_latency(f"player {self.num_players_connected - 1}", random.randint(1, 200)))
-        self.ui.server_close_button.clicked.connect(lambda: self.display_controller_input(f"player {self.num_players_connected - 1}", "RightJoystick"))
-
+        
+        #self.ui.server_close_button.clicked.connect(lambda: self.display_controller_input(f"player {random.randint(0, self.num_players_connected - 1)}", random.randint(0, 14), False))
+        #self.ui.server_close_button.clicked.connect(lambda: self.display_controller_input(f"player {random.randint(0, self.num_players_connected - 1)}", random.randint(0, 14), True))
+        #self.ui.server_close_button.clicked.connect(lambda: self.display_controller_input(f"player {random.randint(0, self.num_players_connected - 1)}", random.randint(0, 14), False))
+        self.ui.server_close_button.clicked.connect(lambda: self.display_controller_input(f"player {self.num_players_connected - 1}", 4, enums.ButtonEvent.PRESSED))
+        self.ui.bluetooth_button.clicked.connect(lambda: self.display_controller_input(f"player {self.num_players_connected - 1}", 4, enums.ButtonEvent.RELEASED))
         #
         # Dev testing function calls
 
@@ -295,6 +290,21 @@ class MainWindow(QMainWindow):
 
                 player_glow_selector = QPushButton()
                 player_glow_selector.setIcon(self.get_icon_from_svg("icons/pencil.svg", self.application_font_color))
+                player_glow_selector.setStyleSheet(f"""
+                    QPushButton {{
+                        border-radius: 7px;
+                        background-color: transparent;
+                        border: none;
+                    }}
+
+                    QPushButton:hover {{
+                        background-color: {self.application_widgets_color.lighter(140).name()};
+                    }}
+
+                    QPushButton:pressed {{
+                        background-color: {self.application_widgets_color.darker(140).name()};
+                    }}
+                """)
                 player_glow_selector.setFixedSize(30, 30)
                 
                 # Horizontal layout for name + latency
@@ -311,7 +321,7 @@ class MainWindow(QMainWindow):
                 controller_layout.addLayout(text_format_layout)
 
                 # Create ControllerWidget with scalable behavior
-                controller_display = ControllerWidget("sample.json", self.application_widgets_color)
+                controller_display = ControllerWidget(controller_json_file, self.application_widgets_color)
 
                 player_glow_selector.clicked.connect(lambda: self.choose_glow_color(controller_display))
 
@@ -331,6 +341,7 @@ class MainWindow(QMainWindow):
 
                 self.player_controller_mapping[player_id] = {
                     "widget": controller_widget,
+                    "glow_button": player_glow_selector,
                     "latency_label": controller_latency,
                     "display": controller_display
                 }
@@ -527,6 +538,21 @@ class MainWindow(QMainWindow):
 
         player_glow_selector = QPushButton()
         player_glow_selector.setIcon(self.get_icon_from_svg("icons/pencil.svg", self.application_font_color))
+        player_glow_selector.setStyleSheet(f"""
+            QPushButton {{
+                border-radius: 7px;
+                background-color: transparent;
+                border: none;
+            }}
+
+            QPushButton:hover {{
+                background-color: {self.application_widgets_color.lighter(140).name()};
+            }}
+
+            QPushButton:pressed {{
+                background-color: {self.application_widgets_color.darker(140).name()};
+            }}
+        """)
         player_glow_selector.setFixedSize(30, 30)
 
         controller_latency = QLabel(f"{latency} ms")
@@ -556,23 +582,23 @@ class MainWindow(QMainWindow):
         # Update player controller mapping
         self.player_controller_mapping[player_id] = {
             "widget": new_controller_widget,
+            "glow_button": player_glow_selector,
             "latency_label": controller_latency,
             "display": new_controller_display
         }
 
     def choose_glow_color(self, controller_widget):
         color = QColorDialog.getColor()
-        if color.isValid():
-            controller_widget.update_glow_color(color)
+        if color == self.application_widgets_color :
+            widget_color_error = QMessageBox()
+            widget_color_error.setText(f"Invalid Color: please select another color so glow will show up")
+            widget_color_error.exec()
+        else :
+            controller_widget.update_glow_color(color)            
 
-    def display_controller_input(self, player_id, input):
-        print("Player id: " + player_id + "\n Input: " + str(input))
+    def display_controller_input(self, player_id, input, hold_input):
         if self.player_controller_input_display[player_id]:
-            # Implement in later sprint
-            #
-            self.player_controller_mapping[player_id]["display"].set_active_input(input)
-            #
-            # Implement in later sprint
+            self.player_controller_mapping[player_id]["display"].set_active_input(input, hold_input)
     
     def toggle_controller_input(self, checkbox, player_id):
         """
@@ -672,7 +698,22 @@ class MainWindow(QMainWindow):
 
         for player_id in self.player_controller_mapping:
             self.player_controller_mapping[player_id]["display"].update_widget_color(self.application_widgets_color)
-        
+            self.player_controller_mapping[player_id]["glow_button"].setStyleSheet(f"""
+            QPushButton {{
+                border-radius: 7px;
+                background-color: transparent;
+                border: none;
+            }}
+
+            QPushButton:hover {{
+                background-color: {self.application_widgets_color.lighter(140).name()};
+            }}
+
+            QPushButton:pressed {{
+                background-color: {self.application_widgets_color.darker(140).name()};
+            }}
+            """)
+    
         self.setStyleSheet(f"""
         QMainWindow {{
             background-color: {self.application_background_color.name()};
@@ -1184,6 +1225,7 @@ class ColorPickerPopup(QDialog):
 class ControllerWidget(QWidget):
     def __init__(self, controller_config_file, widget_color):
         super().__init__()
+                
         with open(controller_config_file, 'r') as data:
             self.layout_config = json.load(data)
         self.controller_widgets = self.layout_config.get("wrappedLandscapeButtons", [])
@@ -1196,6 +1238,7 @@ class ControllerWidget(QWidget):
         self.bbox = self.compute_bbox()
 
         self.active_input = None
+        self.input_held = {}
 
         # Cache the rendered image
         self.cached_pixmap = None
@@ -1247,12 +1290,13 @@ class ControllerWidget(QWidget):
     def update_glow_color(self, color):
         self.glow_color = color
     
-    def set_active_input(self, active_type):
+    def set_active_input(self, active_type, hold_input):
+        self.input_held[active_type] = hold_input
         self.active_input = active_type
-        print("Active Input: " + self.active_input)
         self.update_cache()
         self.update()
-        QTimer.singleShot(200, self.clear_active_input)
+        if self.input_held[active_type] == enums.ButtonEvent.RELEASED:
+            QTimer.singleShot(300, self.clear_active_input)
 
     def clear_active_input(self):
         self.active_input = None
@@ -1269,7 +1313,6 @@ class ControllerWidget(QWidget):
         if self.cached_pixmap:
             painter.drawPixmap(0, 0, self.cached_pixmap)
         else:
-            # Fallback if cache is not available
             super().paintEvent(event)
 
     def compute_bbox(self):
@@ -1279,38 +1322,52 @@ class ControllerWidget(QWidget):
         return (min(x_values) - margin, min(y_values) - margin,
                 max(x_values) + margin, max(y_values) + margin)
     
-    def draw_button(self, painter, btn, x, y):
+    def draw_button(self, painter, controller_widget, x, y):
         """Draw a button at the provided (x, y) using the given painter."""
-        disc = btn.get("discriminator", "")
-        button_type = TYPE_MAP.get(disc, "default")
-        base_size = 30  # Base size for a regular button
+        button_type = controller_widget.get("discriminator", "")
+        base_size = 30
         size = base_size
 
-        input_type = btn.get("input", "")
+        input_type = controller_widget.get("inputId", "")
 
-        glow = (input_type == self.active_input)
+        if button_type == "RegularButtonConfig":
+            if (self.active_input == input_type):
+                gradient = QRadialGradient(QPoint(x, y), size+5)
+                gradient.setColorAt(0, QColor(self.glow_color.red(), self.glow_color.green(), self.glow_color.blue(), 180))
+                gradient.setColorAt(1, QColor(self.glow_color.red(), self.glow_color.green(), self.glow_color.blue(), 0))
+                painter.setBrush(gradient)
+                painter.setPen(Qt.NoPen)
+                painter.drawEllipse(QPoint(int(x), int(y)), int(size / 2)+5, int(size / 2)+5)
 
-        if glow:
-            print("I'm glowing")
-            glow_size = size + 10
-            gradient = QRadialGradient(QPoint(x, y), glow_size)
-            gradient.setColorAt(0, QColor(self.glow_color.red(), self.glow_color.green(), self.glow_color.blue(), 180))
-            gradient.setColorAt(1, QColor(self.glow_color.red(), self.glow_color.green(), self.glow_color.blue(), 0))
-            painter.setBrush(gradient)
-            painter.setPen(Qt.NoPen)
-            painter.drawEllipse(QPoint(x, y), glow_size, glow_size)
-
-        if button_type == "regularButton":
-            painter.setPen(QPen(Qt.black, 2))
-            painter.setBrush(QColor(self.color_scheme))
-            painter.drawEllipse(QPoint(int(x), int(y)), int(size / 2), int(size / 2))
-        elif button_type == "joystick":
-            painter.setPen(QPen(Qt.black, 2))
-            painter.setBrush(QColor(self.color_scheme))
-            painter.drawEllipse(QPoint(int(x), int(y)), int(size), int(size))
-            painter.setBrush(QColor(self.color_scheme).lighter(140))
-            painter.drawEllipse(QPoint(int(x), int(y)), int(size)/2.4, int(size)/2.4)
-        elif button_type == "dPad":
+                painter.setPen(QPen(Qt.black, 2))
+                painter.setBrush(QColor(self.glow_color))
+                painter.drawEllipse(QPoint(int(x), int(y)), int(size / 2), int(size / 2))
+            else:
+                painter.setPen(QPen(Qt.black, 2))
+                painter.setBrush(QColor(self.color_scheme))
+                painter.drawEllipse(QPoint(int(x), int(y)), int(size / 2), int(size / 2))
+        elif button_type == "JoystickConfig":
+            if (self.active_input == input_type):
+                glow_size = size + 10
+                gradient = QRadialGradient(QPoint(x, y), glow_size)
+                gradient.setColorAt(0, QColor(self.glow_color.red(), self.glow_color.green(), self.glow_color.blue(), 180))
+                gradient.setColorAt(1, QColor(self.glow_color.red(), self.glow_color.green(), self.glow_color.blue(), 0))
+                painter.setBrush(gradient)
+                painter.setPen(Qt.NoPen)
+                painter.drawEllipse(QPoint(int(x), int(y)), int(size)/2.4+glow_size, int(size)/2.4+glow_size)
+                
+                painter.setPen(QPen(Qt.black, 2))
+                painter.setBrush(QColor(self.glow_color))
+                painter.drawEllipse(QPoint(int(x), int(y)), int(size), int(size))
+                painter.setBrush(QColor(self.glow_color).lighter(140))
+                painter.drawEllipse(QPoint(int(x), int(y)), int(size)/2.4, int(size)/2.4)
+            else:
+                painter.setPen(QPen(Qt.black, 2))
+                painter.setBrush(QColor(self.color_scheme))
+                painter.drawEllipse(QPoint(int(x), int(y)), int(size), int(size))
+                painter.setBrush(QColor(self.color_scheme).lighter(140))
+                painter.drawEllipse(QPoint(int(x), int(y)), int(size)/2.4, int(size)/2.4)
+        elif button_type == "DPadConfig":
             half = int(size / 2)
             quarter = int(size / 4)
             box_polygon = QPolygon([
@@ -1327,57 +1384,143 @@ class ControllerWidget(QWidget):
                 QPoint(int(x)+quarter, int(y) - half-8),
                 QPoint(int(x)+quarter, int(y) -quarter)
             ])
-            
-            painter.setPen(QPen(Qt.black, 2))
-            painter.setBrush(QColor(self.color_scheme).lighter(140))
-            painter.drawPolygon(box_polygon)
-            
-            painter.setPen(QPen(Qt.black, 2))
-            painter.setBrush(QColor(self.color_scheme))
 
-            # Up arrow triangle
-            up_points = QPolygon([
-                QPoint(int(x), int(y) - half-5),
-                QPoint(int(x) - quarter, int(y) - quarter),
-                QPoint(int(x) + quarter, int(y) - quarter)
-            ])
-            painter.drawPolygon(up_points)
-            
-            # Down arrow triangle
-            down_points = QPolygon([
-                QPoint(int(x), int(y) + half+5),
-                QPoint(int(x) - quarter, int(y) + quarter),
-                QPoint(int(x) + quarter, int(y) + quarter)
-            ])
-            painter.drawPolygon(down_points)
-            
-            # Left arrow triangle
-            left_points = QPolygon([
-                QPoint(int(x) - half-5, int(y)),
-                QPoint(int(x) - quarter, int(y) - quarter),
-                QPoint(int(x) - quarter, int(y) + quarter)
-            ])
-            painter.drawPolygon(left_points)
-            
-            # Right arrow triangle
-            right_points = QPolygon([
-                QPoint(int(x) + half+5, int(y)),
-                QPoint(int(x) + quarter, int(y) - quarter),
-                QPoint(int(x) + quarter, int(y) + quarter)
-            ])
-            painter.drawPolygon(right_points)
-        elif button_type == "bumper":
-            painter.setPen(QPen(Qt.black, 2))
-            painter.setBrush(QColor(self.color_scheme))
-            painter.drawRoundedRect(int(x) - int(size / 2)-15, int(y) - int(size / 4)-5, int(size) + 30, int(size / 2)+10, 10, 10)
-        elif button_type == "trigger":
-            painter.setPen(QPen(Qt.black, 2))
-            painter.setBrush(QColor(self.color_scheme))
-            painter.drawRoundedRect(int(x)-17, int(y)-10, int(size / 2)+20, int(size / 2) + 40, 10, 10)
-        else:
-            painter.setPen(QPen(Qt.gray, 2))
-            painter.setBrush(QColor(self.color_scheme))
-            painter.drawEllipse(QPoint(int(x), int(y)), int(size / 2), int(size / 2))
+            if (self.active_input == input_type):
+                glow_size = size + 5
+
+                glow_polygon = QPolygon([
+                    QPoint(int(x) + half+8+5, int(y)-quarter-5),
+                    QPoint(int(x) + half+8+5, int(y)+quarter+5),
+                    QPoint(int(x) + quarter+5, int(y) + quarter+5),
+                    QPoint(int(x) + quarter+5, int(y) + half+8+5),
+                    QPoint(int(x) - quarter-5, int(y) + half+8+5),
+                    QPoint(int(x) - quarter-5, int(y)+quarter+5),
+                    QPoint(int(x) - half-8-5, int(y)+quarter+5),
+                    QPoint(int(x) - half-8-5, int(y)-quarter-5),
+                    QPoint(int(x) - quarter-5, int(y)-quarter-5),
+                    QPoint(int(x)-quarter-5, int(y) - half-8-5),
+                    QPoint(int(x)+quarter+5, int(y) - half-8-5),
+                    QPoint(int(x)+quarter+5, int(y) -quarter-5)
+                ])
+
+                gradient = QRadialGradient(QPoint(x, y), glow_size)
+                gradient.setColorAt(0, QColor(self.glow_color.red(), self.glow_color.green(), self.glow_color.blue(), 180))
+                gradient.setColorAt(1, QColor(self.glow_color.red(), self.glow_color.green(), self.glow_color.blue(), 0))
+                painter.setBrush(gradient)
+                painter.setPen(Qt.NoPen)
+                painter.drawPolygon(glow_polygon)
+
+                painter.setPen(QPen(Qt.black, 2))
+                painter.setBrush(QColor(self.glow_color).lighter(140))
+                painter.drawPolygon(box_polygon)
+
+                painter.setPen(QPen(Qt.black, 2))
+                painter.setBrush(QColor(self.glow_color))
+
+                # Up arrow triangle
+                up_points = QPolygon([
+                    QPoint(int(x), int(y) - half-5),
+                    QPoint(int(x) - quarter, int(y) - quarter),
+                    QPoint(int(x) + quarter, int(y) - quarter)
+                ])
+                painter.drawPolygon(up_points)
+                
+                # Down arrow triangle
+                down_points = QPolygon([
+                    QPoint(int(x), int(y) + half+5),
+                    QPoint(int(x) - quarter, int(y) + quarter),
+                    QPoint(int(x) + quarter, int(y) + quarter)
+                ])
+                painter.drawPolygon(down_points)
+                
+                # Left arrow triangle
+                left_points = QPolygon([
+                    QPoint(int(x) - half-5, int(y)),
+                    QPoint(int(x) - quarter, int(y) - quarter),
+                    QPoint(int(x) - quarter, int(y) + quarter)
+                ])
+                painter.drawPolygon(left_points)
+                
+                # Right arrow triangle
+                right_points = QPolygon([
+                    QPoint(int(x) + half+5, int(y)),
+                    QPoint(int(x) + quarter, int(y) - quarter),
+                    QPoint(int(x) + quarter, int(y) + quarter)
+                ])
+                painter.drawPolygon(right_points)
+            else:
+                painter.setPen(QPen(Qt.black, 2))
+                painter.setBrush(QColor(self.color_scheme).lighter(140))
+                painter.drawPolygon(box_polygon)
+
+                painter.setPen(QPen(Qt.black, 2))
+                painter.setBrush(QColor(self.color_scheme))
+
+                # Up arrow triangle
+                up_points = QPolygon([
+                    QPoint(int(x), int(y) - half-5),
+                    QPoint(int(x) - quarter, int(y) - quarter),
+                    QPoint(int(x) + quarter, int(y) - quarter)
+                ])
+                painter.drawPolygon(up_points)
+                
+                # Down arrow triangle
+                down_points = QPolygon([
+                    QPoint(int(x), int(y) + half+5),
+                    QPoint(int(x) - quarter, int(y) + quarter),
+                    QPoint(int(x) + quarter, int(y) + quarter)
+                ])
+                painter.drawPolygon(down_points)
+                
+                # Left arrow triangle
+                left_points = QPolygon([
+                    QPoint(int(x) - half-5, int(y)),
+                    QPoint(int(x) - quarter, int(y) - quarter),
+                    QPoint(int(x) - quarter, int(y) + quarter)
+                ])
+                painter.drawPolygon(left_points)
+                
+                # Right arrow triangle
+                right_points = QPolygon([
+                    QPoint(int(x) + half+5, int(y)),
+                    QPoint(int(x) + quarter, int(y) - quarter),
+                    QPoint(int(x) + quarter, int(y) + quarter)
+                ])
+                painter.drawPolygon(right_points)
+        elif button_type == "BumperConfig":
+            if (self.active_input == input_type):
+                gradient = QRadialGradient(QPoint(x + ((int(size) + 40)/8), y + ((int(size / 2)+20)/4)), 2*size)
+                gradient.setColorAt(0, QColor(self.glow_color.red(), self.glow_color.green(), self.glow_color.blue(), 180))
+                gradient.setColorAt(1, QColor(self.glow_color.red(), self.glow_color.green(), self.glow_color.blue(), 0))
+                painter.setBrush(gradient)
+                painter.setPen(Qt.NoPen)
+                painter.drawRoundedRect(int(x) - int(size / 2)-20, int(y) - int(size / 4)-10, int(size) + 40, int(size / 2)+20, 10, 10)
+
+                painter.setPen(QPen(Qt.black, 2))
+                painter.setBrush(QColor(self.glow_color))
+                painter.drawRoundedRect(int(x) - int(size / 2)-15, int(y) - int(size / 4)-5, int(size) + 30, int(size / 2)+10, 10, 10)
+            else:
+                painter.setPen(QPen(Qt.black, 2))
+                painter.setBrush(QColor(self.color_scheme))
+                painter.drawRoundedRect(int(x) - int(size / 2)-15, int(y) - int(size / 4)-5, int(size) + 30, int(size / 2)+10, 10, 10)
+        elif button_type == "TriggerConfig":
+            if (self.active_input == input_type):
+                gradient = QRadialGradient(QPoint(x + ((int(size / 2)+30)/6), y + ((int(size / 2) + 50)/4)), 2*size)
+                
+                gradient.setColorAt(0, QColor(self.glow_color.red(), self.glow_color.green(), self.glow_color.blue(), 180))
+                gradient.setColorAt(1, QColor(self.glow_color.red(), self.glow_color.green(), self.glow_color.blue(), 0))
+                
+                painter.setBrush(gradient)
+                painter.setPen(Qt.NoPen)
+                painter.drawRoundedRect(int(x)-22, int(y)-15, int(size / 2)+30, int(size / 2) + 50, 10, 10)
+                
+                painter.setPen(QPen(Qt.black, 2))
+                painter.setBrush(QColor(self.glow_color))
+                painter.drawRoundedRect(int(x)-17, int(y)-10, int(size / 2)+20, int(size / 2) + 40, 10, 10)
+            else:
+                painter.setPen(QPen(Qt.black, 2))
+                painter.setBrush(QColor(self.color_scheme))
+                painter.drawRoundedRect(int(x)-17, int(y)-10, int(size / 2)+20, int(size / 2) + 40, 10, 10)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
