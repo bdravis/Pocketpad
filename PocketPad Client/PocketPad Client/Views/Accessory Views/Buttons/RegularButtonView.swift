@@ -14,7 +14,7 @@ struct RegularButtonView: View {
     
     var body: some View {
         Button(action: {
-            //
+            // Actions are handled with pressAction modifier
         }) {
             if let icon = config.style.icon {
                 switch config.style.iconType {
@@ -32,28 +32,79 @@ struct RegularButtonView: View {
             }
         }
         .applyButtonStyle(shape: config.style.shape)
+        .overlay(
+            turboManager.isTurboEnabled(config.input) ?
+            Group {
+                switch config.style.shape {
+                case .Circle:
+                    Circle()
+                        .stroke(.yellow, lineWidth: 2)
+                        .padding(2)
+                case .Pill:
+                    Capsule()
+                        .stroke(.yellow, lineWidth: 2)
+                        .padding(2)
+                }
+            } : nil
+        )
         .pressAction(onPress: {
-            if let service = bluetoothManager.selectedService {
-                let ui8_playerId: UInt8 = 0 // Assuming one player
-                let ui8_inputId : UInt8 = config.inputId
-                let ui8_buttonType : UInt8 = config.type.rawValue
-                let ui8_event : UInt8 = ButtonEvent.pressed.rawValue
-                
-                let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
-                print("PRESS REGULAR BUTTON")
-                bluetoothManager.sendInput(data)
+            if config.turbo { // if this button is the turbo button itself
+                turboManager.activateTurboMode()
+            } else if turboManager.turboActive { // turbo button is being held and then another button is pressed
+                turboManager.toggleTurboForButton(config.input)
+            } else if turboManager.isTurboEnabled(config.input) { // while turbo is not being held, a turbo-enabled button is held
+                turboManager.startTurboForButton(
+                    config.input,
+                    playerId: 0, // Assuming one player
+                    inputId: config.inputId,
+                    buttonType: config.type.rawValue
+                )
+            } else { // turbo button is not being held, button is not turbo-enabled
+                // this case is a simple button press/hold
+                sendButtonPress()
             }
         }, onRelease: {
-            if let service = bluetoothManager.selectedService {
-                let ui8_playerId: UInt8 = 0 // Assuming one player
-                let ui8_inputId : UInt8 = config.inputId
-                let ui8_buttonType : UInt8 = config.type.rawValue
-                let ui8_event : UInt8 = ButtonEvent.released.rawValue
+            if config.turbo { // if released button is the turbo button itself
+                turboManager.deactivateTurboMode()
+            } else if !turboManager.turboActive { // if turbo button is not being held
+                // note: for the case of turbo button being held, do nothing to avoid duplicate toggling of turbo for a button
                 
-                let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
-                print("RELEASE REGULAR BUTTON")
-                bluetoothManager.sendInput(data)
+                // if turbo button is not being held:
+                if (turboManager.isTurboEnabled(config.input)) { // the released button is a turbo-enabled button
+                    turboManager.stopTurboForButton(config.input)
+                } else { // the released button is not a turbo-enabled button
+                    // this case is a simple button press/hold
+                    sendButtonRelease()
+                }
             }
         })
+    }
+    
+    // send button press for a non turbo-enabled button
+    private func sendButtonPress() {
+        let ui8_playerId: UInt8 = 0 // Assuming one player
+        let ui8_inputId : UInt8 = config.inputId
+        let ui8_buttonType : UInt8 = config.type.rawValue
+        let ui8_event : UInt8 = ButtonEvent.pressed.rawValue
+        
+        let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
+#if DEBUG
+        print("TURBO-DISABLED REGULAR BUTTON PRESS")
+#endif
+        bluetoothManager.sendInput(data)
+    }
+    
+    // send button release for a non turbo-enabled button
+    private func sendButtonRelease() {
+        let ui8_playerId: UInt8 = 0 // Assuming one player
+        let ui8_inputId : UInt8 = config.inputId
+        let ui8_buttonType : UInt8 = config.type.rawValue
+        let ui8_event : UInt8 = ButtonEvent.released.rawValue
+        
+        let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
+#if DEBUG
+        print("TURBO-DISABLED REGULAR BUTTON RELEASE")
+#endif
+        bluetoothManager.sendInput(data)
     }
 }

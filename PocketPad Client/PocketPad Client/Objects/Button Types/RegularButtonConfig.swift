@@ -32,7 +32,6 @@ struct RegularButtonConfig: ButtonConfig, ConfigType {
         
         self.input = input
         self.turbo = turbo
-        self.isTurboButton = isTurboButton;
         
         if let style = style {
             self.style = style

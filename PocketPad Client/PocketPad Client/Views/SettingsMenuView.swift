@@ -32,6 +32,8 @@ struct SettingsMenuView: View {
     @State private var showingRightDeadzoneView: Bool = false
     @State private var leftJoystickDeadzone: Double = LayoutManager.shared.getLeftJoystickDeadzone()
     @State private var rightJoystickDeadzone: Double = LayoutManager.shared.getRightJoystickDeadzone()
+    
+    @State private var showingTurboSettings: Bool = false
 
     
     // MARK: - Body
@@ -201,7 +203,7 @@ struct SettingsMenuView: View {
                     Text("Left Joystick Deadzone")
                     Spacer()
                     Button(action: {
-                        showingLeftDeadzoneView = true // pulls up a sheet
+                        showingLeftDeadzoneView = true
                     }) {
                         Text("\(Int(leftJoystickDeadzone * 100))%")
                             .foregroundColor(.blue)
@@ -215,7 +217,7 @@ struct SettingsMenuView: View {
                     Text("Right Joystick Deadzone")
                     Spacer()
                     Button(action: {
-                        showingRightDeadzoneView = true // pulls up a sheet
+                        showingRightDeadzoneView = true
                     }) {
                         Text("\(Int(rightJoystickDeadzone * 100))%")
                             .foregroundColor(.blue)
@@ -339,6 +341,7 @@ struct SettingsMenuView: View {
     func exitAllMenus() {
         showingLeftDeadzoneView = false
         showingRightDeadzoneView = false
+        showingTurboSettings = false
     }
 }
 
