@@ -93,7 +93,7 @@ struct JoystickButtonView: View {
         }
     }
 }
-
-#Preview {
-    ControllerView(layout: .init(name: "Joystick Debug", landscapeButtons: [JoystickConfig(position: CGPoint(x: 100, y: 200), scale: 1, inputId: 4, input: "RightJoystick")], portraitButtons: [JoystickConfig(position: CGPoint(x: 100, y: 200), scale: 1, inputId: 4, input: "RightJoystick")]))
-}
+//
+//#Preview {
+//    ControllerView(layout: .init(name: "Joystick Debug", landscapeButtons: [JoystickConfig(position: CGPoint(x: 100, y: 200), scale: 1, inputId: 4, input: "RightJoystick")], portraitButtons: [JoystickConfig(position: CGPoint(x: 100, y: 200), scale: 1, inputId: 4, input: "RightJoystick")]))
+//}

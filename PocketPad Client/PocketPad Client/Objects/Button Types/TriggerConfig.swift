@@ -15,8 +15,9 @@ enum TriggerSide: UInt8, ConfigType {
 
 struct TriggerConfig: ButtonConfig, ConfigType {
     // Protocol Properties
-    var position: CGPoint
+    var position: ButtonPosition
     var scale: CGFloat
+    var rotation: Double
     var type: ButtonType
     var inputId: UInt8
     
@@ -27,7 +28,7 @@ struct TriggerConfig: ButtonConfig, ConfigType {
     
     // Object Initializer
     init(
-        position: CGPoint, scale: CGFloat, inputId: UInt8,
+        position: ButtonPosition, scale: CGFloat, rotation: Double = 0.0, inputId: UInt8,
         input: String, turbo: Bool = false,
         side: TriggerSide
     ) {
@@ -35,6 +36,7 @@ struct TriggerConfig: ButtonConfig, ConfigType {
         
         self.position = position
         self.scale = scale
+        self.rotation = rotation
         
         self.inputId = inputId
         
