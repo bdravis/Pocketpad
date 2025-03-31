@@ -6,11 +6,13 @@ from pathlib import Path
 import bluetooth_server
 import enums
 
+import json
+
 from PySide6.QtWidgets import (QApplication, QMainWindow, QListWidgetItem, QMessageBox, QCheckBox, QVBoxLayout,
                                 QWidget, QLabel, QHBoxLayout, QFrame, QGridLayout, QSystemTrayIcon, QMenu, QDialog,
-                                QPushButton, QColorDialog)
-from PySide6.QtCore import Qt, QSettings, Signal, QSize
-from PySide6.QtGui import QFont, QIcon, QAction, QPixmap, QPainter, QImage, QColor
+                                QPushButton, QColorDialog, QSizePolicy, QSpacerItem)
+from PySide6.QtCore import Qt, QSettings, Signal, QSize, QPoint, QTimer
+from PySide6.QtGui import QFont, QIcon, QAction, QPixmap, QPainter, QImage, QColor, QPen, QPolygon, QRadialGradient, QKeyEvent
 from PySide6.QtSvg import QSvgRenderer
 
 
@@ -18,6 +20,14 @@ from PySide6.QtSvg import QSvgRenderer
 # You need to run the following command to generate the ui_form.py file
 #     pyside6-uic PocketPad.ui -o ui_form.py
 from ui_form import Ui_MainWindow
+
+TYPE_MAP = {
+    "RegularButtonConfig": "regularButton",
+    "JoystickConfig": "joystick",
+    "DPadConfig": "dPad",
+    "BumperConfig": "bumper",
+    "TriggerConfig": "trigger"
+}
 
 class MainWindow(QMainWindow):
 
@@ -58,6 +68,7 @@ class MainWindow(QMainWindow):
         self.connected_players = []
         self.player_checkbox_mapping = {}
         self.player_controller_mapping = {}
+        self.player_controller_location_mapping = {}
         self.player_svg_paths_for_icons = {}
         self.player_controller_input_display = {}
         self.num_players_connected = 0
@@ -66,13 +77,13 @@ class MainWindow(QMainWindow):
 
         self.ui.customizer_button.clicked.connect(self.display_color_picker)
 
-        self.ui.bluetooth_button.clicked.connect(self.start_bluetooth_server)
+        #self.ui.bluetooth_button.clicked.connect(self.start_bluetooth_server)
         self.bluetooth_server_initiated=False
 
-        self.ui.network_button.clicked.connect(self.start_network_server)
+        #self.ui.network_button.clicked.connect(self.start_network_server)
         self.network_server_initiated=False
 
-        self.ui.server_close_button.clicked.connect(self.stop_server)
+        #self.ui.server_close_button.clicked.connect(self.stop_server)
 
         self.ui.view_code_button.clicked.connect(self.toggle_pair_code)
         self.view_code = True
@@ -119,22 +130,26 @@ class MainWindow(QMainWindow):
 
         # Widget and widget layout for controller mockups
         #
+        
         self.ui.controller_mockup_area.setFrameShape(QFrame.StyledPanel)
-        self.ui.controller_mockup_area.setContentsMargins(10, 10, 10, 10)
         self.controller_grid_layout = QGridLayout(self.ui.controller_mockup_area)
-        self.controller_grid_layout.setAlignment(Qt.AlignTop | Qt.AlignLeft)
+        self.controller_grid_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.controller_grid_layout.setSpacing(5)
         self.ui.controller_mockup_area.setLayout(self.controller_grid_layout)
+        self.ui.controller_mockup_area.setContentsMargins(10, 10, 10, 10)
+        self.controller_grid_layout.setContentsMargins(10, 10, 10, 10)
+
         #
         # Widget and widget layout for controller mockups
 
         # Dev testing function calls
         #
 
-        #self.ui.bluetooth_button.clicked.connect(lambda: self.update_player_connection("disconnect", f"player {self.num_players_connected - 1}", "switch"))
-        #self.ui.bluetooth_button.clicked.connect(lambda: self.dev_testing(f"player {self.num_players_connected - 1}", random.randint(1, 4)))
-        #self.ui.network_button.clicked.connect(lambda: self.update_player_connection("connect", f"player {self.num_players_connected}", enums.ControllerType.Playstation))
+        #self.ui.bluetooth_button.clicked.connect(lambda: self.update_player_connection("disconnect", f"player {self.num_players_connected - 1}", "switch", "sample.json"))
+        self.ui.bluetooth_button.clicked.connect(lambda: self.dev_testing(f"player {self.num_players_connected - 1}", random.randint(1, 4)))
+        self.ui.network_button.clicked.connect(lambda: self.update_player_connection("connect", f"player {self.num_players_connected}", enums.ControllerType.Playstation, "sample.json"))
         #self.ui.server_close_button.clicked.connect(lambda: self.update_latency(f"player {self.num_players_connected - 1}", random.randint(1, 200)))
+        self.ui.server_close_button.clicked.connect(lambda: self.display_controller_input(f"player {self.num_players_connected - 1}", "RightJoystick"))
 
         #
         # Dev testing function calls
@@ -145,7 +160,7 @@ class MainWindow(QMainWindow):
     def dev_testing(self, player_id, num):
         options = [enums.ControllerType.Switch, enums.ControllerType.Xbox, enums.ControllerType.Playstation, enums.ControllerType.Wii]
         selected_option = options[num-1]
-        self.update_controller_type(player_id, selected_option)
+        self.update_controller_type(player_id, selected_option, "sample_2.json")
     # REMOVE AFTER SPRINTS
     
     # NEEDS WORK
@@ -208,7 +223,7 @@ class MainWindow(QMainWindow):
             already_initiated.setText("The is no server currently running")
             already_initiated.exec()
     
-    def update_player_connection(self, connection, player_id, controller_type):
+    def update_player_connection(self, connection, player_id, controller_type, controller_json_file):
         if (connection == "connect"):
             if player_id not in self.connected_players:
                 player_connection = QListWidgetItem()
@@ -266,31 +281,59 @@ class MainWindow(QMainWindow):
                 # Implement generate controller mockup
                 #
                 controller_widget = QWidget()
-        
-                controller_name = QLabel(f"{player_id}'s Controller")
+
+                # Create a vertical layout for controller_widget
+                controller_layout = QVBoxLayout()
+                controller_layout.setContentsMargins(0, 0, 0, 0)  # Remove extra spacing
+
+                # Add controller name and latency info
+                controller_name = QLabel(f"<h2>{player_id}</h2>")
+                controller_name.setWordWrap(True)
                 controller_latency = QLabel("0 ms")
                 if not self.ui.latency_setting_box.isChecked():
                     controller_latency.setVisible(False)
-        
+
+                player_glow_selector = QPushButton()
+                player_glow_selector.setIcon(self.get_icon_from_svg("icons/pencil.svg", self.application_font_color))
+                player_glow_selector.setFixedSize(30, 30)
+                
+                # Horizontal layout for name + latency
                 text_format_layout = QHBoxLayout()
                 text_format_layout.addWidget(controller_name)
-                text_format_layout.addWidget(controller_latency)
-        
-                controller_widget.setLayout(text_format_layout)
-        
-                main_layout = QVBoxLayout()
-                main_layout.addWidget(controller_widget)
-                main_layout.addStretch()
+                text_format_layout.addWidget(player_glow_selector)
 
-                self.controller_grid_layout.addWidget(controller_widget, (self.num_players_connected//2), (self.num_players_connected%2))                
-        
-                self.player_controller_mapping[player_id] = {
-                    "widget": controller_widget,
-                    "latency_label": controller_latency
+                spacer = QSpacerItem(20, 10, QSizePolicy.Expanding, QSizePolicy.Minimum)
+                text_format_layout.addItem(spacer)
+
+                text_format_layout.addWidget(controller_latency)
+
+                # Add text layout to main controller layout
+                controller_layout.addLayout(text_format_layout)
+
+                # Create ControllerWidget with scalable behavior
+                controller_display = ControllerWidget("sample.json", self.application_widgets_color)
+
+                player_glow_selector.clicked.connect(lambda: self.choose_glow_color(controller_display))
+
+                # Add the display to the layout without forcing size increase
+                controller_layout.addWidget(controller_display)
+
+                controller_widget.setLayout(controller_layout)  # Apply layout
+
+                # Add controller_widget to the grid layout
+                self.controller_grid_layout.addWidget(controller_widget, (self.num_players_connected // 2), (self.num_players_connected % 2))
+
+                # Store player-controller mappings
+                self.player_controller_location_mapping[player_id] = {
+                    "row": (self.num_players_connected // 2),
+                    "column": (self.num_players_connected % 2)
                 }
 
-                # Set the main layout on the widget.
-                self.setLayout(main_layout)
+                self.player_controller_mapping[player_id] = {
+                    "widget": controller_widget,
+                    "latency_label": controller_latency,
+                    "display": controller_display
+                }
                 #
                 # Implement generate controller mockup
 
@@ -315,6 +358,7 @@ class MainWindow(QMainWindow):
                     self.ui.connection_list.takeItem(player_index)
 
             if (player_id in self.connected_players):
+                
                 # Remove player's checkbox
                 #
                 if (player_id in self.player_checkbox_mapping):
@@ -322,7 +366,6 @@ class MainWindow(QMainWindow):
                     self.checkbox_layout.removeWidget(controller_checkbox)
                     controller_checkbox.deleteLater()
                     del self.player_checkbox_mapping[player_id]
-                    #self.refresh_grid_layout((self.num_players_connected-1))
                 #
                 # Remove player's checkbox
 
@@ -333,7 +376,7 @@ class MainWindow(QMainWindow):
                     controller_widget = controller_info["widget"]
                     self.controller_grid_layout.removeWidget(controller_widget)
                     controller_widget.deleteLater()
-                    del self.player_controller_mapping[player_id]
+                    self.refresh_grid_layout(player_id)
                 #
                 # Implement remove controller mockups
             
@@ -430,7 +473,7 @@ class MainWindow(QMainWindow):
                 #
                 # Change latency label visibilty
 
-    def update_controller_type(self, player_id, controller_type):
+    def update_controller_type(self, player_id, controller_type, controller_json_file):
         """
         Update the icon for the player whose player id is passed as a parameter to the function. Depending on
         the controller type passed to the function, it will swap the svg path for the correct svg and  
@@ -441,7 +484,6 @@ class MainWindow(QMainWindow):
 
         @return: none
         """
-        #base_path = Path(__file__).resolve().parent 
         if (controller_type == enums.ControllerType.Playstation):
             icon_type = "icons/playstation.svg"
         elif (controller_type == enums.ControllerType.Switch):
@@ -451,8 +493,6 @@ class MainWindow(QMainWindow):
         elif (controller_type == enums.ControllerType.Xbox):
             icon_type = "icons/xbox.svg"
 
-        #icon_type = icon_type.resolve()
-        #icon_type = str(icon_type)
         self.player_svg_paths_for_icons[player_id] = icon_type        
 
         latency = self.player_latency[player_id]
@@ -471,19 +511,66 @@ class MainWindow(QMainWindow):
             if ((player_connection != None) and (player_connection.text() == player_id)):
                 player_connection.setIcon(player_icon)
 
-        # Implement Updating controller mockups (later sprint)
-        #
+        controller_widget = self.player_controller_mapping[player_id]["widget"]
 
-        #
-        # Implement Updating controller mockups (later sprint)
+        # Remove old controller widget from the grid layout
+        self.controller_grid_layout.removeWidget(controller_widget)
+        controller_widget.deleteLater()
+
+        # Create a new controller widget with the updated controller JSON file
+        new_controller_widget = QWidget()
+        new_controller_layout = QVBoxLayout()
+        new_controller_layout.setContentsMargins(0, 0, 0, 0)
+
+        controller_name = QLabel(f"<h2>{player_id}</h2>")
+        controller_name.setWordWrap(True)
+
+        player_glow_selector = QPushButton()
+        player_glow_selector.setIcon(self.get_icon_from_svg("icons/pencil.svg", self.application_font_color))
+        player_glow_selector.setFixedSize(30, 30)
+
+        controller_latency = QLabel(f"{latency} ms")
+        if not self.ui.latency_setting_box.isChecked():
+            controller_latency.setVisible(False)
+
+        text_format_layout = QHBoxLayout()
+        text_format_layout.addWidget(controller_name)
+        text_format_layout.addWidget(player_glow_selector)
+        text_format_layout.addStretch()
+        text_format_layout.addWidget(controller_latency)
+
+        new_controller_layout.addLayout(text_format_layout)
+
+        # Create a new instance of ControllerWidget with the updated controller JSON file
+        new_controller_display = ControllerWidget(controller_json_file, self.application_widgets_color)
+        new_controller_layout.addWidget(new_controller_display)
+
+        player_glow_selector.clicked.connect(lambda: self.choose_glow_color(new_controller_display))
+
+        new_controller_widget.setLayout(new_controller_layout)
+
+        # Get the player's grid position and insert the new widget
+        row, col = self.player_controller_location_mapping[player_id]["row"], self.player_controller_location_mapping[player_id]["column"]
+        self.controller_grid_layout.addWidget(new_controller_widget, row, col)
+
+        # Update player controller mapping
+        self.player_controller_mapping[player_id] = {
+            "widget": new_controller_widget,
+            "latency_label": controller_latency,
+            "display": new_controller_display
+        }
+
+    def choose_glow_color(self, controller_widget):
+        color = QColorDialog.getColor()
+        if color.isValid():
+            controller_widget.update_glow_color(color)
 
     def display_controller_input(self, player_id, input):
         print("Player id: " + player_id + "\n Input: " + str(input))
         if self.player_controller_input_display[player_id]:
-            print("Display Controller Input")
             # Implement in later sprint
             #
-
+            self.player_controller_mapping[player_id]["display"].set_active_input(input)
             #
             # Implement in later sprint
     
@@ -505,26 +592,58 @@ class MainWindow(QMainWindow):
         else:
             self.player_controller_input_display[player_id] = False
     
-    # NEEDS WORKS 
-    def refresh_grid_layout(self, index):
-        for controller_index in reversed(range(index, self.controller_grid_layout.count())):
-            print(controller_index)
-            controller_item = self.controller_grid_layout.itemAt(controller_index)
-            if controller_item:
-                controller_widget = controller_item.widget()
-                if controller_widget:
-                    self.controller_grid_layout.removeWidget(controller_widget)
-                    controller_widget.setParent(None)
+    def refresh_grid_layout(self, player_id):
+        row = (self.player_controller_location_mapping[player_id])["row"]
+        column = (self.player_controller_location_mapping[player_id])["column"]
+        controller_to_remove = self.controller_grid_layout.itemAtPosition(row, column)
+
+        if controller_to_remove:
+            controller_widget = controller_to_remove.widget()
+            if controller_widget:
+                self.controller_grid_layout.removeWidget(controller_widget)
+                controller_widget.setParent(None)
+
+        del self.player_controller_mapping[player_id]
+        del self.player_controller_location_mapping[player_id]
         
-        #row = 0
-        #column = 0
-        #for player_id, controller_info in self.player_controller_mapping.items():
-        #    self.controller_grid_layout.addWidget(controller_info["widget"], row, column)
-        #    column += 1
-        #    if column == 2:
-        #        column = 0
-        #        row += 1
-    # NEEDS WORKS
+        for player in self.player_controller_mapping:
+            player_row = (self.player_controller_location_mapping[player])["row"]
+            player_column = (self.player_controller_location_mapping[player])["column"]
+            if player_row == row:
+                if column == 0:
+                    controller_to_remove = self.controller_grid_layout.itemAtPosition(player_row, player_column)
+                    if controller_to_remove:
+                        controller_widget = controller_to_remove.widget()
+                        if controller_widget:
+                            self.controller_grid_layout.removeWidget(controller_widget)
+                            controller_widget.setParent(None)
+
+                            (self.player_controller_location_mapping[player])["column"] = (player_column-1)
+                            self.controller_grid_layout.addWidget((self.player_controller_mapping[player])["widget"], row, (player_column-1))
+
+            elif player_row > row:
+                if player_column == 0:
+                    controller_to_remove = self.controller_grid_layout.itemAtPosition(player_row, player_column)
+                    if controller_to_remove:
+                        controller_widget = controller_to_remove.widget()
+                        if controller_widget:
+                            self.controller_grid_layout.removeWidget(controller_widget)
+                            controller_widget.setParent(None)
+
+                            (self.player_controller_location_mapping[player])["row"] = (player_row-1)
+                            (self.player_controller_location_mapping[player])["column"] = (player_column+1)
+                            self.controller_grid_layout.addWidget((self.player_controller_mapping[player])["widget"], (player_row-1), (player_column+1))
+                
+                if player_column == 1:
+                    controller_to_remove = self.controller_grid_layout.itemAtPosition(player_row, player_column)
+                    if controller_to_remove:
+                        controller_widget = controller_to_remove.widget()
+                        if controller_widget:
+                            self.controller_grid_layout.removeWidget(controller_widget)
+                            controller_widget.setParent(None)
+
+                            (self.player_controller_location_mapping[player])["column"] = (player_column-1)
+                            self.controller_grid_layout.addWidget((self.player_controller_mapping[player])["widget"], player_row, (player_column-1))
 
     def display_color_picker(self):
         color_picker = ColorPickerPopup(self.application_background_color, self.application_widgets_color, self.application_font_color)
@@ -550,6 +669,9 @@ class MainWindow(QMainWindow):
             self.application_widgets_color = QColor(self.application_widgets_color)
         if not isinstance(self.application_font_color, QColor):
             self.application_font_color = QColor(self.application_font_color)
+
+        for player_id in self.player_controller_mapping:
+            self.player_controller_mapping[player_id]["display"].update_widget_color(self.application_widgets_color)
         
         self.setStyleSheet(f"""
         QMainWindow {{
@@ -870,6 +992,7 @@ class MainWindow(QMainWindow):
         self.settings.endGroup()
         super().closeEvent(event)
 
+
 class ColorPickerPopup(QDialog):
 
     color_updated = Signal(QColor, QColor, QColor)
@@ -1058,6 +1181,203 @@ class ColorPickerPopup(QDialog):
         self.color_updated.emit(self.application_color, self.widget_color, self.font_color)
         self.accept()
 
+class ControllerWidget(QWidget):
+    def __init__(self, controller_config_file, widget_color):
+        super().__init__()
+        with open(controller_config_file, 'r') as data:
+            self.layout_config = json.load(data)
+        self.controller_widgets = self.layout_config.get("wrappedLandscapeButtons", [])
+        
+        self.color_scheme = widget_color
+        self.glow_color = QColor(255, 255, 0)
+
+        self.setMinimumSize(75, 50)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.bbox = self.compute_bbox()
+
+        self.active_input = None
+
+        # Cache the rendered image
+        self.cached_pixmap = None
+        self.update_cache()
+
+    def update_cache(self):
+        # Create a pixmap with the current widget size
+        self.cached_pixmap = QPixmap(self.width(), self.height())
+        self.cached_pixmap.fill(QColor(self.color_scheme))
+        
+        painter = QPainter(self.cached_pixmap)
+        painter.setRenderHint(QPainter.Antialiasing)
+        
+        min_x, min_y, max_x, max_y = self.compute_bbox()
+        bbox_width = max_x - min_x
+        bbox_height = max_y - min_y
+
+        widget_width = self.width()
+        widget_height = self.height()
+        
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(QColor(self.color_scheme).darker(140))
+        painter.drawRoundedRect(0, 0, widget_width, widget_height, 10, 10)
+
+        scale_x = widget_width / bbox_width if bbox_width else 1
+        scale_y = widget_height / bbox_height if bbox_height else 1
+        scale = min(scale_x, scale_y)
+
+        offset_x = (widget_width - bbox_width * scale) / 2
+        offset_y = (widget_height - bbox_height * scale) / 2
+
+        painter.translate(offset_x, offset_y)
+        painter.scale(scale, scale)
+        painter.translate(-min_x, -min_y)
+
+        # Draw the buttons without additional scaling inside the drawing method
+        for widget in self.controller_widgets:
+            pos = widget.get("position", {})
+            x, y = pos["x"], pos["y"]
+            self.draw_button(painter, widget, x, y)
+
+        painter.end()
+
+    def update_widget_color(self, color):
+        self.color_scheme = color
+        self.update_cache()
+        self.update()
+
+    def update_glow_color(self, color):
+        self.glow_color = color
+    
+    def set_active_input(self, active_type):
+        self.active_input = active_type
+        print("Active Input: " + self.active_input)
+        self.update_cache()
+        self.update()
+        QTimer.singleShot(200, self.clear_active_input)
+
+    def clear_active_input(self):
+        self.active_input = None
+        self.update_cache()
+        self.update()
+    
+    def resizeEvent(self, event):
+        # Update the cache when the widget resizes
+        self.update_cache()
+        super().resizeEvent(event)
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        if self.cached_pixmap:
+            painter.drawPixmap(0, 0, self.cached_pixmap)
+        else:
+            # Fallback if cache is not available
+            super().paintEvent(event)
+
+    def compute_bbox(self):
+        margin = 45
+        x_values = [widget["position"]["x"] for widget in self.controller_widgets]
+        y_values = [widget["position"]["y"] for widget in self.controller_widgets]
+        return (min(x_values) - margin, min(y_values) - margin,
+                max(x_values) + margin, max(y_values) + margin)
+    
+    def draw_button(self, painter, btn, x, y):
+        """Draw a button at the provided (x, y) using the given painter."""
+        disc = btn.get("discriminator", "")
+        button_type = TYPE_MAP.get(disc, "default")
+        base_size = 30  # Base size for a regular button
+        size = base_size
+
+        input_type = btn.get("input", "")
+
+        glow = (input_type == self.active_input)
+
+        if glow:
+            print("I'm glowing")
+            glow_size = size + 10
+            gradient = QRadialGradient(QPoint(x, y), glow_size)
+            gradient.setColorAt(0, QColor(self.glow_color.red(), self.glow_color.green(), self.glow_color.blue(), 180))
+            gradient.setColorAt(1, QColor(self.glow_color.red(), self.glow_color.green(), self.glow_color.blue(), 0))
+            painter.setBrush(gradient)
+            painter.setPen(Qt.NoPen)
+            painter.drawEllipse(QPoint(x, y), glow_size, glow_size)
+
+        if button_type == "regularButton":
+            painter.setPen(QPen(Qt.black, 2))
+            painter.setBrush(QColor(self.color_scheme))
+            painter.drawEllipse(QPoint(int(x), int(y)), int(size / 2), int(size / 2))
+        elif button_type == "joystick":
+            painter.setPen(QPen(Qt.black, 2))
+            painter.setBrush(QColor(self.color_scheme))
+            painter.drawEllipse(QPoint(int(x), int(y)), int(size), int(size))
+            painter.setBrush(QColor(self.color_scheme).lighter(140))
+            painter.drawEllipse(QPoint(int(x), int(y)), int(size)/2.4, int(size)/2.4)
+        elif button_type == "dPad":
+            half = int(size / 2)
+            quarter = int(size / 4)
+            box_polygon = QPolygon([
+                QPoint(int(x) + half+8, int(y)-quarter),
+                QPoint(int(x) + half+8, int(y)+quarter),
+                QPoint(int(x) + quarter, int(y) + quarter),
+                QPoint(int(x) + quarter, int(y) + half+8),
+                QPoint(int(x) - quarter, int(y) + half+8),
+                QPoint(int(x) - quarter, int(y)+quarter),
+                QPoint(int(x) - half-8, int(y)+quarter),
+                QPoint(int(x) - half-8, int(y)-quarter),
+                QPoint(int(x) - quarter, int(y)-quarter),
+                QPoint(int(x)-quarter, int(y) - half-8),
+                QPoint(int(x)+quarter, int(y) - half-8),
+                QPoint(int(x)+quarter, int(y) -quarter)
+            ])
+            
+            painter.setPen(QPen(Qt.black, 2))
+            painter.setBrush(QColor(self.color_scheme).lighter(140))
+            painter.drawPolygon(box_polygon)
+            
+            painter.setPen(QPen(Qt.black, 2))
+            painter.setBrush(QColor(self.color_scheme))
+
+            # Up arrow triangle
+            up_points = QPolygon([
+                QPoint(int(x), int(y) - half-5),
+                QPoint(int(x) - quarter, int(y) - quarter),
+                QPoint(int(x) + quarter, int(y) - quarter)
+            ])
+            painter.drawPolygon(up_points)
+            
+            # Down arrow triangle
+            down_points = QPolygon([
+                QPoint(int(x), int(y) + half+5),
+                QPoint(int(x) - quarter, int(y) + quarter),
+                QPoint(int(x) + quarter, int(y) + quarter)
+            ])
+            painter.drawPolygon(down_points)
+            
+            # Left arrow triangle
+            left_points = QPolygon([
+                QPoint(int(x) - half-5, int(y)),
+                QPoint(int(x) - quarter, int(y) - quarter),
+                QPoint(int(x) - quarter, int(y) + quarter)
+            ])
+            painter.drawPolygon(left_points)
+            
+            # Right arrow triangle
+            right_points = QPolygon([
+                QPoint(int(x) + half+5, int(y)),
+                QPoint(int(x) + quarter, int(y) - quarter),
+                QPoint(int(x) + quarter, int(y) + quarter)
+            ])
+            painter.drawPolygon(right_points)
+        elif button_type == "bumper":
+            painter.setPen(QPen(Qt.black, 2))
+            painter.setBrush(QColor(self.color_scheme))
+            painter.drawRoundedRect(int(x) - int(size / 2)-15, int(y) - int(size / 4)-5, int(size) + 30, int(size / 2)+10, 10, 10)
+        elif button_type == "trigger":
+            painter.setPen(QPen(Qt.black, 2))
+            painter.setBrush(QColor(self.color_scheme))
+            painter.drawRoundedRect(int(x)-17, int(y)-10, int(size / 2)+20, int(size / 2) + 40, 10, 10)
+        else:
+            painter.setPen(QPen(Qt.gray, 2))
+            painter.setBrush(QColor(self.color_scheme))
+            painter.drawEllipse(QPoint(int(x), int(y)), int(size / 2), int(size / 2))
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
