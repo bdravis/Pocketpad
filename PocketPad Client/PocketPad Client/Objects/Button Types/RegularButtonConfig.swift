@@ -16,12 +16,12 @@ struct RegularButtonConfig: ButtonConfig, ConfigType {
     
     var input: String // the button it is bound to
     var style: RegularButtonStyle // style configuration of the button
-    var turbo: Bool // whether or not it is a turbo tap
+    var turbo: Bool // whether or not this is the turbo button
     
     // Object Initializer
     init(
         position: CGPoint, scale: CGFloat, inputId: UInt8,
-        input: String, style: RegularButtonStyle? = nil, turbo: Bool = false
+        input: String, style: RegularButtonStyle? = nil, turbo: Bool = false, isTurboButton: Bool = false
     ) {
         self.type = .regular
         

@@ -119,14 +119,14 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
     if (characteristic.uuid.upper() == INPUT_CHARACTERISTIC):
         # Implement a way to extract a value corresponding to player characteristic
         #
+
         parse_input(characteristic.value)
-        input = None # Fix this to have it be the input 
-        #
-        # Implement a way to extract a value corresponding to player characteristic
+        # FIRST UNCOMMENT THIS: player_id, input_id, event_type = parse_input(characteristic.value)
 
-        # player_id = connection_information[0]
+        # FIGURE OUT WHAT IS THIS vvv
+        # player_id = connection_information[0] 
 
-        # input_function(player_id, input)
+        # ALSO UNCOMMENT THIS CALLBACK TO CALL: input_function(player_id, input_id, event_type)
 
 
 
