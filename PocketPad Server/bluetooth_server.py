@@ -126,7 +126,14 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
 
         player_id = connection_information[0]
 
-        input_function(player_id, input)
+        # If press & release -> send release 
+        input_function(str(player_id), input_id, enums.ButtonEvent.RELEASED)
+
+        # If press & and held -> send pressed
+        input_function(str(player_id), input_id, enums.ButtonEvent.PRESSED)
+
+        # If release -> send release
+        input_function(str(player_id), input_id, enums.ButtonEvent.RELEASED)
 
 
 
