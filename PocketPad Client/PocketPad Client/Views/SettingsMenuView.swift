@@ -61,7 +61,7 @@ struct SettingsMenuView: View {
                     )
                 
                 // Menu Content
-                if !showingLeftDeadzoneView && !showingRightDeadzoneView {
+                if !showingLeftDeadzoneView && !showingRightDeadzoneView && !showingTurboSettings {
                     VStack(spacing: 0) {
                         headerView
                         Divider()
@@ -79,14 +79,20 @@ struct SettingsMenuView: View {
                     JoystickDeadzoneView(
                         isShowingDeadzoneView: $showingLeftDeadzoneView,
                         deadzoneValue: $leftJoystickDeadzone,
-                        joystickName: .constant("Left Joystick"))
+                        joystickName: .constant("Left Joystick")
+                    )
                 }
                 
                 if showingRightDeadzoneView {
                     JoystickDeadzoneView(
                         isShowingDeadzoneView: $showingRightDeadzoneView,
                         deadzoneValue: $rightJoystickDeadzone,
-                        joystickName: .constant("Right Joystick"))
+                        joystickName: .constant("Right Joystick")
+                    )
+                }
+                
+                if showingTurboSettings {
+                    TurboSettingsView(isShowingTurboSettings: $showingTurboSettings)
                 }
             }
             // Center the menu on the screen
@@ -144,6 +150,7 @@ struct SettingsMenuView: View {
                         showDPadStyle = LayoutManager.shared.hasDPad
                         leftJoystickDeadzone = LayoutManager.shared.getLeftJoystickDeadzone()
                         rightJoystickDeadzone = LayoutManager.shared.getRightJoystickDeadzone()
+                        turboManager.stopAllTurbo()
                     } catch {
                         UIApplication.shared.alert(title: "Failed to load layout", body: error.localizedDescription)
                         selectedController = ControllerType.Xbox.stringValue
@@ -228,6 +235,27 @@ struct SettingsMenuView: View {
                 .padding(.horizontal, 16)
             } header: {
                 Text("Joystick Settings")
+                    .font(.footnote)
+                    .foregroundStyle(Color(uiColor: .secondaryLabel))
+            }
+            .padding(.horizontal, 16)
+            
+            // MARK: - Turbo Settings
+            Section {
+                HStack {
+                    Text("Turbo Repeat Rate")
+                    Spacer()
+                    Button(action: {
+                        showingTurboSettings = true
+                    }) {
+                        Text("\(Int(turboManager.turboRate)) presses/sec")
+                            .foregroundColor(.blue)
+                    }
+                    .accessibilityIdentifier("TurboRateButton")
+                }
+                .padding(.horizontal, 16)
+            } header: {
+                Text("Turbo Settings")
                     .font(.footnote)
                     .foregroundStyle(Color(uiColor: .secondaryLabel))
             }
