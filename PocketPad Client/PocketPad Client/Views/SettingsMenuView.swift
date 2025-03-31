@@ -33,6 +33,7 @@ struct SettingsMenuView: View {
     @State private var leftJoystickDeadzone: Double = LayoutManager.shared.getLeftJoystickDeadzone()
     @State private var rightJoystickDeadzone: Double = LayoutManager.shared.getRightJoystickDeadzone()
     
+    @ObservedObject private var turboManager = TurboManager.shared
     @State private var showingTurboSettings: Bool = false
 
     
