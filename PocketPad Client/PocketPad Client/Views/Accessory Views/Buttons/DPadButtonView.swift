@@ -18,8 +18,8 @@ struct DPadButtonView: View {
             if !split {
                 // Background path
                 Plus(thickness: DPAD_THICKNESS)
-                    .fill(Color(uiColor: .secondarySystemFill))
-                    .stroke(.black, style: StrokeStyle(lineWidth: 3, lineCap: .square, lineJoin: .bevel))
+                    .fill(config.style.color ?? Color(uiColor: .secondarySystemFill))
+                    .stroke(.black, style: StrokeStyle(lineWidth: config.style.borderThickness, lineCap: .square, lineJoin: .bevel))
                 
                 // Center Circle
                 Circle()
@@ -77,7 +77,7 @@ struct DirectionalArrow: View {
                 .rotationEffect(.degrees(rotation))
                 .aspectRatio(1.0, contentMode: .fit)
         }
-        .buttonStyle(DPadButtonStyle(split: split))
+        .buttonStyle(DPadButtonStyle(style: config.style, split: split))
         .pressAction(onPress: {
             if let service = bluetoothManager.selectedService {
                 let ui8_playerId: UInt8 = 0 // Assuming one player

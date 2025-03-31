@@ -12,6 +12,7 @@ struct JoystickConfig: ButtonConfig, ConfigType {
     var position: ButtonPosition
     var scale: CGFloat
     var rotation: Double
+    var style: GeneralButtonStyle
     var type: ButtonType
     var inputId: UInt8
     
@@ -21,14 +22,16 @@ struct JoystickConfig: ButtonConfig, ConfigType {
     
     // Object Initializer
     init(
-        position: ButtonPosition, scale: CGFloat, rotation: Double = 0.0, inputId: UInt8,
-        input: ButtonInput, sensitivity: Double = 0.0, deadzone: Double = 0.0
+        position: ButtonPosition, scale: CGFloat, rotation: Double = 0.0,
+        style: GeneralButtonStyle = .init(),
+        inputId: UInt8, input: ButtonInput, sensitivity: Double = 0.0, deadzone: Double = 0.0
     ) {
         self.type = .joystick
         
         self.position = position
         self.scale = scale
         self.rotation = rotation
+        self.style = style
         
         self.inputId = inputId
         

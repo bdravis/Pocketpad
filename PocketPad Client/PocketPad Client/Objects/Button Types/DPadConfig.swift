@@ -20,6 +20,7 @@ struct DPadConfig: ButtonConfig, ConfigType {
     var position: ButtonPosition
     var scale: CGFloat
     var rotation: Double
+    var style: GeneralButtonStyle
     var type: ButtonType
     var inputId: UInt8
     
@@ -27,14 +28,16 @@ struct DPadConfig: ButtonConfig, ConfigType {
     
     // Object Initializer
     init(
-        position: ButtonPosition, scale: CGFloat, rotation: Double = 0.0, inputId: UInt8,
-        inputs: [DPadDirection: ButtonInput]
+        position: ButtonPosition, scale: CGFloat, rotation: Double = 0.0,
+        style: GeneralButtonStyle = .init(),
+        inputId: UInt8, inputs: [DPadDirection: ButtonInput]
     ) {
         self.type = .dpad
         
         self.position = position
         self.scale = scale
         self.rotation = rotation
+        self.style = style
         
         self.inputId = inputId
         
