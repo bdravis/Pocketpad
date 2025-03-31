@@ -48,6 +48,7 @@ protocol ButtonConfig: Codable {
     
     var inputId: UInt8 { get set } // id for buttons when sending input
     
+    mutating func updateStyle<T>(to newStyle: T)
 }
 
 extension ButtonConfig {
@@ -93,6 +94,10 @@ extension ButtonConfig {
 
 // a bad button type config for testing encoding errors
 struct BadButtonTypeConfig: ButtonConfig, ConfigType {
+    mutating func updateStyle<T>(to newStyle: T) {
+        return
+    }
+    
     // Protocol Properties
     var position: ButtonPosition
     var scale: CGFloat

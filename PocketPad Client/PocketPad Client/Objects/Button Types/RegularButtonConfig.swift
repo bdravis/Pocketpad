@@ -8,6 +8,12 @@
 import UIKit
 
 struct RegularButtonConfig: ButtonConfig, ConfigType {
+    mutating func updateStyle<T>(to newStyle: T) {
+        if let newStyle = newStyle as? RegularButtonStyle {
+            self.style = newStyle
+        }
+    }
+    
     // Protocol Properties
     var position: ButtonPosition
     var scale: CGFloat

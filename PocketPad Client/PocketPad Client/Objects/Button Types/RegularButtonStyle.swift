@@ -9,15 +9,15 @@ import Foundation
 import SwiftUICore
 
 // encapsulating button shape
-enum RegularButtonShape: ConfigType {
-    case Circle
-    case Pill
+enum RegularButtonShape: String, ConfigType, CaseIterable {
+    case Circle = "Circle"
+    case Pill = "Pill"
 }
 
 // the type of icon to display
-enum RegularButtonIconType: ConfigType {
-    case Text
-    case SFSymbol
+enum RegularButtonIconType: String, ConfigType, CaseIterable {
+    case Text = "Text"
+    case SFSymbol = "SF Symbol"
 }
 
 // settings to configure how the button looks

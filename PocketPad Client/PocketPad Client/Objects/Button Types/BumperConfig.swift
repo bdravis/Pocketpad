@@ -8,6 +8,10 @@
 import UIKit
 
 struct BumperConfig: ButtonConfig, ConfigType {
+    mutating func updateStyle<T>(to newStyle: T) {
+        return
+    }
+    
     // Protocol Properties
     var position: ButtonPosition
     var scale: CGFloat

@@ -16,6 +16,12 @@ enum DPadDirection: UInt8, ConfigType {
 }
 
 struct DPadConfig: ButtonConfig, ConfigType {
+    mutating func updateStyle<T>(to newStyle: T) {
+        if let newStyle = newStyle as? GeneralButtonStyle {
+            self.style = newStyle
+        }
+    }
+    
     // Protocol Properties
     var position: ButtonPosition
     var scale: CGFloat

@@ -50,66 +50,66 @@ struct ControllerView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .topLeading) {
-                ForEach(Array(layoutManager.currentController.buttons.enumerated()), id: \.element.id) { idx, btn in
+                ForEach($layoutManager.currentController.buttons, id: \.wrappedValue.id) { btn in
                     ZStack {
                         Group {
-                            switch btn.type {
+                            switch btn.wrappedValue.type {
                                 case .regular:
-                                    RegularButtonView(config: btn as! RegularButtonConfig)
+                                RegularButtonView(config: btn.wrappedValue as! RegularButtonConfig)
                                         .accessibilityAddTraits(.isButton)
                                         .accessibilityIdentifier("ControllerButton")
                                 case .joystick:
-                                    JoystickButtonView(config: btn as! JoystickConfig)
+                                    JoystickButtonView(config: btn.wrappedValue as! JoystickConfig)
                                         .accessibilityAddTraits(.isButton)
                                         .accessibilityIdentifier("ControllerButton")
                                 case .dpad:
-                                    DPadButtonView(config: btn as! DPadConfig)
+                                    DPadButtonView(config: btn.wrappedValue as! DPadConfig)
                                 case .bumper:
-                                    BumperButtonView(config: btn as! BumperConfig)
+                                    BumperButtonView(config: btn.wrappedValue as! BumperConfig)
                                         .accessibilityAddTraits(.isButton)
                                         .accessibilityIdentifier("ControllerButton")
                                 case .trigger:
-                                    TriggerButtonView(config: btn as! TriggerConfig)
+                                    TriggerButtonView(config: btn.wrappedValue as! TriggerConfig)
                                         .accessibilityAddTraits(.isButton)
                                         .accessibilityIdentifier("ControllerButton")
                             }
                         }
-                        .scaleEffect(btn.scale)
+                        .scaleEffect(btn.wrappedValue.scale)
                         .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE)
                         .position(
-                            x: btn.position.scaledPos.x * geometry.size.width,
-                            y: btn.position.scaledPos.y * geometry.size.height
+                            x: btn.wrappedValue.position.scaledPos.x * geometry.size.width,
+                            y: btn.wrappedValue.position.scaledPos.y * geometry.size.height
                         )
                         .offset(
-                            x: btn.position.offset.x,
-                            y: btn.position.offset.y
+                            x: btn.wrappedValue.position.offset.x,
+                            y: btn.wrappedValue.position.offset.y
                         )
-                        .rotationEffect(.degrees(btn.rotation))
+                        .rotationEffect(.degrees(btn.wrappedValue.rotation))
                         .disabled(isEditor)
-                        if isEditor && selectedBtn == btn.inputId {
-                            ButtonInfoView(config: btn)
+                        if isEditor && selectedBtn == btn.wrappedValue.inputId {
+                            ButtonInfoView(config: btn.wrappedValue)
                                 .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE)
-                                .scaleEffect(btn.scale)
+                                .scaleEffect(btn.scale.wrappedValue)
                                 .position(
-                                    x: btn.position.scaledPos.x * geometry.size.width,
-                                    y: btn.position.scaledPos.y * geometry.size.height
+                                    x: btn.wrappedValue.position.scaledPos.x * geometry.size.width,
+                                    y: btn.wrappedValue.position.scaledPos.y * geometry.size.height
                                 )
                                 .offset(
-                                    x: btn.position.offset.x,
-                                    y: btn.position.offset.y
+                                    x: btn.wrappedValue.position.offset.x,
+                                    y: btn.wrappedValue.position.offset.y
                                 )
                         }
                     }
                     .onTapGesture {
-                        if selectedBtn == btn.inputId {
+                        if selectedBtn == btn.wrappedValue.inputId {
                             selectedBtn = nil
                         } else {
-                            selectedBtn = btn.inputId
+                            selectedBtn = btn.wrappedValue.inputId
                         }
                     }
                     .overlay {
-                        if selectedBtn == btn.inputId {
-                            EditButtonView(buttonId: idx)
+                        if selectedBtn == btn.inputId.wrappedValue {
+                            EditButtonView(button: btn)
                                 .frame(maxHeight: geometry.size.height * 0.3)
                                 .position(x: 0.5 * geometry.size.width, y: (btnEditViewPos * geometry.size.height) - (geometry.size.height * 0.15))
                         }

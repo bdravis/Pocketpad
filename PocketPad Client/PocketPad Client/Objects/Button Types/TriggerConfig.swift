@@ -14,6 +14,10 @@ enum TriggerSide: UInt8, ConfigType, CaseIterable {
 }
 
 struct TriggerConfig: ButtonConfig, ConfigType {
+    mutating func updateStyle<T>(to newStyle: T) {
+        return
+    }
+    
     // Protocol Properties
     var position: ButtonPosition
     var scale: CGFloat
