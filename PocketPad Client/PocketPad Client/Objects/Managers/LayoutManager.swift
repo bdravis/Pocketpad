@@ -15,7 +15,7 @@ class LayoutManager {
     var availableLayouts: [String] = []
     
     // Current Layout Information
-    var currentController: LayoutConfig = .init(name: "DEBUG", landscapeButtons: [], portraitButtons: [])
+    var currentController: LayoutConfig = .init(name: "DEBUG", buttons: [])
     var hasDPad: Bool = false
     
     func getLayoutsFolder() -> URL {
@@ -103,9 +103,7 @@ class LayoutManager {
             self.currentController = try loadLayout(for: "\(name).plist")
         }
         // check if it has a d-pad
-        if currentController.landscapeButtons.enumerated().filter({ $0.element.type == ButtonType.dpad }).count > 0 {
-            self.hasDPad = true
-        } else if currentController.portraitButtons.enumerated().filter({ $0.element.type == ButtonType.dpad }).count > 0 {
+        if currentController.buttons.enumerated().filter({ $0.element.type == ButtonType.dpad }).count > 0 {
             self.hasDPad = true
         } else {
             self.hasDPad = false
@@ -116,38 +114,38 @@ class LayoutManager {
     // Helper functions for accessing and updating left and right joystick deadzone values
     // MARK: Update from landscapeButtons to buttons to reflect new LayoutConfig struct
     func getLeftJoystickDeadzone() -> Double {
-        return (currentController.landscapeButtons.first(where: {
+        return (currentController.buttons.first(where: {
             ($0 as? JoystickConfig)?.input == "LeftJoystick"
         }) as? JoystickConfig)?.deadzone ?? 0.0
     }
     
     func getRightJoystickDeadzone() -> Double {
-        return (currentController.landscapeButtons.first(where: {
+        return (currentController.buttons.first(where: {
             ($0 as? JoystickConfig)?.input == "LeftJoystick"
         }) as? JoystickConfig)?.deadzone ?? 0.0
     }
     
     func updateLeftJoystickDeadzone(_ newDeadzone: Double) {
-        for i in 0..<currentController.landscapeButtons.count {
+        for i in 0..<currentController.buttons.count {
             // find joystick
-            if var joystickButton = currentController.landscapeButtons[i] as? JoystickConfig {
+            if var joystickButton = currentController.buttons[i] as? JoystickConfig {
                 if (joystickButton.input == "LeftJoystick") {
                     // update deadzone
                     joystickButton.deadzone = newDeadzone
-                    currentController.landscapeButtons[i] = joystickButton
+                    currentController.buttons[i] = joystickButton
                 }
             }
         }
     }
     
     func updateRightJoystickDeadzone(_ newDeadzone: Double) {
-        for i in 0..<currentController.landscapeButtons.count {
+        for i in 0..<currentController.buttons.count {
             // find joystick
-            if var joystickButton = currentController.landscapeButtons[i] as? JoystickConfig {
+            if var joystickButton = currentController.buttons[i] as? JoystickConfig {
                 if (joystickButton.input == "RightJoystick") {
                     // update deadzone
                     joystickButton.deadzone = newDeadzone
-                    currentController.landscapeButtons[i] = joystickButton
+                    currentController.buttons[i] = joystickButton
                 }
             }
         }
