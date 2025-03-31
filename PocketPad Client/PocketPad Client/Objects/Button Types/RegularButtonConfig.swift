@@ -16,8 +16,7 @@ struct RegularButtonConfig: ButtonConfig, ConfigType {
     
     var input: String // the button it is bound to
     var style: RegularButtonStyle // style configuration of the button
-    var turbo: Bool // whether or not it is a turbo tap
-    var isTurboButton: Bool // whether or not this is the turbo button
+    var turbo: Bool // whether or not this is the turbo button
     
     // Object Initializer
     init(

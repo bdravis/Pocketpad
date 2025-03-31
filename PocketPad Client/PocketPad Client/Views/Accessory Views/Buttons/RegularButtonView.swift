@@ -9,6 +9,7 @@ import SwiftUI
 
 struct RegularButtonView: View {
     @StateObject private var bluetoothManager = BluetoothManager.shared
+    @StateObject private var turboManager = TurboManager.shared
     var config: RegularButtonConfig
     
     var body: some View {
