@@ -32,6 +32,7 @@ let DEBUG_BUTTONS: [ButtonConfig] = [ // Example buttons
 
 // MARK: Main Controller View
 struct ControllerView: View {
+    @Environment(\.presentationMode) var presentationMode
     // TODO: Make a View Model with the buttons
     @State private var orientation = UIDeviceOrientation.unknown
     @ObservedObject private var layoutManager = LayoutManager.shared
@@ -41,6 +42,10 @@ struct ControllerView: View {
     @State private var showAddPopup: Bool = false
     @State private var selectedBtn: UInt8? = nil
     @State private var btnEditViewPos: CGFloat = 1.0
+    
+    @State private var showDeleteAlert: Bool = false
+    @State private var showRenameAlert: Bool = false
+    @State private var newName: String = ""
     
     var body: some View {
         GeometryReader { geometry in
@@ -130,6 +135,22 @@ struct ControllerView: View {
             }
             .toolbar {
                 if isEditor {
+                    ToolbarItem(placement: .topBarLeading, content: {
+                        HStack {
+                            Button(action: {
+                                showDeleteAlert.toggle()
+                            }) {
+                                Image(systemName: "trash")
+                            }
+                            .foregroundStyle(.red)
+                            Button(action: {
+                                newName = ""
+                                showRenameAlert.toggle()
+                            }) {
+                                Image(systemName: "pencil")
+                            }
+                        }
+                    })
                     ToolbarItem(placement: .topBarTrailing, content: {
                         Button(action: {
                             showAddPopup.toggle()
@@ -142,6 +163,43 @@ struct ControllerView: View {
             .sheet(isPresented: $showAddPopup) {
                 AddButtonView()
             }
+            .alert("Delete Layout", isPresented: $showDeleteAlert, actions: {
+                Button("Cancel") {
+                    showDeleteAlert = false
+                }
+                Button("Delete") {
+                    do {
+                        try layoutManager.deleteLayout(layoutManager.currentController.name)
+                        showDeleteAlert = false
+                        presentationMode.wrappedValue.dismiss()
+                    } catch {
+                        // TODO: Add error message
+                        print(error.localizedDescription)
+                    }
+                }
+            }, message: {
+                Text("Are you sure you want to delete this layout? This cannot be undone.")
+            })
+            .alert("Rename Layout", isPresented: $showRenameAlert, actions: {
+                TextField("Layout Name", text: $newName)
+                Button("Cancel") {
+                    showRenameAlert = false
+                }
+                Button("Done") {
+                    do {
+                        if newName == "" {
+                            return
+                        }
+                        try layoutManager.renameLayout(from: layoutManager.currentController.name, to: newName)
+                        showRenameAlert = false
+                    } catch {
+                        // TODO: Add error message
+                        print(error.localizedDescription)
+                    }
+                }
+            }, message: {
+                Text("Choose a new name for the current layout.")
+            })
         }
         .navigationTitle("Controller")
         .navigationBarTitleDisplayMode(.inline)

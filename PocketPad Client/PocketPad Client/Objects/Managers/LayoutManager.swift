@@ -75,6 +75,19 @@ class LayoutManager: ObservableObject {
         }
     }
     
+    func deleteLayout(_ name: String) throws {
+        // delete the layout from both folder and file contents
+        if let idx = availableLayouts.firstIndex(where: { $0 == name }) {
+            availableLayouts.remove(at: idx)
+            let url = getLayoutsFolder()
+            try FileManager.default.removeItem(at: url.appendingPathComponent("\(name).plist", conformingTo: .propertyList))
+            if currentController.name == name {
+                currentController = try self.loadLayout(for: self.availableLayouts.first!)
+                UserDefaults.standard.set(currentController, forKey: "selectedController")
+            }
+        }
+    }
+    
     func loadLayouts(includeControllerTypes: Bool = false) throws {
         // load the list of file names from layouts
         availableLayouts.removeAll(keepingCapacity: true)
@@ -97,6 +110,26 @@ class LayoutManager: ObservableObject {
         let data = try Data(contentsOf: url)
         let layout = try decoder.decode(LayoutConfig.self, from: data)
         return layout
+    }
+    
+    func renameLayout(from initial: String, to newName: String) throws {
+        if availableLayouts.filter({ $0 == newName }).count > 0 {
+            print("Name already exists!")
+            // TODO: Throw error here
+            return
+        }
+        // TODO: Handle if it is not the current controller
+        self.currentController.name = newName
+        try self.saveLayout(self.currentController)
+        UserDefaults.standard.set(newName, forKey: "selectedController")
+        let url = getLayoutsFolder().appendingPathComponent("\(initial).plist", conformingTo: .propertyList)
+        do {
+            try FileManager.default.removeItem(at: url)
+            print("removed \(initial)")
+        } catch {
+            print("failed to remove \(initial): \(error.localizedDescription)")
+        }
+        try self.loadLayouts(includeControllerTypes: true)
     }
     
     private func getControllerType(for name: String) -> ControllerType? {

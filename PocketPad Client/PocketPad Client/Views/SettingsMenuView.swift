@@ -62,6 +62,11 @@ struct SettingsMenuView: View {
                     Spacer()
                 }
                 .frame(width: menuWidth, height: menuHeight)
+                .onAppear {
+                    if let savedController = UserDefaults.standard.string(forKey: "selectedController") {
+                        selectedController = savedController
+                    }
+                }
             }
             // Center the menu on the screen
             .position(
@@ -135,8 +140,9 @@ struct SettingsMenuView: View {
                         // TODO: Make sure the name does not already exist
                         do {
                             let newLayout: LayoutConfig = .init(name: newLayoutName, buttons: [])
-                            try LayoutManager.shared.saveLayout(newLayout)
-                            try LayoutManager.shared.setCurrentLayout(to: newLayoutName)
+                            try layoutManager.saveLayout(newLayout)
+                            try layoutManager.loadLayouts()
+                            try layoutManager.setCurrentLayout(to: newLayoutName)
                             selectedController = newLayoutName
                         } catch {
                             // TODO: Add error message
