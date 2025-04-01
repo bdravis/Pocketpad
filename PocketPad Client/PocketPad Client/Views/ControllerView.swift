@@ -33,17 +33,23 @@ let DEBUG_BUTTONS: [ButtonConfig] = [ // Example buttons
 // MARK: Main Controller View
 struct ControllerView: View {
     @Environment(\.presentationMode) var presentationMode
-    @State private var orientation = UIDeviceOrientation.unknown
+    @State private var isPortait: Bool = false
     @ObservedObject private var layoutManager = LayoutManager.shared
     
     let isEditor: Bool
     
+    // Editing Button View Values
     @State private var showAddPopup: Bool = false
     @ObservedObject private var selectedBtn: EditingButtonVM = .init()
     @State private var btnEditViewPos: CGFloat = 1.0
     @State private var editViewOpacity: Double = 1.0
-    @State private var dragPos: CGPoint? = nil
     
+    // Editing Button Gesture Values
+    @State private var dragPos: CGPoint? = nil
+    @State private var zoomStart: CGFloat? = nil
+    @State private var rotateStart: Double? = nil
+    
+    // Alert Values
     @State private var showDeleteAlert: Bool = false
     @State private var deleting: Bool = false
     @State private var showRenameAlert: Bool = false
@@ -93,6 +99,11 @@ struct ControllerView: View {
                         .onTapGesture {
                             applySelectedButton()
                             selectedBtn.setButton(to: btn.wrappedValue)
+                            if (isPortait && selectedBtn.scaledPos.y > 0.5) || (!isPortait && selectedBtn.scaledPos.x > 0.5) {
+                                btnEditViewPos = 0.0
+                            } else {
+                                btnEditViewPos = 1.0
+                            }
                         }
                     }
                 }
@@ -142,12 +153,21 @@ struct ControllerView: View {
                         applySelectedButton()
                         selectedBtn.clear()
                     }
-                    .highPriorityGesture(
+                    .simultaneousGesture(
                         DragGesture()
                             .onChanged { drag in
                                 dragPos = drag.location
                                 withAnimation {
                                     editViewOpacity = 0.3
+                                }
+                                if btnEditViewPos > 0.5 && ((isPortait && drag.location.y > geometry.size.height * 0.55) || (!isPortait && drag.location.x > geometry.size.width * 0.55)) {
+                                    withAnimation {
+                                        btnEditViewPos = 0.0
+                                    }
+                                } else if btnEditViewPos < 0.5 && ((isPortait && drag.location.y < geometry.size.height * 0.45) || (!isPortait && drag.location.x < geometry.size.width * 0.45)) {
+                                    withAnimation {
+                                        btnEditViewPos = 1.0
+                                    }
                                 }
                             }
                             .onEnded { drag in
@@ -159,13 +179,58 @@ struct ControllerView: View {
                                 }
                             }
                     )
+                    .simultaneousGesture(
+                        MagnifyGesture(minimumScaleDelta: 0.0)
+                            .onChanged { magnify in
+                                if zoomStart == nil {
+                                    zoomStart = selectedBtn.scale
+                                }
+                                if let zoomStart = zoomStart {
+                                    let zoomAmt = zoomStart + (magnify.magnification - 1)
+                                    if zoomAmt < 0.25 {
+                                        selectedBtn.scale = 0.25
+                                    } else if zoomAmt > 4.0 {
+                                        selectedBtn.scale = 4.0
+                                    } else {
+                                        selectedBtn.scale = zoomStart + (magnify.magnification - 1)
+                                    }
+                                }
+                            }
+                            .onEnded { _ in
+                                zoomStart = nil
+                            }
+                    )
+                    .simultaneousGesture(
+                        RotateGesture(minimumAngleDelta: .degrees(0.0))
+                            .onChanged { value in
+                                if rotateStart == nil {
+                                    rotateStart = selectedBtn.rotation
+                                }
+                                if let rotateStart = rotateStart {
+                                    let rotAmt = rotateStart + value.rotation.degrees
+                                    selectedBtn.rotation = rotAmt
+                                }
+                            }
+                            .onEnded { _ in
+                                rotateStart = nil
+                            }
+                    )
                 }
             }
             .onRotate { newOrientation in
-                orientation = newOrientation
+                if newOrientation.isLandscape {
+                    isPortait = false
+                } else if newOrientation.isPortrait {
+                    isPortait = true
+                }
             }
             .onAppear {
-                orientation = UIDevice.current.orientation
+                let orientation = UIDevice.current.orientation
+                if orientation.isLandscape {
+                    isPortait = false
+                } else if orientation.isPortrait {
+                    isPortait = true
+                }
             }
             .onDisappear {
                 guard !deleting else { return }
@@ -230,8 +295,14 @@ struct ControllerView: View {
             .overlay {
                 if !selectedBtn.isEmpty {
                     EditButtonView(button: selectedBtn)
-                        .frame(maxHeight: geometry.size.height * 0.3)
-                        .position(x: 0.5 * geometry.size.width, y: (btnEditViewPos * geometry.size.height) - (geometry.size.height * 0.15))
+                        .frame(
+                            width: !isPortait ? geometry.size.width * 0.4 : geometry.size.width,
+                            height: isPortait ? geometry.size.height * 0.4 : geometry.size.height
+                        )
+                        .position(
+                            x: !self.isPortait ? (btnEditViewPos * geometry.size.width) - (geometry.size.width * 0.2 * (btnEditViewPos * 2 - 1)) : 0.5 * geometry.size.width,
+                            y: self.isPortait ? (btnEditViewPos * geometry.size.height) - (geometry.size.height * 0.2 * (btnEditViewPos * 2 - 1)) : (geometry.size.height * 0.5)
+                        )
                         .opacity(editViewOpacity)
                 }
             }

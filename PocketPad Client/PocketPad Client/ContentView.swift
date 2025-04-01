@@ -120,6 +120,9 @@ struct ContentView: View {
                     
                     Spacer()
                 }
+                .onAppear {
+                    showModifyBtn = !DefaultLayouts.isDefaultLayout(name: LayoutManager.shared.currentController.name)
+                }
                 
                 // Gear Icon for Settings (top-right)
                 VStack {

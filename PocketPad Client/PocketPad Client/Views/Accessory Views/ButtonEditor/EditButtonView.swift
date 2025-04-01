@@ -10,6 +10,12 @@ import SwiftUI
 struct EditButtonView: View {
     @ObservedObject var button: EditingButtonVM
     
+    // Values for if the sections are expanded
+    @State private var positionExpanded: Bool = false
+    @State private var scaleRotExpanded: Bool = true
+    @State private var iconExpanded: Bool = true
+    @State private var styleExpanded: Bool = true
+    
     private var numberFormatter: NumberFormatter {
         let nf = NumberFormatter()
         nf.numberStyle = .decimal
@@ -18,29 +24,29 @@ struct EditButtonView: View {
     
     var body: some View {
         List {
-            Section {
+            Section(isExpanded: $positionExpanded) {
                 // MARK: X Scale
-                EditorSlider(title: "X Scale", value: $button.scaledPos.x, min: 0.0, max: 1.0, step: 0.01, inputWidth: 40, keyboardType: .decimalPad, formatter: numberFormatter)
+                EditorSlider(title: "X Scale", hideSlider: true, value: $button.scaledPos.x, min: 0.0, max: 1.0, step: 0.01, inputWidth: 40, keyboardType: .decimalPad, formatter: numberFormatter)
                 // MARK: Y Scale
-                EditorSlider(title: "Y Scale", value: $button.scaledPos.y, min: 0.0, max: 1.0, step: 0.01, inputWidth: 40, keyboardType: .decimalPad, formatter: numberFormatter)
+                EditorSlider(title: "Y Scale", hideSlider: true, value: $button.scaledPos.y, min: 0.0, max: 1.0, step: 0.01, inputWidth: 40, keyboardType: .decimalPad, formatter: numberFormatter)
             } header: {
                 Text("Position")
             }
             
-            Section {
+            Section(isExpanded: $scaleRotExpanded) {
                 // MARK: Scale
-                EditorSlider(title: "Scale", value: $button.scale, min: 0.25, max: 4.0, step: 0.05, inputWidth: 40, keyboardType: .decimalPad, formatter: numberFormatter)
+                EditorSlider(title: "Scale", hideSlider: true, value: $button.scale, min: 0.25, max: 4.0, step: 0.05, inputWidth: 40, keyboardType: .decimalPad, formatter: numberFormatter)
                 // MARK: Rotation
-                EditorSlider(title: "Rotation", value: $button.rotation, units: "º", min: 0.0, max: 360.0, step: 1.0, inputWidth: 40, keyboardType: .numberPad, formatter: numberFormatter)
+                EditorSlider(title: "Rotation", hideSlider: true, value: $button.rotation, units: "º", min: 0.0, max: 360.0, step: 1.0, inputWidth: 40, keyboardType: .numberPad, formatter: numberFormatter)
+            } header: {
+                Text("Scale and Rotation")
             }
             
             if button.type == .regular {
-                Section {
+                Section(isExpanded: $iconExpanded) {
                     // MARK: Shape
                     HStack {
-                        Text("Button Shape")
-                        Spacer()
-                        Picker("Shape", selection: $button.shape) {
+                        Picker("Button Shape", selection: $button.shape) {
                             ForEach(RegularButtonShape.allCases, id: \.self) { shape in
                                 Text(shape.rawValue).tag(shape)
                             }
@@ -52,9 +58,7 @@ struct EditButtonView: View {
                     Toggle("Has Icon", isOn: $button.hasIcon)
                     if button.hasIcon {
                         HStack {
-                            Text("Icon Type")
-                            Spacer()
-                            Picker("Type", selection: $button.iconType) {
+                            Picker("Icon Type", selection: $button.iconType) {
                                 ForEach(RegularButtonIconType.allCases, id: \.self) { iconType in
                                     Text(iconType.rawValue).tag(iconType)
                                 }
@@ -65,6 +69,8 @@ struct EditButtonView: View {
                             Text("Icon")
                             Spacer()
                             TextField("Icon", text: $button.icon)
+                                .multilineTextAlignment(.trailing)
+                                .autocorrectionDisabled(true)
                         }
                     }
                 } header: {
@@ -72,7 +78,7 @@ struct EditButtonView: View {
                 }
             }
             if button.type == .regular || button.type == .joystick || button.type == .dpad {
-                Section {
+                Section(isExpanded: $styleExpanded) {
                     // MARK: Icon Colors
                     ColorPicker("\(button.type == .regular ? "Icon" : button.type == .joystick ? "Thumbstick" : "Arrow") Color", selection: $button.fgColor)
                     if button.type != .joystick {
@@ -82,7 +88,7 @@ struct EditButtonView: View {
                     // MARK: Background Colors
                     ColorPicker("Background Color", selection: $button.bgColor)
                     if button.type != .joystick {
-                        ColorPicker("Pressed Background Color", selection: $button.bgPressedColor)
+                        ColorPicker("Pressed BG Color", selection: $button.bgPressedColor)
                     }
                     
                     // MARK: Stroke
@@ -92,11 +98,13 @@ struct EditButtonView: View {
                 }
             }
         }
+        .listStyle(.sidebar)
     }
 }
 
 struct EditorSlider<V>: View where V : BinaryFloatingPoint, V.Stride : BinaryFloatingPoint {
     var title: String
+    var hideSlider: Bool = false
     @Binding var value: V
     var units: String = ""
     var min: V
@@ -121,7 +129,7 @@ struct EditorSlider<V>: View where V : BinaryFloatingPoint, V.Stride : BinaryFlo
                     enteringValue = value
                     enterAlert.toggle()
                 }) {
-                    Text("\(value)\(units)")
+                    Text("\(Double(value), specifier: "%.2f")\(units)")
                 }
                 .alert("Enter Value", isPresented: $enterAlert, actions: {
                     TextField(title, value: $enteringValue, formatter: formatter)
@@ -138,19 +146,21 @@ struct EditorSlider<V>: View where V : BinaryFloatingPoint, V.Stride : BinaryFlo
                     Text("Enter a value for \(title).")
                 }
             }
-            Slider(value: $value, in: min...max, step: V.Stride(step)) {
-                Text(title)
-            } minimumValueLabel: {
-                if let minLabel = minLabel {
-                    Text(minLabel)
-                } else {
-                    Text("\(min)\(units)")
-                }
-            } maximumValueLabel: {
-                if let maxLabel = maxLabel {
-                    Text(maxLabel)
-                } else {
-                    Text("\(max)\(units)")
+            if !hideSlider {
+                Slider(value: $value, in: min...max, step: V.Stride(step)) {
+                    Text(title)
+                } minimumValueLabel: {
+                    if let minLabel = minLabel {
+                        Text(minLabel)
+                    } else {
+                        Text("\(min)\(units)")
+                    }
+                } maximumValueLabel: {
+                    if let maxLabel = maxLabel {
+                        Text(maxLabel)
+                    } else {
+                        Text("\(max)\(units)")
+                    }
                 }
             }
         }
