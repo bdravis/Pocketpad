@@ -230,11 +230,10 @@ extension BluetoothManager: CBPeripheralDelegate {
                 
                 let response_data = [LayoutManager.shared.player_id, ConnectionMessage.connecting.rawValue, UInt8(selectedControllerValue)]
                 
-                peripheral.writeValue(Data(response_data), for: characteristic, type: .withResponse)
-                peripheral.readValue(for: characteristic)
-                
                 sendLayout(layout: LayoutManager.shared.currentController)
 
+                peripheral.writeValue(Data(response_data), for: characteristic, type: .withResponse)
+                peripheral.readValue(for: characteristic)
             }
         }
     }
