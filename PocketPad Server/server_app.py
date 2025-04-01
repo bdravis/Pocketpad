@@ -24,9 +24,8 @@ from ui_form import Ui_MainWindow
 class MainWindow(QMainWindow):
 
     latency_updated = Signal(str, int)
-    connection_updated = Signal(str, str, enums.ControllerType)
-    controller_updated = Signal(str, enums.ControllerType)
-    controller_updated = Signal(str, enums.ControllerType)
+    connection_updated = Signal(str, str, enums.ControllerType, str)
+    controller_updated = Signal(str, enums.ControllerType, str)
     input_updated = Signal(str, int, enums.ButtonEvent)
 
     def __init__(self, parent=None):
@@ -70,7 +69,7 @@ class MainWindow(QMainWindow):
 
         self.ui.customizer_button.clicked.connect(self.display_color_picker)
 
-        #self.ui.bluetooth_button.clicked.connect(self.start_bluetooth_server)
+        self.ui.bluetooth_button.clicked.connect(self.start_bluetooth_server)
         self.bluetooth_server_initiated=False
 
         #self.ui.network_button.clicked.connect(self.start_network_server)
@@ -597,7 +596,11 @@ class MainWindow(QMainWindow):
             controller_widget.update_glow_color(color)            
 
     def display_controller_input(self, player_id, input, hold_input):
+        """
         if self.player_controller_input_display[player_id]:
+            self.player_controller_mapping[player_id]["display"].set_active_input(input, hold_input)
+        """
+        if player_id in self.player_controller_input_display:
             self.player_controller_mapping[player_id]["display"].set_active_input(input, hold_input)
     
     def toggle_controller_input(self, checkbox, player_id):
