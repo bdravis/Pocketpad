@@ -11,7 +11,7 @@ let INFO_OVERLAY_SIZE = DEFAULT_BUTTON_SIZE + 6
 
 // this will be the overlay for debugging + will be shown in the layout configurator
 struct ButtonInfoView: View {
-    var config: ButtonConfig
+    @ObservedObject var configVM: EditingButtonVM
     
     var body: some View {
         ZStack {
@@ -32,7 +32,7 @@ struct ButtonInfoView: View {
             
             // Scale tag
             HStack {
-                Text("\(Int(config.scale * 100))%")
+                Text("\(Int(configVM.scale * 100))%")
                     .frame(height: 10)
                     .font(.system(size: 8))
                     .offset(y: -INFO_OVERLAY_SIZE / 2 - 8)

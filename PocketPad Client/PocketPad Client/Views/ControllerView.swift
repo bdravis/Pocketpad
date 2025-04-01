@@ -40,7 +40,7 @@ struct ControllerView: View {
     let isEditor: Bool
     
     @State private var showAddPopup: Bool = false
-    @State private var selectedBtn: UInt8? = nil
+    @ObservedObject private var selectedBtn: EditingButtonVM = .init()
     @State private var btnEditViewPos: CGFloat = 1.0
     
     @State private var showDeleteAlert: Bool = false
@@ -51,11 +51,12 @@ struct ControllerView: View {
         GeometryReader { geometry in
             ZStack(alignment: .topLeading) {
                 ForEach($layoutManager.currentController.buttons, id: \.wrappedValue.id) { btn in
-                    ZStack {
-                        Group {
-                            switch btn.wrappedValue.type {
+                    if selectedBtn.isEmpty || selectedBtn.inputId != btn.wrappedValue.inputId {
+                        ZStack {
+                            Group {
+                                switch btn.wrappedValue.type {
                                 case .regular:
-                                RegularButtonView(config: btn.wrappedValue as! RegularButtonConfig)
+                                    RegularButtonView(config: btn.wrappedValue as! RegularButtonConfig)
                                         .accessibilityAddTraits(.isButton)
                                         .accessibilityIdentifier("ControllerButton")
                                 case .joystick:
@@ -72,47 +73,72 @@ struct ControllerView: View {
                                     TriggerButtonView(config: btn.wrappedValue as! TriggerConfig)
                                         .accessibilityAddTraits(.isButton)
                                         .accessibilityIdentifier("ControllerButton")
+                                }
+                            }
+                            .scaleEffect(btn.wrappedValue.scale)
+                            .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE)
+                            .position(
+                                x: btn.wrappedValue.position.scaledPos.x * geometry.size.width,
+                                y: btn.wrappedValue.position.scaledPos.y * geometry.size.height
+                            )
+                            .offset(
+                                x: btn.wrappedValue.position.offset.x,
+                                y: btn.wrappedValue.position.offset.y
+                            )
+                            .rotationEffect(.degrees(btn.wrappedValue.rotation))
+                            .disabled(isEditor)
+                        }
+                        .onTapGesture {
+                            applySelectedButton()
+                            selectedBtn.setButton(to: btn.wrappedValue)
+                        }
+                    }
+                }
+                
+                // MARK: Editor Button
+                if !selectedBtn.isEmpty {
+                    ZStack {
+                        Group {
+                            switch selectedBtn.type {
+                            case .regular:
+                                RegularButtonView(config: selectedBtn.asButtonConfig() as! RegularButtonConfig)
+                            case .joystick:
+                                JoystickButtonView(config: selectedBtn.asButtonConfig() as! JoystickConfig)
+                            case .dpad:
+                                DPadButtonView(config: selectedBtn.asButtonConfig() as! DPadConfig)
+                            case .bumper:
+                                BumperButtonView(config: selectedBtn.asButtonConfig() as! BumperConfig)
+                            case .trigger:
+                                TriggerButtonView(config: selectedBtn.asButtonConfig() as! TriggerConfig)
                             }
                         }
-                        .scaleEffect(btn.wrappedValue.scale)
+                        .scaleEffect(selectedBtn.scale)
                         .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE)
                         .position(
-                            x: btn.wrappedValue.position.scaledPos.x * geometry.size.width,
-                            y: btn.wrappedValue.position.scaledPos.y * geometry.size.height
+                            x: selectedBtn.scaledPos.x * geometry.size.width,
+                            y: selectedBtn.scaledPos.y * geometry.size.height
                         )
                         .offset(
-                            x: btn.wrappedValue.position.offset.x,
-                            y: btn.wrappedValue.position.offset.y
+                            x: selectedBtn.offset.x,
+                            y: selectedBtn.offset.y
                         )
-                        .rotationEffect(.degrees(btn.wrappedValue.rotation))
-                        .disabled(isEditor)
-                        if isEditor && selectedBtn == btn.wrappedValue.inputId {
-                            ButtonInfoView(config: btn.wrappedValue)
-                                .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE)
-                                .scaleEffect(btn.scale.wrappedValue)
-                                .position(
-                                    x: btn.wrappedValue.position.scaledPos.x * geometry.size.width,
-                                    y: btn.wrappedValue.position.scaledPos.y * geometry.size.height
-                                )
-                                .offset(
-                                    x: btn.wrappedValue.position.offset.x,
-                                    y: btn.wrappedValue.position.offset.y
-                                )
-                        }
+                        .rotationEffect(.degrees(selectedBtn.rotation))
+                        .disabled(true)
+                        ButtonInfoView(configVM: selectedBtn)
+                            .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE)
+                            .scaleEffect(selectedBtn.scale)
+                            .position(
+                                x: selectedBtn.scaledPos.x * geometry.size.width,
+                                y: selectedBtn.scaledPos.y * geometry.size.height
+                            )
+                            .offset(
+                                x: selectedBtn.offset.x,
+                                y: selectedBtn.offset.y
+                            )
                     }
                     .onTapGesture {
-                        if selectedBtn == btn.wrappedValue.inputId {
-                            selectedBtn = nil
-                        } else {
-                            selectedBtn = btn.wrappedValue.inputId
-                        }
-                    }
-                    .overlay {
-                        if selectedBtn == btn.inputId.wrappedValue {
-                            EditButtonView(button: btn)
-                                .frame(maxHeight: geometry.size.height * 0.3)
-                                .position(x: 0.5 * geometry.size.width, y: (btnEditViewPos * geometry.size.height) - (geometry.size.height * 0.15))
-                        }
+                        applySelectedButton()
+                        selectedBtn.clear()
                     }
                 }
             }
@@ -123,6 +149,8 @@ struct ControllerView: View {
                 orientation = UIDevice.current.orientation
             }
             .onDisappear {
+                // apply the selected button first
+                applySelectedButton()
                 // save controller
                 if isEditor {
                     do {
@@ -180,6 +208,13 @@ struct ControllerView: View {
             }, message: {
                 Text("Are you sure you want to delete this layout? This cannot be undone.")
             })
+            .overlay {
+                if !selectedBtn.isEmpty {
+                    EditButtonView(button: selectedBtn)
+                        .frame(maxHeight: geometry.size.height * 0.3)
+                        .position(x: 0.5 * geometry.size.width, y: (btnEditViewPos * geometry.size.height) - (geometry.size.height * 0.15))
+                }
+            }
             .alert("Rename Layout", isPresented: $showRenameAlert, actions: {
                 TextField("Layout Name", text: $newName)
                 Button("Cancel") {
@@ -203,6 +238,17 @@ struct ControllerView: View {
         }
         .navigationTitle("Controller")
         .navigationBarTitleDisplayMode(.inline)
+    }
+    
+    func applySelectedButton() {
+        guard !selectedBtn.isEmpty else { return }
+        for i in 0..<layoutManager.currentController.buttons.count {
+            if layoutManager.currentController.buttons[i].inputId == selectedBtn.inputId {
+                selectedBtn.applyToButton(&layoutManager.currentController.buttons[i])
+                break
+            }
+        }
+        selectedBtn.clear()
     }
 }
 //
