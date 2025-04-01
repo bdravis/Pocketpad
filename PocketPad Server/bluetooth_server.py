@@ -139,14 +139,14 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
 
         player_id = connection_information[0]
 
-        # If press & release -> send release 
-        input_function(str(player_id), input_id, enums.ButtonEvent.RELEASED)
+        # # If press & release -> send release 
+        # input_function(str(player_id), input_id, enums.ButtonEvent.RELEASED)
 
-        # If press & and held -> send pressed
-        input_function(str(player_id), input_id, enums.ButtonEvent.PRESSED)
+        # # If press & and held -> send pressed
+        # input_function(str(player_id), input_id, enums.ButtonEvent.PRESSED)
 
-        # If release -> send release
-        input_function(str(player_id), input_id, enums.ButtonEvent.RELEASED)
+        # # If release -> send release
+        # input_function(str(player_id), input_id, enums.ButtonEvent.RELEASED)
 
 
 
@@ -250,7 +250,6 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
                 response_data = [0, ConnectionMessage.transmitting_layout.value]
                 response = bytearray(response_data)
                 characteristic.value = response
-
 
 async def run(loop):
     global logger, trigger

@@ -24,9 +24,8 @@ from ui_form import Ui_MainWindow
 class MainWindow(QMainWindow):
 
     latency_updated = Signal(str, int)
-    connection_updated = Signal(str, str, enums.ControllerType)
-    controller_updated = Signal(str, enums.ControllerType)
-    controller_updated = Signal(str, enums.ControllerType)
+    connection_updated = Signal(str, str, enums.ControllerType, str)
+    controller_updated = Signal(str, enums.ControllerType, str)
     input_updated = Signal(str, int, enums.ButtonEvent)
 
     def __init__(self, parent=None):
@@ -70,13 +69,13 @@ class MainWindow(QMainWindow):
 
         self.ui.customizer_button.clicked.connect(self.display_color_picker)
 
-        #self.ui.bluetooth_button.clicked.connect(self.start_bluetooth_server)
+        self.ui.bluetooth_button.clicked.connect(self.start_bluetooth_server)
         self.bluetooth_server_initiated=False
 
-        #self.ui.network_button.clicked.connect(self.start_network_server)
+        self.ui.network_button.clicked.connect(self.start_network_server)
         self.network_server_initiated=False
 
-        #self.ui.server_close_button.clicked.connect(self.stop_server)
+        self.ui.server_close_button.clicked.connect(self.stop_server)
 
         self.ui.view_code_button.clicked.connect(self.toggle_pair_code)
         self.view_code = True
@@ -138,14 +137,14 @@ class MainWindow(QMainWindow):
 
         #self.ui.bluetooth_button.clicked.connect(lambda: self.update_player_connection("disconnect", f"player {self.num_players_connected - 3}", "switch", "sample.json"))
         #self.ui.bluetooth_button.clicked.connect(lambda: self.dev_testing(f"player {self.num_players_connected - 1}", random.randint(1, 4)))
-        self.ui.network_button.clicked.connect(lambda: self.update_player_connection("connect", f"player {self.num_players_connected}", enums.ControllerType.Playstation, "sample.json"))
+        #self.ui.network_button.clicked.connect(lambda: self.update_player_connection("connect", f"player {self.num_players_connected}", enums.ControllerType.Playstation, "sample.json"))
         #self.ui.server_close_button.clicked.connect(lambda: self.update_latency(f"player {self.num_players_connected - 1}", random.randint(1, 200)))
         
         #self.ui.server_close_button.clicked.connect(lambda: self.display_controller_input(f"player {random.randint(0, self.num_players_connected - 1)}", random.randint(0, 14), False))
         #self.ui.server_close_button.clicked.connect(lambda: self.display_controller_input(f"player {random.randint(0, self.num_players_connected - 1)}", random.randint(0, 14), True))
         #self.ui.server_close_button.clicked.connect(lambda: self.display_controller_input(f"player {random.randint(0, self.num_players_connected - 1)}", random.randint(0, 14), False))
-        self.ui.server_close_button.clicked.connect(lambda: self.display_controller_input(f"player {self.num_players_connected - 1}", 4, enums.ButtonEvent.PRESSED))
-        self.ui.bluetooth_button.clicked.connect(lambda: self.display_controller_input(f"player {self.num_players_connected - 1}", 4, enums.ButtonEvent.RELEASED))
+        #self.ui.server_close_button.clicked.connect(lambda: self.display_controller_input(f"player {self.num_players_connected - 1}", 4, enums.ButtonEvent.PRESSED))
+        #self.ui.bluetooth_button.clicked.connect(lambda: self.display_controller_input(f"player {self.num_players_connected - 1}", 4, enums.ButtonEvent.RELEASED))
         #
         # Dev testing function calls
 
@@ -1226,8 +1225,8 @@ class ControllerWidget(QWidget):
     def __init__(self, controller_config_file, widget_color):
         super().__init__()
                 
-        with open(controller_config_file, 'r') as data:
-            self.layout_config = json.load(data)
+        #with open(controller_config_file, 'r') as data:
+        self.layout_config = json.loads(controller_config_file)
         self.controller_widgets = self.layout_config.get("wrappedLandscapeButtons", [])
         
         self.color_scheme = widget_color
