@@ -42,6 +42,8 @@ struct ControllerView: View {
     @State private var showAddPopup: Bool = false
     @ObservedObject private var selectedBtn: EditingButtonVM = .init()
     @State private var btnEditViewPos: CGFloat = 1.0
+    @State private var editViewOpacity: Double = 1.0
+    @State private var dragPos: CGPoint? = nil
     
     @State private var showDeleteAlert: Bool = false
     @State private var showRenameAlert: Bool = false
@@ -75,19 +77,19 @@ struct ControllerView: View {
                                         .accessibilityIdentifier("ControllerButton")
                                 }
                             }
-                            .scaleEffect(btn.wrappedValue.scale)
-                            .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE)
-                            .position(
-                                x: btn.wrappedValue.position.scaledPos.x * geometry.size.width,
-                                y: btn.wrappedValue.position.scaledPos.y * geometry.size.height
-                            )
-                            .offset(
-                                x: btn.wrappedValue.position.offset.x,
-                                y: btn.wrappedValue.position.offset.y
-                            )
-                            .rotationEffect(.degrees(btn.wrappedValue.rotation))
-                            .disabled(isEditor)
                         }
+                        .rotationEffect(.degrees(btn.wrappedValue.rotation))
+                        .scaleEffect(btn.wrappedValue.scale)
+                        .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE)
+                        .position(
+                            x: btn.wrappedValue.position.scaledPos.x * geometry.size.width,
+                            y: btn.wrappedValue.position.scaledPos.y * geometry.size.height
+                        )
+                        .offset(
+                            x: btn.wrappedValue.position.offset.x,
+                            y: btn.wrappedValue.position.offset.y
+                        )
+                        .disabled(isEditor)
                         .onTapGesture {
                             applySelectedButton()
                             selectedBtn.setButton(to: btn.wrappedValue)
@@ -112,24 +114,24 @@ struct ControllerView: View {
                                 TriggerButtonView(config: selectedBtn.asButtonConfig() as! TriggerConfig)
                             }
                         }
+                        .rotationEffect(.degrees(selectedBtn.rotation))
                         .scaleEffect(selectedBtn.scale)
                         .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE)
                         .position(
-                            x: selectedBtn.scaledPos.x * geometry.size.width,
-                            y: selectedBtn.scaledPos.y * geometry.size.height
+                            x: dragPos?.x ?? selectedBtn.scaledPos.x * geometry.size.width,
+                            y: dragPos?.y ?? selectedBtn.scaledPos.y * geometry.size.height
                         )
                         .offset(
                             x: selectedBtn.offset.x,
                             y: selectedBtn.offset.y
                         )
-                        .rotationEffect(.degrees(selectedBtn.rotation))
                         .disabled(true)
                         ButtonInfoView(configVM: selectedBtn)
-                            .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE)
                             .scaleEffect(selectedBtn.scale)
+                            .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE)
                             .position(
-                                x: selectedBtn.scaledPos.x * geometry.size.width,
-                                y: selectedBtn.scaledPos.y * geometry.size.height
+                                x: dragPos?.x ?? selectedBtn.scaledPos.x * geometry.size.width,
+                                y: dragPos?.y ?? selectedBtn.scaledPos.y * geometry.size.height
                             )
                             .offset(
                                 x: selectedBtn.offset.x,
@@ -140,6 +142,23 @@ struct ControllerView: View {
                         applySelectedButton()
                         selectedBtn.clear()
                     }
+                    .highPriorityGesture(
+                        DragGesture()
+                            .onChanged { drag in
+                                dragPos = drag.location
+                                withAnimation {
+                                    editViewOpacity = 0.3
+                                }
+                            }
+                            .onEnded { drag in
+                                let pos = drag.location
+                                selectedBtn.scaledPos = CGPoint(x: pos.x / geometry.size.width, y: pos.y / geometry.size.height)
+                                dragPos = nil
+                                withAnimation {
+                                    editViewOpacity = 1.0
+                                }
+                            }
+                    )
                 }
             }
             .onRotate { newOrientation in
@@ -213,6 +232,7 @@ struct ControllerView: View {
                     EditButtonView(button: selectedBtn)
                         .frame(maxHeight: geometry.size.height * 0.3)
                         .position(x: 0.5 * geometry.size.width, y: (btnEditViewPos * geometry.size.height) - (geometry.size.height * 0.15))
+                        .opacity(editViewOpacity)
                 }
             }
             .alert("Rename Layout", isPresented: $showRenameAlert, actions: {
