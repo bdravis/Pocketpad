@@ -49,6 +49,11 @@ struct ControllerView: View {
     @State private var zoomStart: CGFloat? = nil
     @State private var rotateStart: Double? = nil
     
+    // Keep the last safe values
+    @State private var lastSafePos: CGPoint? = nil
+    @State private var lastSafeScale: CGFloat? = nil
+    @State private var isUnsafe: Bool = false
+    
     // Alert Values
     @State private var showDeleteAlert: Bool = false
     @State private var deleting: Bool = false
@@ -137,7 +142,7 @@ struct ControllerView: View {
                             y: selectedBtn.offset.y
                         )
                         .disabled(true)
-                        ButtonInfoView(configVM: selectedBtn)
+                        ButtonInfoView(configVM: selectedBtn, isUnsafe: $isUnsafe)
                             .scaleEffect(selectedBtn.scale)
                             .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE)
                             .position(
@@ -156,6 +161,12 @@ struct ControllerView: View {
                     .simultaneousGesture(
                         DragGesture()
                             .onChanged { drag in
+                                if lastSafePos == nil {
+                                    lastSafePos = CGPoint(
+                                        x: selectedBtn.scaledPos.x * geometry.size.width,
+                                        y: selectedBtn.scaledPos.y * geometry.size.height
+                                    )
+                                }
                                 dragPos = drag.location
                                 withAnimation {
                                     editViewOpacity = 0.3
@@ -169,11 +180,26 @@ struct ControllerView: View {
                                         btnEditViewPos = 1.0
                                     }
                                 }
+                                if isSafe(geomSize: geometry.size), let dragPos = dragPos {
+                                    isUnsafe = false
+                                    lastSafePos = dragPos
+                                } else {
+                                    isUnsafe = true
+                                }
                             }
                             .onEnded { drag in
                                 let pos = drag.location
                                 selectedBtn.scaledPos = CGPoint(x: pos.x / geometry.size.width, y: pos.y / geometry.size.height)
                                 dragPos = nil
+                                if !isSafe(geomSize: geometry.size), let lastSafePos = lastSafePos {
+                                    // needs to set position back to the safe pos
+                                    selectedBtn.scaledPos = CGPoint(
+                                        x: lastSafePos.x / geometry.size.width,
+                                        y: lastSafePos.y / geometry.size.height
+                                    )
+                                }
+                                lastSafePos = nil
+                                isUnsafe = false
                                 withAnimation {
                                     editViewOpacity = 1.0
                                 }
@@ -182,6 +208,9 @@ struct ControllerView: View {
                     .simultaneousGesture(
                         MagnifyGesture(minimumScaleDelta: 0.0)
                             .onChanged { magnify in
+                                if lastSafeScale == nil {
+                                    lastSafeScale = selectedBtn.scale
+                                }
                                 if zoomStart == nil {
                                     zoomStart = selectedBtn.scale
                                 }
@@ -195,9 +224,21 @@ struct ControllerView: View {
                                         selectedBtn.scale = zoomStart + (magnify.magnification - 1)
                                     }
                                 }
+                                // check if safe
+                                if isSafe(geomSize: geometry.size) {
+                                    isUnsafe = false
+                                    lastSafeScale = selectedBtn.scale
+                                } else {
+                                    isUnsafe = true
+                                }
                             }
                             .onEnded { _ in
                                 zoomStart = nil
+                                if !isSafe(geomSize: geometry.size), let lastSafeScale = lastSafeScale {
+                                    selectedBtn.scale = lastSafeScale
+                                }
+                                lastSafeScale = nil
+                                isUnsafe = false
                             }
                     )
                     .simultaneousGesture(
@@ -328,6 +369,29 @@ struct ControllerView: View {
         }
         .navigationTitle("Controller")
         .navigationBarTitleDisplayMode(.inline)
+    }
+    
+    func isSafe(geomSize: CGSize) -> Bool {
+        guard !selectedBtn.isEmpty else { return true }
+        let selBtnRect = CGRect(
+            x: dragPos?.x ?? (selectedBtn.scaledPos.x * geomSize.width) + selectedBtn.offset.x,
+            y: dragPos?.y ?? (selectedBtn.scaledPos.y * geomSize.height) + selectedBtn.offset.y,
+            width: selectedBtn.scale * DEFAULT_BUTTON_SIZE,
+            height: selectedBtn.scale * DEFAULT_BUTTON_SIZE
+        )
+        for btn in layoutManager.currentController.buttons {
+            if btn.inputId == selectedBtn.inputId { continue }
+            let currBtnRect = CGRect(
+                x: (btn.position.scaledPos.x * geomSize.width) + btn.position.offset.x,
+                y: (btn.position.scaledPos.y * geomSize.height) + btn.position.offset.y,
+                width: btn.scale * DEFAULT_BUTTON_SIZE,
+                height: btn.scale * DEFAULT_BUTTON_SIZE
+            )
+            if selBtnRect.intersects(currBtnRect) {
+                return false
+            }
+        }
+        return true
     }
     
     func applySelectedButton() {

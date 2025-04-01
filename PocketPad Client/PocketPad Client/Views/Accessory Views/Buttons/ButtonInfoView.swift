@@ -12,12 +12,13 @@ let INFO_OVERLAY_SIZE = DEFAULT_BUTTON_SIZE + 6
 // this will be the overlay for debugging + will be shown in the layout configurator
 struct ButtonInfoView: View {
     @ObservedObject var configVM: EditingButtonVM
+    @Binding var isUnsafe: Bool
     
     var body: some View {
         ZStack {
             // Overlay Rectangle
             Rectangle()
-                .stroke(Color.blue, style: StrokeStyle(lineWidth: 4, lineJoin: .bevel))
+                .stroke(isUnsafe ? Color.red : Color.blue, style: StrokeStyle(lineWidth: 4, lineJoin: .bevel))
                 .frame(width: INFO_OVERLAY_SIZE, height: INFO_OVERLAY_SIZE)
             
             // Position tag
