@@ -67,14 +67,23 @@ struct EditButtonView: View {
                             TextField("Icon", text: $button.icon)
                         }
                     }
-                    
+                } header: {
+                    Text("Icon")
+                }
+            }
+            if button.type == .regular || button.type == .joystick || button.type == .dpad {
+                Section {
                     // MARK: Icon Colors
-                    ColorPicker("Icon Color", selection: $button.fgColor)
-                    ColorPicker("Pressed Icon Color", selection: $button.fgPressedColor)
+                    ColorPicker("\(button.type == .regular ? "Icon" : button.type == .joystick ? "Thumbstick" : "Arrow") Color", selection: $button.fgColor)
+                    if button.type != .joystick {
+                        ColorPicker("Pressed \(button.type == .regular ? "Icon" : "Arrow") Color", selection: $button.fgPressedColor)
+                    }
                     
                     // MARK: Background Colors
                     ColorPicker("Background Color", selection: $button.bgColor)
-                    ColorPicker("Pressed Background Color", selection: $button.bgPressedColor)
+                    if button.type != .joystick {
+                        ColorPicker("Pressed Background Color", selection: $button.bgPressedColor)
+                    }
                     
                     // MARK: Stroke
                     EditorSlider(title: "Stroke Thickness", value: $button.stroke, min: 0, max: 15, step: 1, inputWidth: 40, keyboardType: .numberPad, formatter: NumberFormatter())
@@ -82,56 +91,6 @@ struct EditButtonView: View {
                     Text("Style")
                 }
             }
-//            } else if button.type == .joystick || button.type == .dpad {
-//                Section {
-//                    // MARK: Icon Colors
-//                    ColorPicker("\(button.type == .joystick ? "Thumbstick" : "Icon") Color", selection: $fgColor)
-//                        .onChange(of: fgColor) {
-//                            var newStyle = ((button as? JoystickConfig)?.style ?? (button as! DPadConfig).style)
-//                            newStyle.foregroundColor = fgColor
-//                            button.updateStyle(to: newStyle)
-//                        }
-//                    if button.type == .dpad {
-//                        ColorPicker("Pressed Icon Color", selection: $fgPressedColor)
-//                            .onChange(of: fgPressedColor) {
-//                                var newStyle = ((button as? JoystickConfig)?.style ?? (button as! DPadConfig).style)
-//                                newStyle.foregroundPressedColor = fgPressedColor
-//                                button.updateStyle(to: newStyle)
-//                            }
-//                    }
-//                    
-//                    // MARK: Background Colors
-//                    ColorPicker("Background Color", selection: $bgColor)
-//                        .onChange(of: bgColor) {
-//                            var newStyle = ((button as? JoystickConfig)?.style ?? (button as! DPadConfig).style)
-//                            newStyle.color = bgColor
-//                            button.updateStyle(to: newStyle)
-//                        }
-//                    if button.type == .dpad {
-//                        ColorPicker("Pressed Background Color", selection: $bgPressedColor)
-//                            .onChange(of: bgPressedColor) {
-//                                var newStyle = ((button as? JoystickConfig)?.style ?? (button as! DPadConfig).style)
-//                                newStyle.pressedColor = bgPressedColor
-//                                button.updateStyle(to: newStyle)
-//                            }
-//                    }
-//                    
-//                    // MARK: Stroke
-//                    EditorSlider(title: "Stroke Thickness", value: $stroke, min: 0, max: 15, step: 1, inputWidth: 40, keyboardType: .numberPad, formatter: NumberFormatter())
-//                        .onChange(of: stroke) {
-//                            var newStyle = (button as! RegularButtonConfig).style
-//                            newStyle.properties.borderThickness = stroke
-//                            button.updateStyle(to: newStyle)
-//                        }
-//                } header: {
-//                    Text("Style")
-//                }
-//            }
-//        }
-//        .onAppear {
-//            if button.type == .regular {
-//                bgColor = (button as! RegularButtonConfig).style.properties.color ?? Color(uiColor: .secondarySystemFill)
-//            }
         }
     }
 }

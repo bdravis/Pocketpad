@@ -63,6 +63,15 @@ class EditingButtonVM: ObservableObject {
             self.fgColor = btn.style.properties.foregroundColor ?? Color(uiColor: .label)
             self.fgPressedColor = btn.style.properties.foregroundPressedColor ?? Color(uiColor: .systemBackground)
             self.stroke = btn.style.properties.borderThickness
+        } else if let btn = config as? JoystickConfig {
+            self.bgColor = btn.style.color ?? Color(uiColor: .secondarySystemFill)
+            self.fgColor = btn.style.foregroundColor ?? Color(uiColor: .darkGray)
+            self.stroke = btn.style.borderThickness
+        } else if let btn = config as? DPadConfig {
+            self.bgColor = btn.style.color ?? Color(uiColor: .secondarySystemFill)
+            self.fgColor = btn.style.foregroundColor ?? Color(uiColor: .label)
+            self.fgPressedColor = btn.style.foregroundPressedColor ?? Color(uiColor: .systemBackground)
+            self.stroke = btn.style.borderThickness
         }
     }
     
@@ -83,6 +92,9 @@ class EditingButtonVM: ObservableObject {
         if button.type == .regular {
             // set the regular button style
             button.updateStyle(to: RegularButtonStyle(shape: self.shape, iconType: self.iconType, icon: self.hasIcon ? self.icon : nil, properties: getGeneralStyle()))
+        } else if button.type == .joystick || button.type == .dpad {
+            // set the general button style
+            button.updateStyle(to: GeneralButtonStyle(color: self.bgColor, pressedColor: self.bgPressedColor, borderThickness: self.stroke, foregroundColor: self.fgColor, foregroundPressedColor: self.fgPressedColor))
         }
     }
     
@@ -96,9 +108,9 @@ class EditingButtonVM: ObservableObject {
                 style: .init(shape: self.shape, iconType: self.iconType, icon: self.hasIcon ? self.icon : nil, properties: getGeneralStyle())
             )
         case .joystick:
-            return JoystickConfig(position: .init(scaledPos: self.scaledPos, offset: self.offset), scale: self.scale, rotation: rotation, inputId: self.inputId, input: .RightJoystick)
+            return JoystickConfig(position: .init(scaledPos: self.scaledPos, offset: self.offset), scale: self.scale, rotation: rotation, style: getGeneralStyle(), inputId: self.inputId, input: .RightJoystick)
         case .dpad:
-            return DPadConfig(position: .init(scaledPos: self.scaledPos, offset: self.offset), scale: self.scale, rotation: rotation, inputId: self.inputId, inputs: [:])
+            return DPadConfig(position: .init(scaledPos: self.scaledPos, offset: self.offset), scale: self.scale, rotation: rotation, style: getGeneralStyle(), inputId: self.inputId, inputs: [:])
         case .bumper:
             return BumperConfig(position: .init(scaledPos: self.scaledPos, offset: self.offset), scale: self.scale, rotation: rotation, inputId: self.inputId, input: .LB)
         case .trigger:
