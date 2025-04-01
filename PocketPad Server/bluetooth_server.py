@@ -184,7 +184,7 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
                 if controller_type == 3:
                     controller_type = enums.ControllerType.Switch
 
-                connection_function("connect", str(next_id), controller_type)
+                connection_function("connect", str(next_id), controller_type, json_file)
                 num_players += 1
                 next_id += 1
                 layout_jsons.append({})
@@ -210,7 +210,7 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
                     controller_type = enums.ControllerType.Switch
 
                 characteristic.value = response
-                connection_function("disconnect", str(player_id), controller_type)
+                connection_function("disconnect", str(player_id), None, None)
 
             if signal == ConnectionMessage.transmitting_layout.value:
 
