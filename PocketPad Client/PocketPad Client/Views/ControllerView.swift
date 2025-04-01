@@ -134,24 +134,16 @@ struct ControllerView: View {
                         .scaleEffect(selectedBtn.scale)
                         .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE)
                         .position(
-                            x: dragPos?.x ?? selectedBtn.scaledPos.x * geometry.size.width,
-                            y: dragPos?.y ?? selectedBtn.scaledPos.y * geometry.size.height
-                        )
-                        .offset(
-                            x: selectedBtn.offset.x,
-                            y: selectedBtn.offset.y
+                            x: dragPos?.x ?? selectedBtn.scaledPos.x * geometry.size.width + selectedBtn.offset.x,
+                            y: dragPos?.y ?? selectedBtn.scaledPos.y * geometry.size.height + selectedBtn.offset.y
                         )
                         .disabled(true)
                         ButtonInfoView(configVM: selectedBtn, isUnsafe: $isUnsafe)
                             .scaleEffect(selectedBtn.scale)
                             .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE)
                             .position(
-                                x: dragPos?.x ?? selectedBtn.scaledPos.x * geometry.size.width,
-                                y: dragPos?.y ?? selectedBtn.scaledPos.y * geometry.size.height
-                            )
-                            .offset(
-                                x: selectedBtn.offset.x,
-                                y: selectedBtn.offset.y
+                                x: dragPos?.x ?? selectedBtn.scaledPos.x * geometry.size.width + selectedBtn.offset.x,
+                                y: dragPos?.y ?? selectedBtn.scaledPos.y * geometry.size.height + selectedBtn.offset.y
                             )
                     }
                     .onTapGesture {
@@ -189,13 +181,16 @@ struct ControllerView: View {
                             }
                             .onEnded { drag in
                                 let pos = drag.location
-                                selectedBtn.scaledPos = CGPoint(x: pos.x / geometry.size.width, y: pos.y / geometry.size.height)
+                                selectedBtn.scaledPos = CGPoint(
+                                    x: (pos.x - selectedBtn.offset.x) / geometry.size.width,
+                                    y: (pos.y - selectedBtn.offset.y) / geometry.size.height
+                                )
                                 dragPos = nil
                                 if !isSafe(geomSize: geometry.size), let lastSafePos = lastSafePos {
                                     // needs to set position back to the safe pos
                                     selectedBtn.scaledPos = CGPoint(
-                                        x: lastSafePos.x / geometry.size.width,
-                                        y: lastSafePos.y / geometry.size.height
+                                        x: (lastSafePos.x - selectedBtn.offset.x) / geometry.size.width,
+                                        y: (lastSafePos.y - selectedBtn.offset.y) / geometry.size.height
                                     )
                                 }
                                 lastSafePos = nil
@@ -256,6 +251,16 @@ struct ControllerView: View {
                                 rotateStart = nil
                             }
                     )
+                    .overlay {
+                        Rectangle()
+                            .strokeBorder(Color.gray, lineWidth: 2)
+                            .background(Color.gray.opacity(0.4), in: Rectangle())
+                            .frame(width: 8, height: 8)
+                            .position(
+                                x: dragPos != nil ? dragPos!.x - selectedBtn.offset.x : selectedBtn.scaledPos.x * geometry.size.width,
+                                y: dragPos != nil ? dragPos!.y - selectedBtn.offset.y : selectedBtn.scaledPos.y * geometry.size.height
+                            )
+                    }
                 }
             }
             .onRotate { newOrientation in

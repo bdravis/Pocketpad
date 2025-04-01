@@ -29,6 +29,10 @@ struct EditButtonView: View {
                 EditorSlider(title: "X Scale", hideSlider: true, value: $button.scaledPos.x, min: 0.0, max: 1.0, step: 0.01, inputWidth: 40, keyboardType: .decimalPad, formatter: numberFormatter)
                 // MARK: Y Scale
                 EditorSlider(title: "Y Scale", hideSlider: true, value: $button.scaledPos.y, min: 0.0, max: 1.0, step: 0.01, inputWidth: 40, keyboardType: .decimalPad, formatter: numberFormatter)
+                // MARK: X Offset
+                EditorSlider(title: "X Offset", value: $button.offset.x, min: -300.0, max: 300.0, step: 0.5, inputWidth: 40, keyboardType: .decimalPad, formatter: numberFormatter)
+                // MARK: Y Offset
+                EditorSlider(title: "Y Offset", value: $button.offset.y, min: -300.0, max: 300.0, step: 0.5, inputWidth: 40, keyboardType: .decimalPad, formatter: numberFormatter)
             } header: {
                 Text("Position")
             }
