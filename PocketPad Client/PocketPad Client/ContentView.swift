@@ -10,6 +10,7 @@ import SwiftUI
 struct ContentView: View {
     // MARK: - State Variables for Settings
     @State private var isShowingSettings = false
+    @State private var showModifyBtn = false
     
     @StateObject private var bluetoothManager = BluetoothManager.shared
     
@@ -111,9 +112,11 @@ struct ContentView: View {
                     .padding(.horizontal)
                     
                     // TODO: Move to settings page (was greyed out so had to add here)
-                    NavigationLink(destination: ControllerView(isEditor: true), label: {
-                        Text("Modify Layout")
-                    })
+                    if showModifyBtn {
+                        NavigationLink(destination: ControllerView(isEditor: true), label: {
+                            Text("Modify Layout")
+                        })
+                    }
                     
                     Spacer()
                 }
@@ -152,7 +155,7 @@ struct ContentView: View {
                             isShowingSettings = false
                         }
                     
-                    SettingsMenuView(isShowingSettings: $isShowingSettings)
+                    SettingsMenuView(isShowingSettings: $isShowingSettings, showModifyBtn: $showModifyBtn)
                         .offset(y: isShowingSettings ? 0 : -geometry.size.height)
                         .transition(.move(edge: .top))
                         .animation(.bouncy, value: isShowingSettings)

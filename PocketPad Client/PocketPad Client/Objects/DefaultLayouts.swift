@@ -172,6 +172,10 @@ class DefaultLayouts {
             return DPadlessTest
         }
     }
+    
+    static func isDefaultLayout(name: String) -> Bool {
+        return (name == XboxConfig.name || name == PlayStationConfig.name || name == WiiConfig.name || name == SwitchConfig.name || name == DPadlessTest.name)
+    }
 }
 
 //#Preview {

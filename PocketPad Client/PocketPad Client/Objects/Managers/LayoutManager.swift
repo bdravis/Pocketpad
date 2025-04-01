@@ -112,11 +112,13 @@ class LayoutManager: ObservableObject {
         return layout
     }
     
+    func layoutExists(for name: String) -> Bool {
+        return availableLayouts.filter({ $0 == name }).count > 0
+    }
+    
     func renameLayout(from initial: String, to newName: String) throws {
-        if availableLayouts.filter({ $0 == newName }).count > 0 {
-            print("Name already exists!")
-            // TODO: Throw error here
-            return
+        if self.layoutExists(for: newName) {
+            throw LayoutError.duplicate
         }
         // TODO: Handle if it is not the current controller
         self.currentController.name = newName

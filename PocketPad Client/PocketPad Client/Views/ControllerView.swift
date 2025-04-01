@@ -33,7 +33,6 @@ let DEBUG_BUTTONS: [ButtonConfig] = [ // Example buttons
 // MARK: Main Controller View
 struct ControllerView: View {
     @Environment(\.presentationMode) var presentationMode
-    // TODO: Make a View Model with the buttons
     @State private var orientation = UIDeviceOrientation.unknown
     @ObservedObject private var layoutManager = LayoutManager.shared
     
@@ -46,6 +45,7 @@ struct ControllerView: View {
     @State private var dragPos: CGPoint? = nil
     
     @State private var showDeleteAlert: Bool = false
+    @State private var deleting: Bool = false
     @State private var showRenameAlert: Bool = false
     @State private var newName: String = ""
     
@@ -168,15 +168,15 @@ struct ControllerView: View {
                 orientation = UIDevice.current.orientation
             }
             .onDisappear {
-                // apply the selected button first
-                applySelectedButton()
+                guard !deleting else { return }
                 // save controller
                 if isEditor {
+                    // apply the selected button first
+                    applySelectedButton()
                     do {
                         try LayoutManager.shared.saveCurrentLayout()
                     } catch {
-                        print(error.localizedDescription)
-                        // TODO: Add error message
+                        UIApplication.shared.alert(body: error.localizedDescription)
                     }
                 }
             }
@@ -218,11 +218,11 @@ struct ControllerView: View {
                     do {
                         try layoutManager.deleteLayout(layoutManager.currentController.name)
                         showDeleteAlert = false
-                        presentationMode.wrappedValue.dismiss()
                     } catch {
-                        // TODO: Add error message
-                        print(error.localizedDescription)
+                        UIApplication.shared.alert(body: error.localizedDescription)
                     }
+                    deleting = true
+                    presentationMode.wrappedValue.dismiss()
                 }
             }, message: {
                 Text("Are you sure you want to delete this layout? This cannot be undone.")
@@ -248,8 +248,7 @@ struct ControllerView: View {
                         try layoutManager.renameLayout(from: layoutManager.currentController.name, to: newName)
                         showRenameAlert = false
                     } catch {
-                        // TODO: Add error message
-                        print(error.localizedDescription)
+                        UIApplication.shared.alert(body: error.localizedDescription)
                     }
                 }
             }, message: {

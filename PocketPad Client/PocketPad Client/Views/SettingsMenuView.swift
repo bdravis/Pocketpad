@@ -16,6 +16,7 @@ private let maxHeightFraction: CGFloat = 0.9
 struct SettingsMenuView: View {
     // MARK: - Bound Properties
     @Binding var isShowingSettings: Bool
+    @Binding var showModifyBtn: Bool
     @ObservedObject private var layoutManager = LayoutManager.shared
     
     @AppStorage("splitDPad") var splitDPad: Bool = false
@@ -119,6 +120,7 @@ struct SettingsMenuView: View {
                     // update the controller layout
                     do {
                         try LayoutManager.shared.setCurrentLayout(to: selectedController)
+                        showModifyBtn = !DefaultLayouts.isDefaultLayout(name: selectedController)
                     } catch {
                         UIApplication.shared.alert(title: "Failed to load layout", body: error.localizedDescription)
                         selectedController = ControllerType.Xbox.stringValue
@@ -137,16 +139,15 @@ struct SettingsMenuView: View {
                 TextField("Name", text: $newLayoutName)
                 Button("OK", action: {
                     if newLayoutName != "" {
-                        // TODO: Make sure the name does not already exist
                         do {
+                            guard !layoutManager.layoutExists(for: newLayoutName) else { throw LayoutError.duplicate }
                             let newLayout: LayoutConfig = .init(name: newLayoutName, buttons: [])
                             try layoutManager.saveLayout(newLayout)
                             try layoutManager.loadLayouts()
                             try layoutManager.setCurrentLayout(to: newLayoutName)
                             selectedController = newLayoutName
                         } catch {
-                            // TODO: Add error message
-                            print(error.localizedDescription)
+                            UIApplication.shared.alert(body: error.localizedDescription)
                         }
                     }
                 })
@@ -301,7 +302,7 @@ struct SettingsMenuView: View {
 // MARK: - Preview
 #Preview {
     SettingsMenuView(
-        isShowingSettings: .constant(true)
+        isShowingSettings: .constant(true), showModifyBtn: .constant(true)
     )
 }
 
