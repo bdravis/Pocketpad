@@ -9,20 +9,6 @@ import SwiftUI
 
 struct EditButtonView: View {
     @ObservedObject var button: EditingButtonVM
-    @ObservedObject private var layoutManager = LayoutManager.shared
-    // TODO: Figure out why it does not continuously update
-    
-    // Style properties
-    @State private var bgColor: Color = Color(uiColor: .secondarySystemFill)
-    @State private var bgPressedColor: Color = Color(uiColor: .secondaryLabel)
-    @State private var fgColor: Color = Color(uiColor: .label)
-    @State private var fgPressedColor: Color = Color(uiColor: .systemBackground)
-    @State private var stroke: CGFloat = 3
-    
-    @State private var hasIcon: Bool = true
-    @State private var buttonShape: RegularButtonShape = .Circle
-    @State private var iconType: RegularButtonIconType = .Text
-    @State private var icon: String = "A"
     
     private var numberFormatter: NumberFormatter {
         let nf = NumberFormatter()
@@ -48,98 +34,54 @@ struct EditButtonView: View {
                 EditorSlider(title: "Rotation", value: $button.rotation, units: "º", min: 0.0, max: 360.0, step: 1.0, inputWidth: 40, keyboardType: .numberPad, formatter: numberFormatter)
             }
             
-//            if button.type == .regular {
-//                Section {
-//                    // MARK: Shape
-//                    HStack {
-//                        Text("Button Shape")
-//                        Spacer()
-//                        Picker("Shape", selection: $buttonShape) {
-//                            ForEach(RegularButtonShape.allCases, id: \.self) { shape in
-//                                Text(shape.rawValue).tag(shape)
-//                            }
-//                        }
-//                        .pickerStyle(.menu)
-//                        .onChange(of: buttonShape, initial: true) {
-//                            var newStyle = (button as! RegularButtonConfig).style
-//                            newStyle.shape = buttonShape
-//                            button.updateStyle(to: newStyle)
-//                        }
-//                    }
-//                    
-//                    // MARK: Icon Configuration
-//                    Toggle("Has Icon", isOn: $hasIcon)
-//                        .onChange(of: hasIcon) {
-//                            var newStyle = (button as! RegularButtonConfig).style
-//                            newStyle.icon = hasIcon ? icon : nil
-//                            button.updateStyle(to: newStyle)
-//                        }
-//                    if hasIcon {
-//                        HStack {
-//                            Text("Icon Type")
-//                            Spacer()
-//                            Picker("Type", selection: $iconType) {
-//                                ForEach(RegularButtonIconType.allCases, id: \.self) { iconType in
-//                                    Text(iconType.rawValue).tag(iconType)
-//                                }
-//                            }
-//                            .pickerStyle(.menu)
-//                            .onChange(of: iconType, initial: true) {
-//                                var newStyle = (button as! RegularButtonConfig).style
-//                                newStyle.iconType = iconType
-//                                button.updateStyle(to: newStyle)
-//                            }
-//                        }
-//                        HStack {
-//                            Text("Icon")
-//                            Spacer()
-//                            TextField("Icon", text: $icon)
-//                                .onChange(of: icon) {
-//                                    var newStyle = (button as! RegularButtonConfig).style
-//                                    newStyle.icon = icon
-//                                    button.updateStyle(to: newStyle)
-//                                }
-//                        }
-//                    }
-//                    
-//                    // MARK: Icon Colors
-//                    ColorPicker("Icon Color", selection: $fgColor)
-//                        .onChange(of: fgColor) {
-//                            var newStyle = (button as! RegularButtonConfig).style
-//                            newStyle.properties.foregroundColor = fgColor
-//                            button.updateStyle(to: newStyle)
-//                        }
-//                    ColorPicker("Pressed Icon Color", selection: $fgPressedColor)
-//                        .onChange(of: fgPressedColor) {
-//                            var newStyle = (button as! RegularButtonConfig).style
-//                            newStyle.properties.foregroundPressedColor = fgPressedColor
-//                            button.updateStyle(to: newStyle)
-//                        }
-//                    
-//                    // MARK: Background Colors
-//                    ColorPicker("Background Color", selection: $bgColor)
-//                        .onChange(of: bgColor) {
-//                            var newStyle = (button as! RegularButtonConfig).style
-//                            newStyle.properties.color = bgColor
-//                            button.updateStyle(to: newStyle)
-//                        }
-//                    ColorPicker("Pressed Background Color", selection: $bgPressedColor)
-//                        .onChange(of: bgPressedColor) {
-//                            var newStyle = (button as! RegularButtonConfig).style
-//                            newStyle.properties.pressedColor = bgPressedColor
-//                            button.updateStyle(to: newStyle)
-//                        }
-//                    
-//                    // MARK: Stroke
-//                    EditorSlider(title: "Stroke Thickness", value: $stroke, min: 0, max: 15, step: 1, inputWidth: 40, keyboardType: .numberPad, formatter: NumberFormatter())
-//                        .onChange(of: stroke) {
-//                            var newStyle = (button as! RegularButtonConfig).style
-//                            newStyle.properties.borderThickness = stroke
-//                            button.updateStyle(to: newStyle)
-//                        }
-//                } header: {
-//                    Text("Style")
-//                }
+            if button.type == .regular {
+                Section {
+                    // MARK: Shape
+                    HStack {
+                        Text("Button Shape")
+                        Spacer()
+                        Picker("Shape", selection: $button.shape) {
+                            ForEach(RegularButtonShape.allCases, id: \.self) { shape in
+                                Text(shape.rawValue).tag(shape)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                    }
+                    
+                    // MARK: Icon Configuration
+                    Toggle("Has Icon", isOn: $button.hasIcon)
+                    if button.hasIcon {
+                        HStack {
+                            Text("Icon Type")
+                            Spacer()
+                            Picker("Type", selection: $button.iconType) {
+                                ForEach(RegularButtonIconType.allCases, id: \.self) { iconType in
+                                    Text(iconType.rawValue).tag(iconType)
+                                }
+                            }
+                            .pickerStyle(.menu)
+                        }
+                        HStack {
+                            Text("Icon")
+                            Spacer()
+                            TextField("Icon", text: $button.icon)
+                        }
+                    }
+                    
+                    // MARK: Icon Colors
+                    ColorPicker("Icon Color", selection: $button.fgColor)
+                    ColorPicker("Pressed Icon Color", selection: $button.fgPressedColor)
+                    
+                    // MARK: Background Colors
+                    ColorPicker("Background Color", selection: $button.bgColor)
+                    ColorPicker("Pressed Background Color", selection: $button.bgPressedColor)
+                    
+                    // MARK: Stroke
+                    EditorSlider(title: "Stroke Thickness", value: $button.stroke, min: 0, max: 15, step: 1, inputWidth: 40, keyboardType: .numberPad, formatter: NumberFormatter())
+                } header: {
+                    Text("Style")
+                }
+            }
 //            } else if button.type == .joystick || button.type == .dpad {
 //                Section {
 //                    // MARK: Icon Colors
