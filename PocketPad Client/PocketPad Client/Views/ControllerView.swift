@@ -316,6 +316,26 @@ struct ControllerView: View {
             .sheet(isPresented: $showAddPopup) {
                 AddButtonView()
             }
+            .overlay {
+                if !selectedBtn.isEmpty {
+                    EditButtonView(button: selectedBtn)
+                        .frame(
+                            width: !isPortait ? geometry.size.width * 0.4 : geometry.size.width,
+                            height: isPortait ? geometry.size.height * 0.4 : geometry.size.height
+                        )
+                        .position(
+                            x: !self.isPortait ? (btnEditViewPos * geometry.size.width) - (geometry.size.width * 0.2 * (btnEditViewPos * 2 - 1)) : 0.5 * geometry.size.width,
+                            y: self.isPortait ? (btnEditViewPos * geometry.size.height) - (geometry.size.height * 0.2 * (btnEditViewPos * 2 - 1)) : (geometry.size.height * 0.5)
+                        )
+                        .opacity(editViewOpacity)
+                }
+            }
+            .overlay {
+                if !isEditor {
+                    // controller glow
+                    GlowEffect(color: UserDefaults.standard.value(forKey: "controllerColor") as? Color ?? Color.blue)
+                }
+            }
             .alert("Delete Layout", isPresented: $showDeleteAlert, actions: {
                 Button("Cancel") {
                     showDeleteAlert = false
@@ -333,20 +353,6 @@ struct ControllerView: View {
             }, message: {
                 Text("Are you sure you want to delete this layout? This cannot be undone.")
             })
-            .overlay {
-                if !selectedBtn.isEmpty {
-                    EditButtonView(button: selectedBtn)
-                        .frame(
-                            width: !isPortait ? geometry.size.width * 0.4 : geometry.size.width,
-                            height: isPortait ? geometry.size.height * 0.4 : geometry.size.height
-                        )
-                        .position(
-                            x: !self.isPortait ? (btnEditViewPos * geometry.size.width) - (geometry.size.width * 0.2 * (btnEditViewPos * 2 - 1)) : 0.5 * geometry.size.width,
-                            y: self.isPortait ? (btnEditViewPos * geometry.size.height) - (geometry.size.height * 0.2 * (btnEditViewPos * 2 - 1)) : (geometry.size.height * 0.5)
-                        )
-                        .opacity(editViewOpacity)
-                }
-            }
             .alert("Rename Layout", isPresented: $showRenameAlert, actions: {
                 TextField("Layout Name", text: $newName)
                 Button("Cancel") {
