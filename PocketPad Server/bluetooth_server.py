@@ -36,8 +36,8 @@ layout_jsons_temp = [""]
 # 0 for not sending, 1 for currently sending, don't use the layout if it is 1
 layout_jsons_status = [0]
 
-# Actually holds the dictionaries representing layouts
-layout_jsons = [{}]
+# Holds json strings that have finished sending
+layout_jsons = [""]
 
 latency_function = None
 send_latency = None
@@ -137,7 +137,6 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
         #
         # Implement a way to extract a value corresponding to player characteristic
 
-        """
         player_id = connection_information[0]
 
         # If press & release -> send release 
@@ -148,7 +147,6 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
 
         # If release -> send release
         input_function(str(player_id), input_id, enums.ButtonEvent.RELEASED)
-        """
 
 
 
@@ -184,10 +182,10 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
                 if controller_type == 3:
                     controller_type = enums.ControllerType.Switch
 
-                connection_function("connect", str(next_id), controller_type)
+                connection_function("connect", str(next_id), controller_type, layout_jsons[player_id])
                 num_players += 1
                 next_id += 1
-                layout_jsons.append({})
+                layout_jsons.append("")
                 layout_jsons_temp.append("")
                 layout_jsons_status.append(0)
 
@@ -210,7 +208,7 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
                     controller_type = enums.ControllerType.Switch
 
                 characteristic.value = response
-                connection_function("disconnect", str(player_id), controller_type)
+                connection_function("disconnect", str(player_id), None, None)
 
             if signal == ConnectionMessage.transmitting_layout.value:
 
@@ -231,9 +229,7 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
                 # json is done sending
                 if size == 0:
 
-                    print(layout_jsons_temp[player_id])
-
-                    layout_jsons[player_id] = json.loads(layout_jsons_temp[player_id])
+                    layout_jsons[player_id] = layout_jsons_temp[player_id]
                     layout_jsons_temp[player_id] = ""
                     layout_jsons_status[player_id] = 0
 
@@ -241,8 +237,6 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
                     response_data = [0, ConnectionMessage.transmitting_layout.value]
                     response = bytearray(response_data)
                     characteristic.value = response
-
-                    print(str(layout_jsons[player_id]))
 
                     return
 
