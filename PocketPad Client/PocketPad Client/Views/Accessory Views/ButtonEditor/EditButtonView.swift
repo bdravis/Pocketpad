@@ -10,6 +10,8 @@ import SwiftUI
 struct EditButtonView: View {
     @ObservedObject var button: EditingButtonVM
     
+    @State private var showDeleteAlert: Bool = false
+    
     // Values for if the sections are expanded
     @State private var positionExpanded: Bool = false
     @State private var scaleRotExpanded: Bool = true
@@ -101,6 +103,28 @@ struct EditButtonView: View {
                     Text("Style")
                 }
             }
+            
+            Section {
+                Button(action: {
+                    showDeleteAlert.toggle()
+                }) {
+                    Text("Delete Button")
+                }
+                .foregroundStyle(.red)
+                .frame(maxWidth: .infinity)
+            }
+            .alert("Delete Button", isPresented: $showDeleteAlert, actions: {
+                Button("Cancel") {
+                    showDeleteAlert = false
+                }
+                Button("Delete") {
+                    LayoutManager.shared.deleteButton(inputId: button.inputId)
+                    showDeleteAlert = false
+                    button.clear()
+                }
+            }, message: {
+                Text("Are you sure you want to delete this button? This cannot be undone.")
+            })
         }
         .listStyle(.sidebar)
     }

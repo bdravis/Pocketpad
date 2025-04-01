@@ -157,4 +157,15 @@ class LayoutManager: ObservableObject {
             self.hasDPad = false
         }
     }
+    
+    func deleteButton(inputId: UInt8) {
+        // delete the button with the corresponding input id and fix all the input ids to be in chronological order
+        currentController.buttons.removeAll { $0.inputId == inputId }
+        // fix ids
+        var currentId: UInt8 = 0
+        currentController.buttons.enumerated().forEach { idx, _ in
+            currentController.buttons[idx].inputId = currentId
+            currentId += 1
+        }
+    }
 }
