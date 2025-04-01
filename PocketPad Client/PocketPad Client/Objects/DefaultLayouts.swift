@@ -157,6 +157,47 @@ class DefaultLayouts {
         JoystickConfig(position: .init(scaledPos: CGPoint(x: 0.6, y: 0.7)), scale: 1.5, inputId: 4, input: "RightJoystick")
     ])
     
+    // MARK: Turbo Test
+    static let TurboTest: LayoutConfig = .init(name: "Turbo", buttons: [
+        // Diamond of buttons
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.8, y: 0.6), offset: CGPoint(x: 0, y: -DEFAULT_BUTTON_SIZE)), scale: 1.0, inputId: 0, input: "Y"),
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.8, y: 0.6), offset: CGPoint(x: -DEFAULT_BUTTON_SIZE, y: 0)), scale: 1.0, inputId: 1, input: "X"),
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.8, y: 0.6), offset: CGPoint(x: DEFAULT_BUTTON_SIZE, y: 0)), scale: 1.0, inputId: 2, input: "B"),
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.8, y: 0.6), offset: CGPoint(x: 0, y: DEFAULT_BUTTON_SIZE)), scale: 1.0, inputId: 3, input: "A"),
+
+        // Right Joystick
+        JoystickConfig(position: .init(scaledPos: CGPoint(x: 0.6, y: 0.8)), scale: 1.5, inputId: 4, input: "RightJoystick"),
+
+        // DPad
+        DPadConfig(
+            position: .init(scaledPos: CGPoint(x: 0.4, y: 0.8)), scale: 1.5, inputId: 5,
+            inputs: [
+                .up: "DPadUp", .right: "DPadRight", .down: "DPadDown", .left: "DPadLeft"
+            ]
+        ),
+        
+        // Left Joystick
+        JoystickConfig(position: .init(scaledPos: CGPoint(x: 0.2, y: 0.6)), scale: 1.5, inputId: 6, input: "LeftJoystick"),
+        
+        // Menu
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.2), offset: CGPoint(x: -DEFAULT_BUTTON_SIZE * 0.6, y: 0)), scale: 0.6, inputId: 7, input: "Menu", style: .init(shape: .Circle, iconType: .SFSymbol, icon: "line.3.horizontal")),
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.2), offset: CGPoint(x: DEFAULT_BUTTON_SIZE * 0.6, y: 0)), scale: 0.6, inputId: 8, input: "Window", style: .init(shape: .Circle, iconType: .SFSymbol, icon: "macwindow.on.rectangle")),
+        
+        // Share
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.2), offset: CGPoint(x: 0, y: DEFAULT_BUTTON_SIZE * 0.6)), scale: 0.6, inputId: 9, input: "Share", style: .init(shape: .Circle, iconType: .SFSymbol, icon: "square.and.arrow.up")),
+        
+        // Bumpers
+        BumperConfig(position: .init(scaledPos: CGPoint(x: 0.1, y: 0.1), offset: CGPoint(x: DEFAULT_BUTTON_SIZE / 2, y: DEFAULT_BUTTON_SIZE * 1.5)), scale: 1.5, inputId: 10, input: "LB"),
+        BumperConfig(position: .init(scaledPos: CGPoint(x: 0.9, y: 0.1), offset: CGPoint(x: -DEFAULT_BUTTON_SIZE / 2, y: DEFAULT_BUTTON_SIZE * 1.5)), scale: 1.5, inputId: 11, input: "RB"),
+        
+        // Triggers
+        TriggerConfig(position: .init(scaledPos: CGPoint(x: 0.1, y: 0.1)), scale: 1.5, inputId: 12, input: "LT", side: .left),
+        TriggerConfig(position: .init(scaledPos: CGPoint(x: 0.9, y: 0.1)), scale: 1.5, inputId: 13, input: "RT", side: .right),
+        
+        // Turbo Button
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.3, y: 0.3), offset: CGPoint(x: 0, y: 0)), scale: 1.5, inputId: 14, input: "T", turbo: true),
+    ])
+    
     
     static func getLayout(for name: ControllerType) -> LayoutConfig {
         switch name {
@@ -170,6 +211,8 @@ class DefaultLayouts {
             return SwitchConfig
         case .DPadless:
             return DPadlessTest
+        case .Turbo:
+            return TurboTest
         }
     }
 }
