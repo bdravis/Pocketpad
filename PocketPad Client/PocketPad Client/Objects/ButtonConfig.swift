@@ -11,7 +11,7 @@ import UIKit
 let DEFAULT_BUTTON_SIZE: CGFloat = 50.0
 
 // Enum for the type of button it is
-enum ButtonType: UInt8, ConfigType {
+enum ButtonType: UInt8, ConfigType, CaseIterable {
     case regular = 0
     case joystick = 1
     case dpad = 2
@@ -48,6 +48,7 @@ protocol ButtonConfig: Codable {
     
     var inputId: UInt8 { get set } // id for buttons when sending input
     
+    mutating func updateStyle<T>(to newStyle: T)
 }
 
 extension ButtonConfig {
@@ -93,6 +94,10 @@ extension ButtonConfig {
 
 // a bad button type config for testing encoding errors
 struct BadButtonTypeConfig: ButtonConfig, ConfigType {
+    mutating func updateStyle<T>(to newStyle: T) {
+        return
+    }
+    
     // Protocol Properties
     var position: ButtonPosition
     var scale: CGFloat

@@ -7,13 +7,17 @@
 
 import UIKit
 
-enum TriggerSide: UInt8, ConfigType {
-    case right = 0
-    case left = 1
-    case middle = 2
+enum TriggerSide: UInt8, ConfigType, CaseIterable {
+    case left = 0
+    case middle = 1
+    case right = 2
 }
 
 struct TriggerConfig: ButtonConfig, ConfigType {
+    mutating func updateStyle<T>(to newStyle: T) {
+        return
+    }
+    
     // Protocol Properties
     var position: ButtonPosition
     var scale: CGFloat
@@ -23,13 +27,13 @@ struct TriggerConfig: ButtonConfig, ConfigType {
     
     var side: TriggerSide // 0 for left, 1
     
-    var input: String // the button it is bound to
+    var input: ButtonInput // the button it is bound to
     var turbo: Bool // whether or not it is a turbo tap
     
     // Object Initializer
     init(
         position: ButtonPosition, scale: CGFloat, rotation: Double = 0.0, inputId: UInt8,
-        input: String, turbo: Bool = false,
+        input: ButtonInput, turbo: Bool = false,
         side: TriggerSide
     ) {
         self.type = .trigger

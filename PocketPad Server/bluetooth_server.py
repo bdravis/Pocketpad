@@ -130,7 +130,21 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
         print(f"Player: {int(characteristic.value)}")
     
     if (characteristic.uuid.upper() == INPUT_CHARACTERISTIC):
-        # Implement a way to extract a value corresponding to player characteristic
+        # Check if this is a motion data packet
+        # Our motion packet is expected to be 14 bytes:
+        # [playerId (1 byte), motionEvent (1 byte, equals 99), pitch (4 bytes), roll (4 bytes), yaw (4 bytes)]
+        if len(characteristic.value) == 14:
+            player_id = characteristic.value[0]
+            event_code = characteristic.value[1]
+            if event_code == 99:
+                import struct
+                pitch = struct.unpack('<f', characteristic.value[2:6])[0]
+                roll  = struct.unpack('<f', characteristic.value[6:10])[0]
+                yaw   = struct.unpack('<f', characteristic.value[10:14])[0]
+                print(f"Motion Data Received from player {player_id}: pitch = {pitch:.2f}, roll = {roll:.2f}, yaw = {yaw:.2f}")
+                return  
+      
+      # Implement a way to extract a value corresponding to player characteristic
         #
         parse_input(characteristic.value)
         input = None # Fix this to have it be the input 
