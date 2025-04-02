@@ -30,6 +30,15 @@ next_id = 0
 num_players_lock = threading.Lock()
 next_id_lock = threading.Lock()
 
+# This is an array of strings that will contain jsons that are being sent
+layout_jsons_temp = [""]
+
+# 0 for not sending, 1 for currently sending, don't use the layout if it is 1
+layout_jsons_status = [0]
+
+# Holds json strings that have finished sending
+layout_jsons = [""]
+
 latency_function = None
 send_latency = None
 connection_function = None
@@ -88,6 +97,10 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
     global num_players
     global next_id
 
+    global layout_jsons
+    global layout_jsons_temp
+    global layout_jsons_status
+
     if (characteristic.uuid.upper() == LATENCY_CHARACTERISTIC):
 
         # data comes as little endian {Byte, quadword}
@@ -140,14 +153,14 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
 
         player_id = connection_information[0]
 
-        # If press & release -> send release 
-        input_function(str(player_id), input_id, enums.ButtonEvent.RELEASED)
+        # # If press & release -> send release 
+        # input_function(str(player_id), input_id, enums.ButtonEvent.RELEASED)
 
-        # If press & and held -> send pressed
-        input_function(str(player_id), input_id, enums.ButtonEvent.PRESSED)
+        # # If press & and held -> send pressed
+        # input_function(str(player_id), input_id, enums.ButtonEvent.PRESSED)
 
-        # If release -> send release
-        input_function(str(player_id), input_id, enums.ButtonEvent.RELEASED)
+        # # If release -> send release
+        # input_function(str(player_id), input_id, enums.ButtonEvent.RELEASED)
 
 
 
@@ -170,12 +183,9 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
                 # Perhaps send playerid back here or at least generate it
                 #print(f"player {next_id} connected")
 
-                # I do not know if this is going to work
                 response_data = [next_id, ConnectionMessage.connecting.value]
                 response = bytearray(response_data)
                 characteristic.value = response
-
-
 
                 if controller_type == 0:
                     controller_type = enums.ControllerType.Xbox
@@ -186,9 +196,12 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
                 if controller_type == 3:
                     controller_type = enums.ControllerType.Switch
 
-                connection_function("connect", str(next_id), controller_type)
+                connection_function("connect", str(next_id), controller_type, layout_jsons[player_id])
                 num_players += 1
                 next_id += 1
+                layout_jsons.append("")
+                layout_jsons_temp.append("")
+                layout_jsons_status.append(0)
 
             if signal == ConnectionMessage.disconnecting.value:
                 # TODO change server to indicate who is leaving
@@ -209,9 +222,48 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
                     controller_type = enums.ControllerType.Switch
 
                 characteristic.value = response
-                connection_function("disconnect", str(player_id), controller_type)
+                connection_function("disconnect", str(player_id), None, None)
 
+            if signal == ConnectionMessage.transmitting_layout.value:
 
+                size = connection_information[2]
+
+                # Start transmission, remove old layout from buffer
+                if size == 255:
+                    layout_jsons_temp[player_id] = ""
+                    layout_jsons_status[player_id] = 1
+
+                    # Pretty sure I need to send something back to the server
+                    response_data = [0, ConnectionMessage.transmitting_layout.value]
+                    response = bytearray(response_data)
+                    characteristic.value = response
+
+                    return
+
+                # json is done sending
+                if size == 0:
+
+                    layout_jsons[player_id] = layout_jsons_temp[player_id]
+                    layout_jsons_temp[player_id] = ""
+                    layout_jsons_status[player_id] = 0
+
+                    # Pretty sure I need to send something back to the server
+                    response_data = [0, ConnectionMessage.transmitting_layout.value]
+                    response = bytearray(response_data)
+                    characteristic.value = response
+
+                    return
+
+                data_length_in_bytes = len(characteristic.value)
+                format_str = "3B" + f"{size}s"
+                connection_information = unpack(format_str, characteristic.value)
+
+                json_string = str(connection_information[3])
+                layout_jsons_temp[player_id] += json_string[2:-1:]
+
+                response_data = [0, ConnectionMessage.transmitting_layout.value]
+                response = bytearray(response_data)
+                characteristic.value = response
 
 async def run(loop):
     global logger, trigger

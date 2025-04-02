@@ -230,9 +230,10 @@ extension BluetoothManager: CBPeripheralDelegate {
                 
                 let response_data = [LayoutManager.shared.player_id, ConnectionMessage.connecting.rawValue, UInt8(selectedControllerValue)]
                 
+                sendLayout(layout: LayoutManager.shared.currentController)
+
                 peripheral.writeValue(Data(response_data), for: characteristic, type: .withResponse)
                 peripheral.readValue(for: characteristic)
-
             }
         }
     }
@@ -298,6 +299,66 @@ extension BluetoothManager: CBPeripheralDelegate {
             print("Error changing notification state: \(error.localizedDescription)")
             return
         }
+    }
+    
+    func sendLayout(layout: LayoutConfig) {
+        
+        guard let service = selectedService else { return }
+        
+        let encoder = JSONEncoder()
+        
+        var data = Data()
+        
+        do {
+            data = try encoder.encode(layout)
+        } catch {
+            print("encoding error when sending layout")
+            return
+        }
+        
+        let packet_size = 20
+        let code_size = 1
+        let id_size = 1
+        let size_size = 1
+        let subdata_size = 17
+        var position = 0
+        
+        guard let characteristics = service.characteristics else { return }
+        
+        for characteristic in characteristics {
+            if characteristic.uuid == CONNECTION_CHARACTERISTIC {
+                
+                let init_transmission_packet = Data([UInt8(LayoutManager.shared.player_id),
+                                                     UInt8(ConnectionMessage.transmitting_layout.rawValue),
+                                                     UInt8(255)
+                                                     ])
+                while position < data.count {
+                    
+                    let chunk_size: UInt8 = UInt8(min(position + subdata_size, data.count) - position)
+                    
+                    let chunk = data.subdata(in: position..<position + Int(chunk_size))
+                    
+                    let packet = Data([UInt8(LayoutManager.shared.player_id),
+                                       UInt8(ConnectionMessage.transmitting_layout.rawValue),
+                                       UInt8(chunk_size)
+                                       ]) + chunk
+                    
+                    service.peripheral?.writeValue(packet, for: characteristic, type: .withResponse)
+                    service.peripheral?.readValue(for: characteristic)
+                    position += subdata_size
+                }
+                
+                let end_transmission_packet = Data([UInt8(LayoutManager.shared.player_id),
+                                   UInt8(ConnectionMessage.transmitting_layout.rawValue),
+                                   UInt8(0)
+                                   ])
+                
+                service.peripheral?.writeValue(end_transmission_packet, for: characteristic, type: .withResponse)
+                service.peripheral?.readValue(for: characteristic)
+
+            }
+        }
+        
     }
 }
 
