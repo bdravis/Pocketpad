@@ -166,7 +166,7 @@ class MainWindow(QMainWindow):
             # Hardcode player disconnect
             #
             for player_id in self.connected_players:
-                self.update_player_connection("disconnect", player_id, enums.ControllerType.Xbox)
+                self.update_player_connection("disconnect", player_id, enums.ControllerType.Xbox, None)
             #
             # Hardcode player disconnect
         else:
@@ -202,7 +202,7 @@ class MainWindow(QMainWindow):
             # Hardcode player disconnect
             #
             for player_id in self.connected_players:
-                self.update_player_connection("disconnect", player_id, enums.ControllerType.Xbox)
+                self.update_player_connection("disconnect", player_id, enums.ControllerType.Xbox, None)
             #
             # Hardcode player disconnect
         elif self.network_server_initiated:
@@ -1230,8 +1230,8 @@ class ControllerWidget(QWidget):
     def __init__(self, controller_config_file, widget_color):
         super().__init__()
 
-        self.design_width = 800
-        self.design_height = 800
+        self.design_width = 600
+        self.design_height = 600
 
         self.layout_config = json.loads(controller_config_file)
         self.controller_widgets = self.layout_config.get("wrappedButtons", [])
@@ -1243,7 +1243,6 @@ class ControllerWidget(QWidget):
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.bbox = self.compute_bbox()
 
-        self.active_input = None
         self.input_held = {}
 
         self.cached_pixmap = None
@@ -1299,15 +1298,15 @@ class ControllerWidget(QWidget):
         self.glow_color = color
     
     def set_active_input(self, active_type, hold_input):
-        self.input_held[active_type] = hold_input
-        self.active_input = active_type
+        if (hold_input == enums.ButtonEvent.PRESSED):
+            self.input_held[active_type] = enums.ButtonEvent.PRESSED
         self.update_cache()
         self.update()
-        if self.input_held[active_type] == enums.ButtonEvent.RELEASED:
-            QTimer.singleShot(300, self.clear_active_input)
+        if hold_input == enums.ButtonEvent.RELEASED:
+            QTimer.singleShot(300, self.clear_active_input(active_type, hold_input))
 
-    def clear_active_input(self):
-        self.active_input = None
+    def clear_active_input(self, active_type, hold_input):
+        self.input_held[active_type] = hold_input
         self.update_cache()
         self.update()
     
@@ -1345,7 +1344,7 @@ class ControllerWidget(QWidget):
         input_type = payload.get("inputId", "")
 
         if button_type == 0:
-            if (self.active_input == input_type):
+            if (input_type in self.input_held and self.input_held[input_type] == enums.ButtonEvent.PRESSED):
                 gradient = QRadialGradient(QPoint(x, y), size+5)
                 gradient.setColorAt(0, QColor(self.glow_color.red(), self.glow_color.green(), self.glow_color.blue(), 180))
                 gradient.setColorAt(1, QColor(self.glow_color.red(), self.glow_color.green(), self.glow_color.blue(), 0))
@@ -1361,7 +1360,7 @@ class ControllerWidget(QWidget):
                 painter.setBrush(QColor(self.color_scheme))
                 painter.drawEllipse(QPoint(int(x), int(y)), int(size / 2), int(size / 2))
         elif button_type == 1:
-            if (self.active_input == input_type):
+            if (input_type in self.input_held and self.input_held[input_type] == enums.ButtonEvent.PRESSED):
                 glow_size = size + 10
                 gradient = QRadialGradient(QPoint(x, y), glow_size)
                 gradient.setColorAt(0, QColor(self.glow_color.red(), self.glow_color.green(), self.glow_color.blue(), 180))
@@ -1399,7 +1398,7 @@ class ControllerWidget(QWidget):
                 QPoint(int(x)+quarter, int(y) -quarter)
             ])
 
-            if (self.active_input == input_type):
+            if (input_type in self.input_held and self.input_held[input_type] == enums.ButtonEvent.PRESSED):
                 glow_size = size + 5
 
                 glow_polygon = QPolygon([
@@ -1502,7 +1501,7 @@ class ControllerWidget(QWidget):
                 ])
                 painter.drawPolygon(right_points)
         elif button_type == 3:
-            if (self.active_input == input_type):
+            if (input_type in self.input_held and self.input_held[input_type] == enums.ButtonEvent.PRESSED):
                 gradient = QRadialGradient(QPoint(x + ((int(size) + 40)/8), y + ((int(size / 2)+20)/4)), 2*size)
                 gradient.setColorAt(0, QColor(self.glow_color.red(), self.glow_color.green(), self.glow_color.blue(), 180))
                 gradient.setColorAt(1, QColor(self.glow_color.red(), self.glow_color.green(), self.glow_color.blue(), 0))
@@ -1518,7 +1517,7 @@ class ControllerWidget(QWidget):
                 painter.setBrush(QColor(self.color_scheme))
                 painter.drawRoundedRect(int(x) - int(size / 2)-15, int(y) - int(size / 4)-5, int(size) + 30, int(size / 2)+10, 10, 10)
         elif button_type == 4:
-            if (self.active_input == input_type):
+            if (input_type in self.input_held and self.input_held[input_type] == enums.ButtonEvent.PRESSED):
                 gradient = QRadialGradient(QPoint(x + ((int(size / 2)+30)/6), y + ((int(size / 2) + 50)/4)), 2*size)
                 
                 gradient.setColorAt(0, QColor(self.glow_color.red(), self.glow_color.green(), self.glow_color.blue(), 180))
