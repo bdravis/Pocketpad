@@ -11,6 +11,7 @@ struct EditButtonView: View {
     @ObservedObject var button: EditingButtonVM
     
     @State private var showDeleteAlert: Bool = false
+    @State private var showSymbolPicker: Bool = false
     
     // Values for if the sections are expanded
     @State private var positionExpanded: Bool = false
@@ -74,9 +75,18 @@ struct EditButtonView: View {
                         HStack {
                             Text("Icon")
                             Spacer()
-                            TextField("Icon", text: $button.icon)
-                                .multilineTextAlignment(.trailing)
-                                .autocorrectionDisabled(true)
+                            switch button.iconType {
+                            case .Text:
+                                TextField("Icon", text: $button.icon)
+                                    .multilineTextAlignment(.trailing)
+                                    .autocorrectionDisabled(true)
+                            case .SFSymbol:
+                                Button(action: {
+                                    showSymbolPicker.toggle()
+                                }) {
+                                    Label(button.icon, systemImage: button.icon)
+                                }
+                            }
                         }
                     }
                 } header: {
@@ -124,6 +134,9 @@ struct EditButtonView: View {
                 }
             }, message: {
                 Text("Are you sure you want to delete this button? This cannot be undone.")
+            })
+            .sheet(isPresented: $showSymbolPicker, content: {
+                SFPickerView(chosenSymbol: $button.icon)
             })
         }
         .listStyle(.sidebar)
