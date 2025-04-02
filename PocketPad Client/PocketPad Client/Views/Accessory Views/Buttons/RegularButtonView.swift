@@ -38,11 +38,11 @@ struct RegularButtonView: View {
                 switch config.style.shape {
                 case .Circle:
                     Circle()
-                        .stroke(.yellow, lineWidth: 2)
+                        .stroke(.yellow, lineWidth: 5)
                         .padding(2)
                 case .Pill:
                     Capsule()
-                        .stroke(.yellow, lineWidth: 2)
+                        .stroke(.yellow, lineWidth: 5)
                         .padding(2)
                 }
             } : nil
