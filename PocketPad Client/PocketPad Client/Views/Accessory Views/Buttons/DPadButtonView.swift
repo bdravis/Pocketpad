@@ -18,8 +18,8 @@ struct DPadButtonView: View {
             if !split {
                 // Background path
                 Plus(thickness: DPAD_THICKNESS)
-                    .fill(Color(uiColor: .secondarySystemFill))
-                    .stroke(.black, style: StrokeStyle(lineWidth: 3, lineCap: .square, lineJoin: .bevel))
+                    .fill(config.style.color ?? Color(uiColor: .secondarySystemFill))
+                    .stroke(.black, style: StrokeStyle(lineWidth: config.style.borderThickness, lineCap: .square, lineJoin: .bevel))
                 
                 // Center Circle
                 Circle()
@@ -31,9 +31,9 @@ struct DPadButtonView: View {
             
             // Horizontal directional arrows
             HStack {
-                DirectionalArrow(split: split, rotation: -90, input: config.inputs[.left], direction: .left, config: config) // left arrow
+                DirectionalArrow(split: split, rotation: -90, input: config.inputs[.left]?.rawValue, direction: .left, config: config) // left arrow
                 Spacer()
-                DirectionalArrow(split: split, rotation: 90, input: config.inputs[.right], direction: .right, config: config) // right arrow
+                DirectionalArrow(split: split, rotation: 90, input: config.inputs[.right]?.rawValue, direction: .right, config: config) // right arrow
                     .accessibilityIdentifier("DPadButton")
             }
             .frame(maxHeight: DPAD_THICKNESS)
@@ -41,9 +41,9 @@ struct DPadButtonView: View {
             
             // Vertical directional arrows
             VStack {
-                DirectionalArrow(split: split, rotation: 0, input: config.inputs[.up], direction: .up, config: config) // up arrow
+                DirectionalArrow(split: split, rotation: 0, input: config.inputs[.up]?.rawValue, direction: .up, config: config) // up arrow
                 Spacer()
-                DirectionalArrow(split: split, rotation: 180, input: config.inputs[.down], direction: .down, config: config) // down arrow
+                DirectionalArrow(split: split, rotation: 180, input: config.inputs[.down]?.rawValue, direction: .down, config: config) // down arrow
             }
             .frame(maxWidth: DPAD_THICKNESS)
         }
@@ -77,7 +77,7 @@ struct DirectionalArrow: View {
                 .rotationEffect(.degrees(rotation))
                 .aspectRatio(1.0, contentMode: .fit)
         }
-        .buttonStyle(DPadButtonStyle(split: split))
+        .buttonStyle(DPadButtonStyle(style: config.style, split: split))
         .pressAction(onPress: {
             if let service = bluetoothManager.selectedService {
                 let ui8_playerId: UInt8 = 0 // Assuming one player

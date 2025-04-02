@@ -30,7 +30,7 @@ struct RegularButtonView: View {
                 Text("") // empty textbox
             }
         }
-        .applyButtonStyle(shape: config.style.shape)
+        .applyButtonStyle(config.style)
         .pressAction(onPress: {
             if let service = bluetoothManager.selectedService {
                 let ui8_playerId: UInt8 = 0 // Assuming one player

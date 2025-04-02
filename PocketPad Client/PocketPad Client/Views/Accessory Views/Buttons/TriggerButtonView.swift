@@ -15,7 +15,7 @@ struct TriggerButtonView: View {
         Button(action: {
             //
         }) {
-            Text(config.input)
+            Text(config.input.rawValue)
         }
         .buttonStyle(TriggerButtonStyle(side: config.side))
         .pressAction(onPress: {
