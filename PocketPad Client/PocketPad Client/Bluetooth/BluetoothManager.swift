@@ -321,7 +321,7 @@ extension BluetoothManager: CBPeripheralDelegate {
         let code_size = 1
         let id_size = 1
         let size_size = 1
-        let subdata_size = 17
+        let subdata_size = 182
         var position = 0
         
         guard let characteristics = service.characteristics else { return }
