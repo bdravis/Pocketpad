@@ -30,4 +30,3 @@ class DPadDirection(Enum):
 class ButtonEvent(Enum):
     PRESSED = 0
     RELEASED = 1
-    HELD = 2
