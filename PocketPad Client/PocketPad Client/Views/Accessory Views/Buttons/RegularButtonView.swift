@@ -70,11 +70,9 @@ struct RegularButtonView: View {
                 // note: for the case of turbo button being held, do nothing to avoid duplicate toggling of turbo for a button
                 
                 // if turbo button is not being held:
+                sendButtonRelease()
                 if (turboManager.isTurboEnabled(config.input)) { // the released button is a turbo-enabled button
                     turboManager.stopTurboForButton(config.input)
-                } else { // the released button is not a turbo-enabled button
-                    // this case is a simple button press/hold
-                    sendButtonRelease()
                 }
             }
         })
@@ -103,7 +101,7 @@ struct RegularButtonView: View {
         
         let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
 #if DEBUG
-        print("TURBO-DISABLED REGULAR BUTTON RELEASE")
+        print("SAFETY REGULAR BUTTON RELEASE")
 #endif
         bluetoothManager.sendInput(data)
     }
