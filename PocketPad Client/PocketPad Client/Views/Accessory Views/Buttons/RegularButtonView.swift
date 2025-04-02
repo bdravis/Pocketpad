@@ -31,7 +31,7 @@ struct RegularButtonView: View {
                 Text("") // empty textbox
             }
         }
-        .applyButtonStyle(shape: config.style.shape)
+        .applyButtonStyle(config.style)
         .overlay(
             turboManager.isTurboEnabled(config.input) ?
             Group {
