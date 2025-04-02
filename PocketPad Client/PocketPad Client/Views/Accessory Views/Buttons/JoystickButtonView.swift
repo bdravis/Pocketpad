@@ -37,7 +37,7 @@ struct JoystickButtonView: View {
                 print("Joystick moved: \(offset)") // Debugging output
 #endif
                 if !hapticTriggered && dist > 5 {
-                    HapticsManager.shared.triggerImpact()
+                    HapticsManager.playHaptic()
                     hapticTriggered = true
                 }
                 
@@ -77,7 +77,7 @@ struct JoystickButtonView: View {
                     bluetoothManager.sendInput(data)
                 }
                 
-                HapticsManager.shared.triggerImpact()
+                HapticsManager.playHaptic()
                 
                 withAnimation(.easeOut(duration: 0.15)) {
                     offset = .zero // Reset to center when released
