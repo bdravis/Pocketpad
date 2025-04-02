@@ -300,3 +300,33 @@ extension BluetoothManager: CBPeripheralDelegate {
         }
     }
 }
+
+extension BluetoothManager {
+    //- Parameters:
+    //  - playerId: The player's ID as a UInt8.
+    //  - pitch: The pitch value (Float).
+    //   - roll: The roll value (Float).
+    //  - yaw: The yaw value (Float).
+    func sendMotionData(playerId: UInt8, pitch: Float, roll: Float, yaw: Float) {
+        guard let _ = selectedService else { return }
+        
+        // Convert the Float values to raw bytes (4 bytes each, little endian)
+        // We use the bitPattern property (UInt32) for consistent endianness
+        let pitchBytes = withUnsafeBytes(of: pitch.bitPattern.littleEndian) { Data($0) }
+        let rollBytes  = withUnsafeBytes(of: roll.bitPattern.littleEndian)  { Data($0) }
+        let yawBytes   = withUnsafeBytes(of: yaw.bitPattern.littleEndian)   { Data($0) }
+        
+        // Define a unique event code for motion data (e.g., 99)
+        let motionEvent: UInt8 = 99
+        
+        // Build the data packet:
+        // [playerId (1 byte), motionEvent (1 byte), pitch(4 bytes), roll(4 bytes), yaw(4 bytes)]
+        var packet = Data([playerId, motionEvent])
+        packet.append(pitchBytes)
+        packet.append(rollBytes)
+        packet.append(yawBytes)
+        
+        // Send the packet using the existing sendInput method
+        sendInput(packet)
+    }
+}

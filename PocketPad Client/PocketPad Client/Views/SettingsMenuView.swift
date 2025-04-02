@@ -23,7 +23,12 @@ struct SettingsMenuView: View {
     @AppStorage("selectedController") var selectedController: String = ControllerType.Xbox.stringValue
     @AppStorage("controllerColor") var controllerColor: Color = .blue
     @AppStorage("controllerName") var controllerName: String = "Controller"
-    
+
+    @AppStorage("motionControlEnabled") var motionControlEnabled: Bool = false
+
+    @EnvironmentObject var motionManager: MotionManager
+
+    @State private var showDPadStyle: Bool = false
     @State private var saveAsMalformed: Bool = false
     @State private var makingNewLayout: Bool = false
     @State private var newLayoutName: String = ""
@@ -196,6 +201,24 @@ struct SettingsMenuView: View {
             }
             .padding(.horizontal, 16)
             
+            //Add toggle for motion control
+            HStack {
+                Text("Enable Motion Control")
+                    .foregroundColor(.primary)
+                Spacer()
+                Toggle("", isOn: $motionControlEnabled)
+                    .labelsHidden()
+                    .accessibilityIdentifier("MotionControlToggle")
+                    // Updated iOS 17 .onChange signature
+                    .onChange(of: motionControlEnabled) { newValue in
+                        if newValue {
+                            motionManager.startUpdates()
+                        } else {
+                            motionManager.stopUpdates()
+                        }
+                    }
+            }
+            .padding(.horizontal, 16)
             // MARK: Saving layouts (temporary)
             Section {
                 // Toggle to save layout as malformed
