@@ -1,2 +1,3 @@
 pyside6
 git+https://github.com/12944qwerty/bless.git@descriptors
+qasync
