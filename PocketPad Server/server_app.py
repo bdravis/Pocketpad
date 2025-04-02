@@ -243,6 +243,8 @@ class MainWindow(QMainWindow):
                     icon_type = "icons/wii.svg"
                 elif (controller_type == enums.ControllerType.Xbox):
                     icon_type = "icons/xbox.svg"
+                else:
+                    icon_type = "icons/pencil.svg"
 
                 #icon_type = icon_type.resolve()
                 #icon_type = str(icon_type)
@@ -502,6 +504,8 @@ class MainWindow(QMainWindow):
             icon_type = "icons/wii.svg"
         elif (controller_type == enums.ControllerType.Xbox):
             icon_type = "icons/xbox.svg"
+        else:
+            icon_type = "icons/pencil.svg"
 
         self.player_svg_paths_for_icons[player_id] = icon_type        
 
@@ -568,6 +572,7 @@ class MainWindow(QMainWindow):
 
         # Create a new instance of ControllerWidget with the updated controller JSON file
         new_controller_display = ControllerWidget(controller_json_file, self.application_widgets_color)
+        print("\n\n\nHello World\n\n\n")
         new_controller_layout.addWidget(new_controller_display)
 
         player_glow_selector.clicked.connect(lambda: self.choose_glow_color(new_controller_display))
@@ -1228,11 +1233,13 @@ class ColorPickerPopup(QDialog):
 class ControllerWidget(QWidget):
     def __init__(self, controller_config_file, widget_color):
         super().__init__()
-                
-        #with open(controller_config_file, 'r') as data:
+
+        self.design_width = 800
+        self.design_height = 800
+
         self.layout_config = json.loads(controller_config_file)
-        self.controller_widgets = self.layout_config.get("wrappedLandscapeButtons", [])
-        
+        self.controller_widgets = self.layout_config.get("wrappedButtons", [])
+
         self.color_scheme = widget_color
         self.glow_color = QColor(255, 255, 0)
 
@@ -1243,12 +1250,10 @@ class ControllerWidget(QWidget):
         self.active_input = None
         self.input_held = {}
 
-        # Cache the rendered image
         self.cached_pixmap = None
         self.update_cache()
 
     def update_cache(self):
-        # Create a pixmap with the current widget size
         self.cached_pixmap = QPixmap(self.width(), self.height())
         self.cached_pixmap.fill(QColor(self.color_scheme))
         
@@ -1266,8 +1271,8 @@ class ControllerWidget(QWidget):
         painter.setBrush(QColor(self.color_scheme).darker(140))
         painter.drawRoundedRect(0, 0, widget_width, widget_height, 10, 10)
 
-        scale_x = widget_width / bbox_width if bbox_width else 1
-        scale_y = widget_height / bbox_height if bbox_height else 1
+        scale_x = (widget_width / bbox_width) if bbox_width else 1
+        scale_y = (widget_height / bbox_height) if bbox_height else 1
         scale = min(scale_x, scale_y)
 
         offset_x = (widget_width - bbox_width * scale) / 2
@@ -1279,9 +1284,13 @@ class ControllerWidget(QWidget):
 
         # Draw the buttons without additional scaling inside the drawing method
         for widget in self.controller_widgets:
-            pos = widget.get("position", {})
-            x, y = pos["x"], pos["y"]
-            self.draw_button(painter, widget, x, y)
+            payload = widget.get("payload", {})
+            pos = payload.get("position", {})
+            scaledPos = pos.get("scaledPos", [0, 0])
+            offset = pos.get("offset", [0, 0])
+            x = (scaledPos[0] * self.design_width) + offset[0]
+            y = (scaledPos[1] * self.design_height) + offset[1]
+            self.draw_button(painter, payload, x, y)
 
         painter.end()
 
@@ -1320,20 +1329,26 @@ class ControllerWidget(QWidget):
 
     def compute_bbox(self):
         margin = 45
-        x_values = [widget["position"]["x"] for widget in self.controller_widgets]
-        y_values = [widget["position"]["y"] for widget in self.controller_widgets]
+        x_values = []
+        y_values = []
+        for widget in self.controller_widgets:
+            payload = widget.get("payload", {})
+            pos = payload.get("position", {})
+            scaledPos = pos.get("scaledPos", [0, 0])
+            offset = pos.get("offset", [0, 0])
+            x_values.append((scaledPos[0] * self.design_width) + offset[0])
+            y_values.append((scaledPos[1] * self.design_height) + offset[1])
         return (min(x_values) - margin, min(y_values) - margin,
                 max(x_values) + margin, max(y_values) + margin)
     
-    def draw_button(self, painter, controller_widget, x, y):
+    def draw_button(self, painter, payload, x, y):
         """Draw a button at the provided (x, y) using the given painter."""
-        button_type = controller_widget.get("discriminator", "")
-        base_size = 30
-        size = base_size
+        button_type = payload.get("type", "")
+        size = 40
 
-        input_type = controller_widget.get("inputId", "")
+        input_type = payload.get("inputId", "")
 
-        if button_type == "RegularButtonConfig":
+        if button_type == 0:
             if (self.active_input == input_type):
                 gradient = QRadialGradient(QPoint(x, y), size+5)
                 gradient.setColorAt(0, QColor(self.glow_color.red(), self.glow_color.green(), self.glow_color.blue(), 180))
@@ -1349,7 +1364,7 @@ class ControllerWidget(QWidget):
                 painter.setPen(QPen(Qt.black, 2))
                 painter.setBrush(QColor(self.color_scheme))
                 painter.drawEllipse(QPoint(int(x), int(y)), int(size / 2), int(size / 2))
-        elif button_type == "JoystickConfig":
+        elif button_type == 1:
             if (self.active_input == input_type):
                 glow_size = size + 10
                 gradient = QRadialGradient(QPoint(x, y), glow_size)
@@ -1370,7 +1385,7 @@ class ControllerWidget(QWidget):
                 painter.drawEllipse(QPoint(int(x), int(y)), int(size), int(size))
                 painter.setBrush(QColor(self.color_scheme).lighter(140))
                 painter.drawEllipse(QPoint(int(x), int(y)), int(size)/2.4, int(size)/2.4)
-        elif button_type == "DPadConfig":
+        elif button_type == 2:
             half = int(size / 2)
             quarter = int(size / 4)
             box_polygon = QPolygon([
@@ -1490,7 +1505,7 @@ class ControllerWidget(QWidget):
                     QPoint(int(x) + quarter, int(y) + quarter)
                 ])
                 painter.drawPolygon(right_points)
-        elif button_type == "BumperConfig":
+        elif button_type == 3:
             if (self.active_input == input_type):
                 gradient = QRadialGradient(QPoint(x + ((int(size) + 40)/8), y + ((int(size / 2)+20)/4)), 2*size)
                 gradient.setColorAt(0, QColor(self.glow_color.red(), self.glow_color.green(), self.glow_color.blue(), 180))
@@ -1506,7 +1521,7 @@ class ControllerWidget(QWidget):
                 painter.setPen(QPen(Qt.black, 2))
                 painter.setBrush(QColor(self.color_scheme))
                 painter.drawRoundedRect(int(x) - int(size / 2)-15, int(y) - int(size / 4)-5, int(size) + 30, int(size / 2)+10, 10, 10)
-        elif button_type == "TriggerConfig":
+        elif button_type == 4:
             if (self.active_input == input_type):
                 gradient = QRadialGradient(QPoint(x + ((int(size / 2)+30)/6), y + ((int(size / 2) + 50)/4)), 2*size)
                 
