@@ -178,7 +178,7 @@ class DefaultLayouts {
         
         // Z
         RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.65, y: 0.05)), scale: 1.2, inputId: 10, input: .Z, style: .init(shape: .Pill, iconType: .Text, icon: "Z", properties: .init(color: Color(hex: "280B72"), pressedColor: Color(hex: "180B4F"))))
-    ])
+    ]) // 24x24   50x50
     
     // MARK: DPad-less Test
     static let DPadlessTest: LayoutConfig = .init(name: "DPad-less Test", buttons: [
