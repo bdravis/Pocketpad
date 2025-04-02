@@ -44,7 +44,7 @@ struct JoystickButtonView: View {
                     width: cos(angle) * clampedDistance,
                     height: sin(angle) * clampedDistance
                 )
-                
+            
 //#if DEBUG
 //                print("Joystick moved: \(offset)") // Debugging output
 //                print("deadzone value is \(config.deadzone)")
@@ -54,12 +54,11 @@ struct JoystickButtonView: View {
 #if DEBUG
                     print("SENDING, OUTSIDE DEADZONE)")
 #endif
-                    
                     if let service = bluetoothManager.selectedService {
                         let ui8_playerId: UInt8 = LayoutManager.shared.player_id
                         let ui8_inputId : UInt8 = config.inputId
                         let ui8_buttonType : UInt8 = config.type.rawValue
-                        let ui8_event : UInt8 = ButtonEvent.held.rawValue
+                        let ui8_event : UInt8 = ButtonEvent.pressed.rawValue
                         
                         var degrees = angle * 180 / .pi
                         while degrees < 0 {
@@ -119,8 +118,8 @@ struct JoystickButtonView: View {
     var body: some View {
         ZStack {
             Circle()
-                .fill(Color(uiColor: .secondarySystemFill))
-                .strokeBorder(Color(uiColor: .secondaryLabel), lineWidth: 3)
+                .fill(config.style.color ?? Color(uiColor: .secondarySystemFill))
+                .strokeBorder(Color(uiColor: .secondaryLabel), lineWidth: config.style.borderThickness)
                 .contentShape(Rectangle())
             
             // Circle indicating deadzone
@@ -129,7 +128,7 @@ struct JoystickButtonView: View {
                 .frame(width: 2 * deadzoneRadius, height: 2 * deadzoneRadius)
 
             Circle()
-                .foregroundStyle(Color(uiColor: .darkGray))
+                .foregroundStyle(config.style.foregroundColor ?? Color(uiColor: .darkGray))
                 .frame(width: STICK_SIZE, height: STICK_SIZE)
                 .offset(offset)
                 .highPriorityGesture(joyDrag)

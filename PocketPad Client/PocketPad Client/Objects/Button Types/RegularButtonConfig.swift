@@ -8,6 +8,12 @@
 import UIKit
 
 struct RegularButtonConfig: ButtonConfig, ConfigType {
+    mutating func updateStyle<T>(to newStyle: T) {
+        if let newStyle = newStyle as? RegularButtonStyle {
+            self.style = newStyle
+        }
+    }
+    
     // Protocol Properties
     var position: ButtonPosition
     var scale: CGFloat
@@ -15,14 +21,14 @@ struct RegularButtonConfig: ButtonConfig, ConfigType {
     var type: ButtonType
     var inputId: UInt8
     
-    var input: String // the button it is bound to
+    var input: ButtonInput // the button it is bound to
     var style: RegularButtonStyle // style configuration of the button
     var turbo: Bool // whether or not this is the turbo button
     
     // Object Initializer
     init(
         position: ButtonPosition, scale: CGFloat, rotation: Double = 0.0, inputId: UInt8,
-        input: String, style: RegularButtonStyle? = nil, turbo: Bool = false
+        input: ButtonInput, style: RegularButtonStyle? = nil, turbo: Bool = false
     ) {
         self.type = .regular
         
@@ -39,7 +45,7 @@ struct RegularButtonConfig: ButtonConfig, ConfigType {
             self.style = style
         } else {
             // create a default style configuration
-            self.style = .init(shape: .Circle, iconType: .Text, icon: input)
+            self.style = .init(shape: .Circle, iconType: .Text, icon: input.rawValue)
         }
     }
 }

@@ -14,8 +14,8 @@ class TurboManager : ObservableObject {
     @Published var turboActive: Bool = false // true iff turbo button is behind held
     @Published var turboRate: Double = 10.0 // number of presses per second
     
-    private var turboEnabledButtons: Set<String> = [] // List of all turbo enabled buttons, regardless of whether they are held
-    private var turboTimers: [String: Timer] = [:]  // A turbo enabled button has a timer iff it is being held
+    private var turboEnabledButtons: Set<ButtonInput> = [] // List of all turbo enabled buttons, regardless of whether they are held
+    private var turboTimers: [ButtonInput: Timer] = [:]  // A turbo enabled button has a timer iff it is being held
     // Having no held buttons implies that turboTimers is empty
     
     init() {
@@ -42,7 +42,7 @@ class TurboManager : ObservableObject {
     // Precondition: turbo mode is activated (turbo button is being held)
     // Precondition: a given button is pressed
     // Given a button, this function enables or disables its turbo state
-    func toggleTurboForButton(_ input: String) {
+    func toggleTurboForButton(_ input: ButtonInput) {
         if turboEnabledButtons.contains(input) {
 #if DEBUG
                     print("BUTTON IS NOW TURBO-DISABLED")
@@ -58,7 +58,7 @@ class TurboManager : ObservableObject {
     }
     
     // Given a button, check it is turbo-enabled {
-    func isTurboEnabled(_ input: String) -> Bool {
+    func isTurboEnabled(_ input: ButtonInput) -> Bool {
         return turboEnabledButtons.contains(input)
     }
     
@@ -67,7 +67,7 @@ class TurboManager : ObservableObject {
     // Precondition: button is being held down
     // When the button is being held down, perform the turbo repetitive action using timers
     // This function involves sending data repeatedly
-    func startTurboForButton(_ input: String, playerId: UInt8, inputId: UInt8, buttonType: UInt8) {
+    func startTurboForButton(_ input: ButtonInput, playerId: UInt8, inputId: UInt8, buttonType: UInt8) {
         // close existing timers for this button
         stopTurboForButton(input)
         
@@ -94,7 +94,7 @@ class TurboManager : ObservableObject {
     
     // Often called when a turbo-enabled button is released
     // Destroys the timer object for a button and removes it from the dict turboTimers
-    func stopTurboForButton(_ input: String) {
+    func stopTurboForButton(_ input: ButtonInput) {
         // destroy the timer objects
         turboTimers[input]?.invalidate()
         turboTimers.removeValue(forKey: input)

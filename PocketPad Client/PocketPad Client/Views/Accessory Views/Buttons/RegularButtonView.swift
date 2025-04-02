@@ -55,7 +55,7 @@ struct RegularButtonView: View {
             } else if turboManager.isTurboEnabled(config.input) { // while turbo is not being held, a turbo-enabled button is held
                 turboManager.startTurboForButton(
                     config.input,
-                    playerId: 0, // Assuming one player
+                    playerId: LayoutManager.shared.player_id, // Assuming one player
                     inputId: config.inputId,
                     buttonType: config.type.rawValue
                 )
@@ -80,7 +80,7 @@ struct RegularButtonView: View {
     
     // send button press for a non turbo-enabled button
     private func sendButtonPress() {
-        let ui8_playerId: UInt8 = 0 // Assuming one player
+        let ui8_playerId: UInt8 = LayoutManager.shared.player_id // Assuming one player
         let ui8_inputId : UInt8 = config.inputId
         let ui8_buttonType : UInt8 = config.type.rawValue
         let ui8_event : UInt8 = ButtonEvent.pressed.rawValue
@@ -94,7 +94,7 @@ struct RegularButtonView: View {
     
     // send button release for a non turbo-enabled button
     private func sendButtonRelease() {
-        let ui8_playerId: UInt8 = 0 // Assuming one player
+        let ui8_playerId: UInt8 = LayoutManager.shared.player_id // Assuming one player
         let ui8_inputId : UInt8 = config.inputId
         let ui8_buttonType : UInt8 = config.type.rawValue
         let ui8_event : UInt8 = ButtonEvent.released.rawValue

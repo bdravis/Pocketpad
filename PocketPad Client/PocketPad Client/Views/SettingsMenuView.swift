@@ -17,16 +17,22 @@ struct SettingsMenuView: View {
     // MARK: - Bound Properties
     @Binding var isShowingSettings: Bool
     @Binding var exitAllMenusCallback: (() -> Void)?
+    @Binding var showModifyBtn: Bool
+    @ObservedObject private var layoutManager = LayoutManager.shared
     
     @AppStorage("splitDPad") var splitDPad: Bool = false
     @AppStorage("selectedController") var selectedController: String = ControllerType.Xbox.stringValue
     @AppStorage("controllerColor") var controllerColor: Color = .blue
     @AppStorage("controllerName") var controllerName: String = "Controller"
-    
-    
+
+    @AppStorage("motionControlEnabled") var motionControlEnabled: Bool = false
+
+    @EnvironmentObject var motionManager: MotionManager
+
     @State private var showDPadStyle: Bool = false
     @State private var saveAsMalformed: Bool = false
-    @State private var availableControllers: [String] = [] // TODO: Change this to a VM later
+    @State private var makingNewLayout: Bool = false
+    @State private var newLayoutName: String = ""
     
     @State private var showingLeftDeadzoneView: Bool = false
     @State private var showingRightDeadzoneView: Bool = false
@@ -73,6 +79,12 @@ struct SettingsMenuView: View {
                         Spacer()
                     }
                     .frame(width: menuWidth, height: menuHeight)
+                    .onAppear {
+                        if let savedController = UserDefaults.standard.string(forKey: "selectedController") {
+                            selectedController = savedController
+                        }
+                    }
+
                 }
                 
                 if showingLeftDeadzoneView {
@@ -130,14 +142,14 @@ struct SettingsMenuView: View {
         VStack(alignment: .leading, spacing: 14) {
             // Controller Type Picker
             HStack {
-                Text("Controller Type")
+                Text("Current Layout")
                     .foregroundColor(.primary)
                 Spacer()
-                Picker("Controller Type", selection: $selectedController) {
+                Picker("Current Layout", selection: $selectedController) {
 //                    ForEach(ControllerType.allCases, id: \.self) { type in
 //                        Label(type.stringValue, image: type.stringValue).tag(type.stringValue)
 //                    }
-                    ForEach(availableControllers, id: \.self) { layout in
+                    ForEach(layoutManager.availableLayouts, id: \.self) { layout in
                         Label(layout, image: layout.lowercased()).tag(layout)
                     }
                 }
@@ -151,6 +163,8 @@ struct SettingsMenuView: View {
                         leftJoystickDeadzone = LayoutManager.shared.getLeftJoystickDeadzone()
                         rightJoystickDeadzone = LayoutManager.shared.getRightJoystickDeadzone()
                         turboManager.stopAllTurbo()
+                        
+                        showModifyBtn = !DefaultLayouts.isDefaultLayout(name: selectedController)
                     } catch {
                         UIApplication.shared.alert(title: "Failed to load layout", body: error.localizedDescription)
                         selectedController = ControllerType.Xbox.stringValue
@@ -159,12 +173,38 @@ struct SettingsMenuView: View {
                 .onAppear {
                     exitAllMenusCallback = exitAllMenus
                     showDPadStyle = LayoutManager.shared.hasDPad
-                    availableControllers = LayoutManager.shared.availableLayouts
                 }
             }
             .padding(.horizontal, 16)
+            Button(action: {
+                newLayoutName = ""
+                makingNewLayout.toggle()
+            }) {
+                Text("Create New Layout")
+            }
+            .padding(.horizontal, 16)
+            .alert("New Layout", isPresented: $makingNewLayout) {
+                TextField("Name", text: $newLayoutName)
+                Button("OK", action: {
+                    if newLayoutName != "" {
+                        do {
+                            guard !layoutManager.layoutExists(for: newLayoutName) else { throw LayoutError.duplicate }
+                            let newLayout: LayoutConfig = .init(name: newLayoutName, buttons: [])
+                            try layoutManager.saveLayout(newLayout)
+                            try layoutManager.loadLayouts()
+                            try layoutManager.setCurrentLayout(to: newLayoutName)
+                            selectedController = newLayoutName
+                        } catch {
+                            UIApplication.shared.alert(body: error.localizedDescription)
+                        }
+                    }
+                })
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text("What will the name of the layout be?")
+            }
             //Picker for D-PAD (Split (True) vs Conjoined (False))
-            if showDPadStyle {
+            if layoutManager.hasDPad {
                 HStack {
                     Text("DPad Style")
                         .foregroundColor(.primary)
@@ -261,6 +301,25 @@ struct SettingsMenuView: View {
             }
             .padding(.horizontal, 16)
             
+            // MARK: Add toggle for motion control
+            HStack {
+                Text("Enable Motion Control")
+                    .foregroundColor(.primary)
+                Spacer()
+                Toggle("", isOn: $motionControlEnabled)
+                    .labelsHidden()
+                    .accessibilityIdentifier("MotionControlToggle")
+                    // Updated iOS 17 .onChange signature
+                    .onChange(of: motionControlEnabled) { newValue in
+                        if newValue {
+                            motionManager.startUpdates()
+                        } else {
+                            motionManager.stopUpdates()
+                        }
+                    }
+            }
+            .padding(.horizontal, 16)
+            
             // MARK: Saving layouts (temporary)
             Section {
                 // Toggle to save layout as malformed
@@ -286,7 +345,6 @@ struct SettingsMenuView: View {
                         try LayoutManager.shared.deleteAllLayouts()
                         try LayoutManager.shared.loadLayouts(includeControllerTypes: true)
                         selectedController = ControllerType.Xbox.stringValue
-                        availableControllers = LayoutManager.shared.availableLayouts
                     } catch {
                         UIApplication.shared.alert(body: error.localizedDescription)
                     }
@@ -314,7 +372,6 @@ struct SettingsMenuView: View {
                 try LayoutManager.shared.saveLayout(layout)
             }
             try LayoutManager.shared.loadLayouts(includeControllerTypes: true)
-            availableControllers = LayoutManager.shared.availableLayouts
             UIApplication.shared.alert(title: "Layout Successfully Saved", body: "It can be found in the \"Controller Type\" menu.")
         } catch {
             UIApplication.shared.alert(body: "Failed to save the layout:\n\(error.localizedDescription)")
@@ -376,7 +433,8 @@ struct SettingsMenuView: View {
 #Preview {
     SettingsMenuView(
         isShowingSettings: .constant(true),
-        exitAllMenusCallback: .constant(nil)
+        exitAllMenusCallback: .constant(nil),
+        showModifyBtn: .constant(true)
     )
 }
 
