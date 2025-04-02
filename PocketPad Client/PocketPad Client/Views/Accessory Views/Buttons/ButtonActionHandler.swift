@@ -29,7 +29,7 @@ struct ButtonActionHandler: ViewModifier {
 extension View {
     func pressAction(onPress: @escaping (() -> Void), onRelease: @escaping (() -> Void)) -> some View {
         modifier(ButtonActionHandler(onPress: {
-            HapticsManager.shared.triggerImpact()
+            HapticsManager.playHaptic()
             onPress()
         }, onRelease: {
             onRelease()
