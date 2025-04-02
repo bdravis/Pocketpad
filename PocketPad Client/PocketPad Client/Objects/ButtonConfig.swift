@@ -23,7 +23,6 @@ enum ButtonType: UInt8, ConfigType, CaseIterable {
 enum ButtonEvent: UInt8, ConfigType {
     case pressed = 0
     case released = 1
-    case held = 2
 }
 
 // Position information for a button, including side override
