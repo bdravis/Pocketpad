@@ -80,7 +80,7 @@ struct DirectionalArrow: View {
         .buttonStyle(DPadButtonStyle(style: config.style, split: split))
         .pressAction(onPress: {
             if let service = bluetoothManager.selectedService {
-                let ui8_playerId: UInt8 = 0 // Assuming one player
+                let ui8_playerId: UInt8 = LayoutManager.shared.player_id
                 let ui8_inputId : UInt8 = config.inputId
                 let ui8_buttonType : UInt8 = config.type.rawValue
                 let ui8_event : UInt8 = ButtonEvent.pressed.rawValue
@@ -93,7 +93,7 @@ struct DirectionalArrow: View {
             }
         }, onRelease: {
             if let service = bluetoothManager.selectedService {
-                let ui8_playerId: UInt8 = 0 // Assuming one player
+                let ui8_playerId: UInt8 = LayoutManager.shared.player_id
                 let ui8_inputId : UInt8 = config.inputId
                 let ui8_buttonType : UInt8 = config.type.rawValue
                 let ui8_event : UInt8 = ButtonEvent.released.rawValue

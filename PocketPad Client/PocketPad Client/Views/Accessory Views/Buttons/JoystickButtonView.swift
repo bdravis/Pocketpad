@@ -40,7 +40,7 @@ struct JoystickButtonView: View {
                     let ui8_playerId: UInt8 = LayoutManager.shared.player_id
                     let ui8_inputId : UInt8 = config.inputId
                     let ui8_buttonType : UInt8 = config.type.rawValue
-                    let ui8_event : UInt8 = ButtonEvent.held.rawValue
+                    let ui8_event : UInt8 = ButtonEvent.pressed.rawValue
                     
                     var degrees = angle * 180 / .pi
                     while degrees < 0 {

@@ -11,7 +11,7 @@ from server_constants import (POCKETPAD_SERVICE, LATENCY_CHARACTERISTIC,
                        CONNECTION_CHARACTERISTIC, PLAYER_ID_CHARACTERISTIC, 
                        CONTROLLER_TYPE_CHARACTERISTIC, INPUT_CHARACTERISTIC,
                        ConnectionMessage)
-from inputs import parse_input
+from inputs import parse_input, input_error_tuple
 
 from bless import (  # type: ignore
     BlessServer,
@@ -146,14 +146,23 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
       
       # Implement a way to extract a value corresponding to player characteristic
         #
-        parse_input(characteristic.value)
-        input = None # Fix this to have it be the input 
-        #
-        # Implement a way to extract a value corresponding to player characteristic
+        input_result = parse_input(characteristic.value)
 
-        player_id = connection_information[0]
+        if input_result == input_error_tuple:
+            logger.error("INVALID INPUT")
+        else:
+            player_id, input_id, event = input_result
 
-        # # If press & release -> send release 
+            logger.debug("PLAYER ID")
+            logger.debug(player_id)
+            logger.debug("INPUT ID")
+            logger.debug(input_id)
+            logger.debug("EVENT")
+            logger.debug(event)
+
+            input_function(str(player_id), input_id, event)
+
+        # # If press & release -> send release (not supported by current impl)
         # input_function(str(player_id), input_id, enums.ButtonEvent.RELEASED)
 
         # # If press & and held -> send pressed
