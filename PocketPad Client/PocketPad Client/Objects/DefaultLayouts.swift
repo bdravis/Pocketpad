@@ -145,6 +145,41 @@ class DefaultLayouts {
         RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.5)), scale: 0.6, inputId: 7, input: .Home, style: .init(shape: .Circle, iconType: .SFSymbol, icon: "house")),
     ])
     
+    // MARK: GameCube Config
+    static let GameCubeConfig: LayoutConfig = .init(name: "GameCube", buttons: [
+        // Left Joystick
+        JoystickConfig(position: .init(scaledPos: CGPoint(x: 0.15, y: 0.4)), scale: 1.5, inputId: 0, input: .LeftJoystick),
+        
+        // DPad
+        DPadConfig(
+            position: .init(scaledPos: CGPoint(x: 0.3, y: 0.75)), scale: 1.5, inputId: 1,
+            inputs: [
+                .up: .DPadUp, .right: .DPadRight, .down: .DPadDown, .left: .DPadLeft
+            ]
+        ),
+        
+        // Start
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.3)), scale: 0.7, inputId: 2, input: .Start, style: .init(shape: .Circle, iconType: .Text, icon: "+")),
+        
+        // Right Joystick
+        JoystickConfig(position: .init(scaledPos: CGPoint(x: 0.7, y: 0.75)), scale: 1.5, style: .init(color: Color(hex: "F7CE46"), foregroundColor: Color(hex: "8C8629")), inputId: 3, input: .RightJoystick),
+        
+        // A and B Buttons
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.8, y: 0.35)), scale: 1.5, inputId: 4, input: .A, style: .init(shape: .Circle, iconType: .Text, icon: "A", properties: .init(color: Color(hex: "64C466"), pressedColor: Color(hex: "729C44")))),
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.8, y: 0.35), offset: CGPoint(x: -68, y: 56.5)), scale: 0.8, inputId: 5, input: .B, style: .init(shape: .Circle, iconType: .Text, icon: "B", properties: .init(color: Color(hex: "EB4D3D"), pressedColor: Color(hex: "781E0E")))),
+        
+        // X and Y Buttons
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.8, y: 0.35), offset: CGPoint(x: -20.5, y: -70)), scale: 1.2, inputId: 6, input: .Y, style: .init(shape: .SlantedPill, iconType: .Text, icon: "Y")),
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.8, y: 0.35), offset: CGPoint(x: 72.5, y: -9)), scale: 1.2, inputId: 7, input: .X, style: .init(shape: .SlantedPill, iconType: .Text, icon: "X")),
+        
+        // Triggers
+        TriggerConfig(position: .init(scaledPos: CGPoint(x: 0.05, y: 0.1)), scale: 1.2, inputId: 8, input: .LT, side: .left),
+        TriggerConfig(position: .init(scaledPos: CGPoint(x: 0.95, y: 0.1)), scale: 1.2, inputId: 9, input: .RT, side: .right),
+        
+        // Z
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.65, y: 0.05)), scale: 1.2, inputId: 10, input: .Z, style: .init(shape: .Pill, iconType: .Text, icon: "Z", properties: .init(color: Color(hex: "280B72"), pressedColor: Color(hex: "180B4F"))))
+    ])
+    
     // MARK: DPad-less Test
     static let DPadlessTest: LayoutConfig = .init(name: "DPad-less Test", buttons: [
         // Diamond of buttons
@@ -166,6 +201,8 @@ class DefaultLayouts {
             return PlayStationConfig
         case .Wii:
             return WiiConfig
+        case .GameCube:
+            return GameCubeConfig
         case .Switch:
             return SwitchConfig
         case .DPadless:
@@ -174,7 +211,7 @@ class DefaultLayouts {
     }
     
     static func isDefaultLayout(name: String) -> Bool {
-        return (name == XboxConfig.name || name == PlayStationConfig.name || name == WiiConfig.name || name == SwitchConfig.name || name == DPadlessTest.name)
+        return (name == XboxConfig.name || name == PlayStationConfig.name || name == WiiConfig.name || name == SwitchConfig.name || name == DPadlessTest.name || name == GameCubeConfig.name)
     }
 }
 

@@ -13,6 +13,7 @@ enum ButtonInput: String, Codable {
     case B = "B"
     case X = "X"
     case Y = "Y"
+    case Z = "Z"
     case One = "1"
     case Two = "2"
     
@@ -38,7 +39,7 @@ enum ButtonInput: String, Codable {
 func getButtonInputs(for type: ButtonType) -> [ButtonInput] {
     switch type {
     case .regular:
-        return [.A, .B, .X, .Y, .One, .Two, .Start, .Select, .Home, .Share]
+        return [.A, .B, .X, .Y, .Z, .One, .Two, .Start, .Select, .Home, .Share]
     case .joystick:
         return [.RightJoystick, .LeftJoystick]
     case .dpad:
