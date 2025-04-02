@@ -65,7 +65,7 @@ struct ControllerView: View {
             ZStack(alignment: .topLeading) {
                 ForEach($layoutManager.currentController.buttons, id: \.wrappedValue.id) { btn in
                     if selectedBtn.isEmpty || selectedBtn.inputId != btn.wrappedValue.inputId {
-                        var tapGesture = TapGesture().onEnded {
+                        let tapGesture = TapGesture().onEnded {
                             applySelectedButton()
                             selectedBtn.setButton(to: btn.wrappedValue)
                             if (isPortait && selectedBtn.scaledPos.y > 0.5) || (!isPortait && selectedBtn.scaledPos.x > 0.5) {
@@ -320,7 +320,19 @@ struct ControllerView: View {
                 }
             }
             .sheet(isPresented: $showAddPopup) {
-                AddButtonView()
+                AddButtonView(selectedBtn: selectedBtn)
+            }
+            .background {
+                if isEditor {
+                    Color(uiColor: .systemBackground)
+                        .ignoresSafeArea()
+                        .onTapGesture {
+                            if !selectedBtn.isEmpty {
+                                applySelectedButton()
+                                selectedBtn.clear()
+                            }
+                        }
+                }
             }
             .overlay {
                 if !selectedBtn.isEmpty {

@@ -10,6 +10,7 @@ import SwiftUI
 struct AddButtonView: View {
     @Environment(\.dismiss) var dismiss
     
+    @ObservedObject var selectedBtn: EditingButtonVM
     @ObservedObject private var layoutManager = LayoutManager.shared
     @State var buttonType: ButtonType = .regular
     @State var buttonInput: ButtonInput = .A
@@ -54,7 +55,7 @@ struct AddButtonView: View {
                     Spacer()
                     Picker("Side", selection: $triggerSide) {
                         ForEach(TriggerSide.allCases, id: \.self) { side in
-                            Text(getSideName(side)).tag(getSideName(side))
+                            Text(side.getName()).tag(side.getName())
                         }
                     }
                     .pickerStyle(.segmented)
@@ -75,6 +76,9 @@ struct AddButtonView: View {
                     layoutManager.currentController.buttons.append(BumperConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.5)), scale: 1.0, inputId: inputId, input: buttonInput))
                 case .trigger:
                     layoutManager.currentController.buttons.append(TriggerConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.5)), scale: 1.0, inputId: inputId, input: buttonInput, side: triggerSide))
+                }
+                if let btn = layoutManager.currentController.buttons.last {
+                    selectedBtn.setButton(to: btn)
                 }
                 dismiss()
             }) {
@@ -120,17 +124,6 @@ struct AddButtonView: View {
             return "button.roundedtop.horizontal"
         case .trigger:
             return "button.angledtop.vertical.left"
-        }
-    }
-    
-    func getSideName(_ side: TriggerSide) -> String {
-        switch side {
-        case .left:
-            return "Left"
-        case .middle:
-            return "Middle"
-        case .right:
-            return "Right"
         }
     }
 }

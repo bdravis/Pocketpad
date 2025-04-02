@@ -148,7 +148,7 @@ struct SettingsMenuView: View {
                             guard !layoutManager.layoutExists(for: newLayoutName) else { throw LayoutError.duplicate }
                             let newLayout: LayoutConfig = .init(name: newLayoutName, buttons: [])
                             try layoutManager.saveLayout(newLayout)
-                            try layoutManager.loadLayouts()
+                            try layoutManager.loadLayouts(includeControllerTypes: true)
                             try layoutManager.setCurrentLayout(to: newLayoutName)
                             selectedController = newLayoutName
                         } catch {
