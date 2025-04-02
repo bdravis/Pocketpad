@@ -601,10 +601,6 @@ class MainWindow(QMainWindow):
             controller_widget.update_glow_color(color)            
 
     def display_controller_input(self, player_id, input, hold_input):
-        """
-        if self.player_controller_input_display[player_id]:
-            self.player_controller_mapping[player_id]["display"].set_active_input(input, hold_input)
-        """
         if player_id in self.player_controller_input_display:
             self.player_controller_mapping[player_id]["display"].set_active_input(input, hold_input)
     
