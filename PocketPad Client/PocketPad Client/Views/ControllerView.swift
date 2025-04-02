@@ -65,6 +65,15 @@ struct ControllerView: View {
             ZStack(alignment: .topLeading) {
                 ForEach($layoutManager.currentController.buttons, id: \.wrappedValue.id) { btn in
                     if selectedBtn.isEmpty || selectedBtn.inputId != btn.wrappedValue.inputId {
+                        var tapGesture = TapGesture().onEnded {
+                            applySelectedButton()
+                            selectedBtn.setButton(to: btn.wrappedValue)
+                            if (isPortait && selectedBtn.scaledPos.y > 0.5) || (!isPortait && selectedBtn.scaledPos.x > 0.5) {
+                                btnEditViewPos = 0.0
+                            } else {
+                                btnEditViewPos = 1.0
+                            }
+                        }
                         ZStack {
                             Group {
                                 switch btn.wrappedValue.type {
@@ -101,15 +110,7 @@ struct ControllerView: View {
                             y: btn.wrappedValue.position.offset.y
                         )
                         .disabled(isEditor)
-                        .onTapGesture {
-                            applySelectedButton()
-                            selectedBtn.setButton(to: btn.wrappedValue)
-                            if (isPortait && selectedBtn.scaledPos.y > 0.5) || (!isPortait && selectedBtn.scaledPos.x > 0.5) {
-                                btnEditViewPos = 0.0
-                            } else {
-                                btnEditViewPos = 1.0
-                            }
-                        }
+                        .gesture(tapGesture, isEnabled: isEditor)
                     }
                 }
                 
