@@ -173,7 +173,7 @@ struct ControllerView: View {
                                         btnEditViewPos = 1.0
                                     }
                                 }
-                                if isSafe(geomSize: geometry.size), let dragPos = dragPos {
+                                if isSafe(geom: geometry.frame(in: .global)), let dragPos = dragPos {
                                     isUnsafe = false
                                     lastSafePos = dragPos
                                 } else {
@@ -187,7 +187,7 @@ struct ControllerView: View {
                                     y: (pos.y - selectedBtn.offset.y) / geometry.size.height
                                 )
                                 dragPos = nil
-                                if !isSafe(geomSize: geometry.size), let lastSafePos = lastSafePos {
+                                if !isSafe(geom: geometry.frame(in: .global)), let lastSafePos = lastSafePos {
                                     // needs to set position back to the safe pos
                                     selectedBtn.scaledPos = CGPoint(
                                         x: (lastSafePos.x - selectedBtn.offset.x) / geometry.size.width,
@@ -221,7 +221,7 @@ struct ControllerView: View {
                                     }
                                 }
                                 // check if safe
-                                if isSafe(geomSize: geometry.size) {
+                                if isSafe(geom: geometry.frame(in: .global)) {
                                     isUnsafe = false
                                     lastSafeScale = selectedBtn.scale
                                 } else {
@@ -230,7 +230,7 @@ struct ControllerView: View {
                             }
                             .onEnded { _ in
                                 zoomStart = nil
-                                if !isSafe(geomSize: geometry.size), let lastSafeScale = lastSafeScale {
+                                if !isSafe(geom: geometry.frame(in: .global)), let lastSafeScale = lastSafeScale {
                                     selectedBtn.scale = lastSafeScale
                                 }
                                 lastSafeScale = nil
@@ -395,19 +395,20 @@ struct ControllerView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
     
-    func isSafe(geomSize: CGSize) -> Bool {
+    func isSafe(geom: CGRect) -> Bool {
         guard !selectedBtn.isEmpty else { return true }
         let selBtnRect = CGRect(
-            x: dragPos?.x ?? (selectedBtn.scaledPos.x * geomSize.width) + selectedBtn.offset.x,
-            y: dragPos?.y ?? (selectedBtn.scaledPos.y * geomSize.height) + selectedBtn.offset.y,
+            x: dragPos?.x ?? (selectedBtn.scaledPos.x * geom.size.width) + selectedBtn.offset.x,
+            y: dragPos?.y ?? (selectedBtn.scaledPos.y * geom.size.height) + selectedBtn.offset.y,
             width: selectedBtn.scale * DEFAULT_BUTTON_SIZE,
             height: selectedBtn.scale * DEFAULT_BUTTON_SIZE
         )
+        if !geom.contains(selBtnRect) { return false }
         for btn in layoutManager.currentController.buttons {
             if btn.inputId == selectedBtn.inputId { continue }
             let currBtnRect = CGRect(
-                x: (btn.position.scaledPos.x * geomSize.width) + btn.position.offset.x,
-                y: (btn.position.scaledPos.y * geomSize.height) + btn.position.offset.y,
+                x: (btn.position.scaledPos.x * geom.size.width) + btn.position.offset.x,
+                y: (btn.position.scaledPos.y * geom.size.height) + btn.position.offset.y,
                 width: btn.scale * DEFAULT_BUTTON_SIZE,
                 height: btn.scale * DEFAULT_BUTTON_SIZE
             )
