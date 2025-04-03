@@ -1,2 +1,7 @@
 pyside6
 git+https://github.com/12944qwerty/bless.git@descriptors
+
+# For compiling the application
+imageio
+nuitka
+zstandard
