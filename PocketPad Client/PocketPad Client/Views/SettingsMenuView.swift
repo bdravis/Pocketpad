@@ -76,6 +76,7 @@ struct SettingsMenuView: View {
                             settingsContent
                                 .padding(.bottom, 20)
                         }
+                        .accessibilityIdentifier("SettingsScrollView")
                         Spacer()
                     }
                     .frame(width: menuWidth, height: menuHeight)
@@ -145,7 +146,7 @@ struct SettingsMenuView: View {
                 Text("Current Layout")
                     .foregroundColor(.primary)
                 Spacer()
-                Picker("Current Layout", selection: $selectedController) {
+                Picker("Picker\(selectedController)", selection: $selectedController) {
 //                    ForEach(ControllerType.allCases, id: \.self) { type in
 //                        Label(type.stringValue, image: type.stringValue).tag(type.stringValue)
 //                    }
@@ -183,8 +184,11 @@ struct SettingsMenuView: View {
                 Text("Create New Layout")
             }
             .padding(.horizontal, 16)
+            .accessibilityIdentifier("CreateNewLayoutButton")
             .alert("New Layout", isPresented: $makingNewLayout) {
-                TextField("Name", text: $newLayoutName)
+                TextField("Layout Name", text: $newLayoutName)
+                    .accessibilityIdentifier("Name")
+                
                 Button("OK", action: {
                     if newLayoutName != "" {
                         do {
@@ -199,6 +203,7 @@ struct SettingsMenuView: View {
                         }
                     }
                 })
+                .accessibilityIdentifier("LayoutNameOK")
                 Button("Cancel", role: .cancel) { }
             } message: {
                 Text("What will the name of the layout be?")
