@@ -1301,7 +1301,7 @@ class ControllerWidget(QWidget):
         self.update_cache()
         self.update()
         if hold_input == enums.ButtonEvent.RELEASED:
-            QTimer.singleShot(300, self.clear_active_input(active_type, hold_input))
+            QTimer.singleShot(300, lambda: self.clear_active_input(active_type, hold_input))
 
     def clear_active_input(self, active_type, hold_input):
         self.input_held[active_type] = hold_input
