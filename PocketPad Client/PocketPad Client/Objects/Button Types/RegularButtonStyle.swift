@@ -12,6 +12,7 @@ import SwiftUICore
 enum RegularButtonShape: String, ConfigType, CaseIterable {
     case Circle = "Circle"
     case Pill = "Pill"
+    case SlantedPill = "Slanted Pill"
 }
 
 // the type of icon to display

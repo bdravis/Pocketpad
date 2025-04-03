@@ -44,6 +44,10 @@ struct RegularButtonView: View {
                     Capsule()
                         .stroke(.yellow, lineWidth: 5)
                         .padding(2)
+                case .SlantedPill:
+                    CurvedCapsule()
+                        .stroke(.yellow, lineWidth: 5)
+                        .padding(2)
                 }
             } : nil
         )

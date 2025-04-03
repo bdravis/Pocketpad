@@ -9,9 +9,10 @@ enum ControllerType: UInt8, CaseIterable {
     case Xbox = 0
     case PlayStation = 1
     case Wii = 2
+    case GameCube = 5
     case Switch = 3
     case DPadless = 4
-    case Turbo = 5
+    case Turbo = 6
     
     var stringValue: String {
         switch self {
@@ -19,6 +20,8 @@ enum ControllerType: UInt8, CaseIterable {
             return "Xbox"
         case .PlayStation:
             return "PlayStation"
+        case .GameCube:
+            return "GameCube"
         case .Wii:
             return "Wii"
         case .Switch:
@@ -37,6 +40,8 @@ enum ControllerType: UInt8, CaseIterable {
             self = .Xbox
         case "PlayStation":
             self = .PlayStation
+        case "GameCube":
+            self = .GameCube
         case "Wii":
             self = .Wii
         case "Switch":
