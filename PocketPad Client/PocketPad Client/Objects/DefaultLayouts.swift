@@ -169,8 +169,8 @@ class DefaultLayouts {
         RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.8, y: 0.35), offset: CGPoint(x: -68, y: 56.5)), scale: 0.8, inputId: 5, input: .B, style: .init(shape: .Circle, iconType: .Text, icon: "B", properties: .init(color: Color(hex: "EB4D3D"), pressedColor: Color(hex: "781E0E")))),
         
         // X and Y Buttons
-        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.8, y: 0.35), offset: CGPoint(x: -20.5, y: -70)), scale: 1.2, inputId: 6, input: .Y, style: .init(shape: .SlantedPill, iconType: .Text, icon: "Y")),
-        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.8, y: 0.35), offset: CGPoint(x: 72.5, y: -9)), scale: 1.2, inputId: 7, input: .X, style: .init(shape: .SlantedPill, iconType: .Text, icon: "X")),
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.8, y: 0.35), offset: CGPoint(x: -20.5, y: -70)), scale: 1.2, rotation: -12, inputId: 6, input: .Y, style: .init(shape: .SlantedPill, iconType: .Text, icon: "Y")),
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.8, y: 0.35), offset: CGPoint(x: 72.5, y: -9)), scale: 1.2, rotation: 84, inputId: 7, input: .X, style: .init(shape: .SlantedPill, iconType: .Text, icon: "X")),
         
         // Triggers
         TriggerConfig(position: .init(scaledPos: CGPoint(x: 0.05, y: 0.1)), scale: 1.2, inputId: 8, input: .LT, side: .left),
