@@ -84,29 +84,33 @@ struct RegularButtonView: View {
     
     // send button press for a non turbo-enabled button
     private func sendButtonPress() {
-        let ui8_playerId: UInt8 = LayoutManager.shared.player_id // Assuming one player
-        let ui8_inputId : UInt8 = config.inputId
-        let ui8_buttonType : UInt8 = config.type.rawValue
-        let ui8_event : UInt8 = ButtonEvent.pressed.rawValue
-        
-        let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
 #if DEBUG
         print("TURBO-DISABLED REGULAR BUTTON PRESS")
 #endif
-        bluetoothManager.sendInput(data)
+        if let service = bluetoothManager.selectedService {
+            let ui8_playerId: UInt8 = LayoutManager.shared.player_id // Assuming one player
+            let ui8_inputId : UInt8 = config.inputId
+            let ui8_buttonType : UInt8 = config.type.rawValue
+            let ui8_event : UInt8 = ButtonEvent.pressed.rawValue
+            
+            let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
+            bluetoothManager.sendInput(data)
+        }
     }
     
     // send button release for a non turbo-enabled button
     private func sendButtonRelease() {
-        let ui8_playerId: UInt8 = LayoutManager.shared.player_id // Assuming one player
-        let ui8_inputId : UInt8 = config.inputId
-        let ui8_buttonType : UInt8 = config.type.rawValue
-        let ui8_event : UInt8 = ButtonEvent.released.rawValue
-        
-        let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
 #if DEBUG
         print("SAFETY REGULAR BUTTON RELEASE")
 #endif
-        bluetoothManager.sendInput(data)
+        if let service = bluetoothManager.selectedService {
+            let ui8_playerId: UInt8 = LayoutManager.shared.player_id // Assuming one player
+            let ui8_inputId : UInt8 = config.inputId
+            let ui8_buttonType : UInt8 = config.type.rawValue
+            let ui8_event : UInt8 = ButtonEvent.released.rawValue
+            
+            let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
+            bluetoothManager.sendInput(data)
+        }
     }
 }
