@@ -12,7 +12,7 @@ enum ControllerType: UInt8, CaseIterable {
     case GameCube = 5
     case Switch = 3
     case DPadless = 4
-    case Turbo = 5
+    case Turbo = 6
     
     var stringValue: String {
         switch self {
