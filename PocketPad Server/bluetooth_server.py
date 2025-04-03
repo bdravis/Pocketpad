@@ -382,6 +382,12 @@ class QBlessServer(QObject):
     
     async def stop(self):
         logger.debug("Stopping server")
+        char = self.server.get_characteristic(CONNECTION_CHARACTERISTIC)
+        char.value = bytearray([0, 0])
+        self.server.update_value(POCKETPAD_SERVICE, CONNECTION_CHARACTERISTIC)
+        
+        await asyncio.sleep(0.5) # small buffer
+
         await self.server.stop()
 
 # Main function to start the bluetooth server for testing purposes
