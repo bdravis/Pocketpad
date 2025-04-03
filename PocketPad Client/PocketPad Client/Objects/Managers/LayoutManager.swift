@@ -158,6 +158,45 @@ class LayoutManager: ObservableObject {
         }
     }
     
+    // Helper functions for accessing and updating left and right joystick deadzone values
+    func getLeftJoystickDeadzone() -> Double {
+        return (currentController.buttons.first(where: {
+            ($0 as? JoystickConfig)?.input == .LeftJoystick
+        }) as? JoystickConfig)?.deadzone ?? 0.0
+    }
+    
+    func getRightJoystickDeadzone() -> Double {
+        return (currentController.buttons.first(where: {
+            ($0 as? JoystickConfig)?.input == .RightJoystick
+        }) as? JoystickConfig)?.deadzone ?? 0.0
+    }
+    
+    func updateLeftJoystickDeadzone(_ newDeadzone: Double) {
+        for i in 0..<currentController.buttons.count {
+            // find joystick
+            if var joystickButton = currentController.buttons[i] as? JoystickConfig {
+                if (joystickButton.input == .LeftJoystick) {
+                    // update deadzone
+                    joystickButton.deadzone = newDeadzone
+                    currentController.buttons[i] = joystickButton
+                }
+            }
+        }
+    }
+    
+    func updateRightJoystickDeadzone(_ newDeadzone: Double) {
+        for i in 0..<currentController.buttons.count {
+            // find joystick
+            if var joystickButton = currentController.buttons[i] as? JoystickConfig {
+                if (joystickButton.input == .RightJoystick) {
+                    // update deadzone
+                    joystickButton.deadzone = newDeadzone
+                    currentController.buttons[i] = joystickButton
+                }
+            }
+        }
+    }
+
     func deleteButton(inputId: UInt8) {
         // delete the button with the corresponding input id and fix all the input ids to be in chronological order
         currentController.buttons.removeAll { $0.inputId == inputId }

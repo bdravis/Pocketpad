@@ -10,8 +10,9 @@ import SwiftUI
 struct ContentView: View {
     // MARK: - State Variables for Settings
     @State private var isShowingSettings = false
+    @State private var exitAllMenusCallback: (() -> Void)? = nil
     @State private var showModifyBtn = false
-    
+
     @StateObject private var bluetoothManager = BluetoothManager.shared
     
     var body: some View {
@@ -155,10 +156,15 @@ struct ContentView: View {
                         .animation(.easeOut, value: isShowingSettings)
                         .ignoresSafeArea()
                         .onTapGesture {
+                            exitAllMenusCallback?()
                             isShowingSettings = false
                         }
                     
-                    SettingsMenuView(isShowingSettings: $isShowingSettings, showModifyBtn: $showModifyBtn)
+                    SettingsMenuView(
+                        isShowingSettings: $isShowingSettings,
+                        exitAllMenusCallback: $exitAllMenusCallback,
+                        showModifyBtn: $showModifyBtn
+                    )
                         .offset(y: isShowingSettings ? 0 : -geometry.size.height)
                         .transition(.move(edge: .top))
                         .animation(.bouncy, value: isShowingSettings)

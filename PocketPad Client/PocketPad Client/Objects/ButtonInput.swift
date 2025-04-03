@@ -33,6 +33,8 @@ enum ButtonInput: String, Codable {
     case DPadDown = "DPadDown"
     case DPadRight = "DPadRight"
     case DPadLeft = "DPadLeft"
+    
+    case Turbo = "T"
 }
 
 func getButtonInputs(for type: ButtonType) -> [ButtonInput] {
