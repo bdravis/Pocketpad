@@ -118,10 +118,10 @@ struct TurboSettingsView : View {
                     .font(.caption)
                     .foregroundColor(.secondary)
                 
-                Slider(value: $tempTurboRate, in: 1...30, step: 1)
+                Slider(value: $tempTurboRate, in: 1...turboManager.MAX_TURBO_RATE, step: 1)
                     .accessibilityIdentifier("TurboRateSlider")
                 
-                Text("30")
+                Text("\(Int(turboManager.MAX_TURBO_RATE))")
                     .font(.caption)
                     .foregroundColor(.secondary)
             }

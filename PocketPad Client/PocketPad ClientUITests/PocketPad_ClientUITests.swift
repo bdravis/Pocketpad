@@ -6,6 +6,7 @@
 //
 
 import XCTest
+@testable import PocketPad_Client
 
 final class PocketPad_ClientUITests: XCTestCase {
 
@@ -362,5 +363,67 @@ final class PocketPad_ClientUITests: XCTestCase {
                 XCUIApplication().launch()
             }
         }
+    }
+    
+    @MainActor
+    func changeTurboRateTest() throws {
+        let app = XCUIApplication()
+        app.launch()
+        
+        let settingsBtn = app.buttons["SettingsGearButton"]
+        let settingsCloseBtn = app.buttons["SettingsCloseButton"]
+        let turboRateBtn = app.buttons["TurboRateButton"]
+        
+        let turboSettingsCloseBtn = app.buttons["TurboSettingsCloseButton"]
+        let turboRateSlider = app.sliders["TurboRateSlider"]
+        let applyTurboRateBtn = app.buttons["ApplyTurboRateButton"]
+        
+        let turboManager = TurboManager.shared
+        
+        print("DEBUGGING Old turbo rate: \(turboManager.turboRate)")
+        
+        // Open settings menu
+        guard settingsBtn.waitForExistence(timeout: 3) else {
+            XCTFail("Settings button open not found")
+            return
+        }
+        settingsBtn.tap()
+        
+        // Open turbo rate settings menu
+        guard turboRateBtn.waitForExistence(timeout: 1) else {
+            XCTFail("Turbo rate button not found")
+            return
+        }
+        turboRateBtn.tap()
+        
+        // Moving slider
+        guard turboRateSlider.waitForExistence(timeout: 1) else {
+            XCTFail("Slider not found")
+            return
+        }
+        let randomTurboRate: Int = Int.random(in: 1...Int(turboManager.MAX_TURBO_RATE)) // Generate random value to move slider to
+        print("DEBUGGING random turbo rate: \(randomTurboRate)")
+        let normalizedRandomTurboRate: Double = (Double(randomTurboRate) - 1) / (turboManager.MAX_TURBO_RATE  - 1) // Map number into the range [0, 1] for slider
+        print("DEBUGGING normalized random turbo rate: \(normalizedRandomTurboRate)")
+        turboRateSlider.adjust(toNormalizedSliderPosition: normalizedRandomTurboRate) // Adjust slider
+        
+        // Apply changes
+        guard applyTurboRateBtn.waitForExistence(timeout: 1) else {
+            XCTFail("Apply turbo rate button not found")
+            return
+        }
+        applyTurboRateBtn.tap()
+        
+        // Close turbo settings
+        XCTAssertTrue(turboSettingsCloseBtn.exists)
+        turboSettingsCloseBtn.tap()
+        
+        // Close settings
+        XCTAssertTrue(settingsCloseBtn.exists)
+        settingsCloseBtn.tap()
+        
+        // Check if new turbo rate is updated
+        XCTAssertTrue(abs(turboManager.turboRate - Double(randomTurboRate)) < 0.000001);
+        print("DEBUGGING New turbo rate: \(turboManager.turboRate)")
     }
 }
