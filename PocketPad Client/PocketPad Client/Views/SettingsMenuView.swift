@@ -16,6 +16,7 @@ private let maxHeightFraction: CGFloat = 0.9
 struct SettingsMenuView: View {
     // MARK: - Bound Properties
     @Binding var isShowingSettings: Bool
+    @Binding var exitAllMenusCallback: (() -> Void)?
     @Binding var showModifyBtn: Bool
     @ObservedObject private var layoutManager = LayoutManager.shared
     
@@ -32,6 +33,15 @@ struct SettingsMenuView: View {
     @State private var saveAsMalformed: Bool = false
     @State private var makingNewLayout: Bool = false
     @State private var newLayoutName: String = ""
+    
+    @State private var showingLeftDeadzoneView: Bool = false
+    @State private var showingRightDeadzoneView: Bool = false
+    @State private var leftJoystickDeadzone: Double = LayoutManager.shared.getLeftJoystickDeadzone()
+    @State private var rightJoystickDeadzone: Double = LayoutManager.shared.getRightJoystickDeadzone()
+    
+    @ObservedObject private var turboManager = TurboManager.shared
+    @State private var showingTurboSettings: Bool = false
+
     
     // MARK: - Body
     var body: some View {
@@ -57,21 +67,44 @@ struct SettingsMenuView: View {
                     )
                 
                 // Menu Content
-                VStack(spacing: 0) {
-                    headerView
-                    Divider()
-                        .padding(.bottom, 6)
-                    ScrollView {
-                        settingsContent
-                            .padding(.bottom, 20)
+                if !showingLeftDeadzoneView && !showingRightDeadzoneView && !showingTurboSettings {
+                    VStack(spacing: 0) {
+                        headerView
+                        Divider()
+                            .padding(.bottom, 6)
+                        ScrollView {
+                            settingsContent
+                                .padding(.bottom, 20)
+                        }
+                        Spacer()
                     }
-                    Spacer()
+                    .frame(width: menuWidth, height: menuHeight)
+                    .onAppear {
+                        if let savedController = UserDefaults.standard.string(forKey: "selectedController") {
+                            selectedController = savedController
+                        }
+                    }
+
                 }
-                .frame(width: menuWidth, height: menuHeight)
-                .onAppear {
-                    if let savedController = UserDefaults.standard.string(forKey: "selectedController") {
-                        selectedController = savedController
-                    }
+                
+                if showingLeftDeadzoneView {
+                    JoystickDeadzoneView(
+                        isShowingDeadzoneView: $showingLeftDeadzoneView,
+                        deadzoneValue: $leftJoystickDeadzone,
+                        joystickName: .constant("Left Joystick")
+                    )
+                }
+                
+                if showingRightDeadzoneView {
+                    JoystickDeadzoneView(
+                        isShowingDeadzoneView: $showingRightDeadzoneView,
+                        deadzoneValue: $rightJoystickDeadzone,
+                        joystickName: .constant("Right Joystick")
+                    )
+                }
+                
+                if showingTurboSettings {
+                    TurboSettingsView(isShowingTurboSettings: $showingTurboSettings)
                 }
             }
             // Center the menu on the screen
@@ -79,6 +112,7 @@ struct SettingsMenuView: View {
                 x: geometry.size.width / 2,
                 y: geometry.size.height / 2
             )
+
         }
     }
     
@@ -125,11 +159,20 @@ struct SettingsMenuView: View {
                     // update the controller layout
                     do {
                         try LayoutManager.shared.setCurrentLayout(to: selectedController)
+                        showDPadStyle = LayoutManager.shared.hasDPad
+                        leftJoystickDeadzone = LayoutManager.shared.getLeftJoystickDeadzone()
+                        rightJoystickDeadzone = LayoutManager.shared.getRightJoystickDeadzone()
+                        turboManager.stopAllTurbo()
+                        
                         showModifyBtn = !DefaultLayouts.isDefaultLayout(name: selectedController)
                     } catch {
                         UIApplication.shared.alert(title: "Failed to load layout", body: error.localizedDescription)
                         selectedController = ControllerType.Xbox.stringValue
                     }
+                }
+                .onAppear {
+                    exitAllMenusCallback = exitAllMenus
+                    showDPadStyle = LayoutManager.shared.hasDPad
                 }
             }
             .padding(.horizontal, 16)
@@ -201,7 +244,64 @@ struct SettingsMenuView: View {
             }
             .padding(.horizontal, 16)
             
-            //Add toggle for motion control
+            // MARK: - Joystick deadzone
+            Section {
+                // Left joystick
+                HStack {
+                    Text("Left Joystick Deadzone")
+                    Spacer()
+                    Button(action: {
+                        showingLeftDeadzoneView = true
+                    }) {
+                        Text("\(Int(leftJoystickDeadzone * 100))%")
+                            .foregroundColor(.blue)
+                    }
+                    .accessibilityIdentifier("LeftDeadzoneButton")
+                }
+                .padding(.horizontal, 16)
+                
+                // Right joystick
+                HStack {
+                    Text("Right Joystick Deadzone")
+                    Spacer()
+                    Button(action: {
+                        showingRightDeadzoneView = true
+                    }) {
+                        Text("\(Int(rightJoystickDeadzone * 100))%")
+                            .foregroundColor(.blue)
+                    }
+                    .accessibilityIdentifier("RightDeadzoneButton")
+                }
+                .padding(.horizontal, 16)
+            } header: {
+                Text("Joystick Settings")
+                    .font(.footnote)
+                    .foregroundStyle(Color(uiColor: .secondaryLabel))
+            }
+            .padding(.horizontal, 16)
+            
+            // MARK: - Turbo Settings
+            Section {
+                HStack {
+                    Text("Turbo Repeat Rate")
+                    Spacer()
+                    Button(action: {
+                        showingTurboSettings = true
+                    }) {
+                        Text("\(Int(turboManager.turboRate)) presses/sec")
+                            .foregroundColor(.blue)
+                    }
+                    .accessibilityIdentifier("TurboRateButton")
+                }
+                .padding(.horizontal, 16)
+            } header: {
+                Text("Turbo Settings")
+                    .font(.footnote)
+                    .foregroundStyle(Color(uiColor: .secondaryLabel))
+            }
+            .padding(.horizontal, 16)
+            
+            // MARK: Add toggle for motion control
             HStack {
                 Text("Enable Motion Control")
                     .foregroundColor(.primary)
@@ -219,6 +319,7 @@ struct SettingsMenuView: View {
                     }
             }
             .padding(.horizontal, 16)
+            
             // MARK: Saving layouts (temporary)
             Section {
                 // Toggle to save layout as malformed
@@ -320,12 +421,20 @@ struct SettingsMenuView: View {
         // present the alert
         UIApplication.shared.windows.first?.rootViewController?.present(alert, animated: true)
     }
+    
+    func exitAllMenus() {
+        showingLeftDeadzoneView = false
+        showingRightDeadzoneView = false
+        showingTurboSettings = false
+    }
 }
 
 // MARK: - Preview
 #Preview {
     SettingsMenuView(
-        isShowingSettings: .constant(true), showModifyBtn: .constant(true)
+        isShowingSettings: .constant(true),
+        exitAllMenusCallback: .constant(nil),
+        showModifyBtn: .constant(true)
     )
 }
 
