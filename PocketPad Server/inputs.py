@@ -35,6 +35,7 @@ def parse_input(raw_data) -> tuple[int, int, ButtonEvent]:
         input_id = unpacked_data[1]
         raw_type = unpacked_data[2]
         raw_event = unpacked_data[3]
+        # return player_id, input_id, raw_event
     except:
         logger.error("Input format missing common fields")
         return input_error_tuple

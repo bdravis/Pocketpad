@@ -11,6 +11,7 @@ enum ControllerType: UInt8, CaseIterable {
     case Wii = 2
     case Switch = 3
     case DPadless = 4
+    case Turbo = 5
     
     var stringValue: String {
         switch self {
@@ -24,7 +25,10 @@ enum ControllerType: UInt8, CaseIterable {
             return "Switch"
         case .DPadless:
             return "DPad-less Test"
+        case .Turbo:
+            return "Turbo"
         }
+        
     }
     
     init?(stringValue: String) {
@@ -39,6 +43,8 @@ enum ControllerType: UInt8, CaseIterable {
             self = .Switch
         case "DPad-less Test":
             self = .DPadless
+        case "Turbo":
+            self = .Turbo
         default:
             return nil
         }
