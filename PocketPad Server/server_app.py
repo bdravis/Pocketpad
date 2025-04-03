@@ -1,9 +1,9 @@
-import random
-
+import asyncio
 import sys
 from pathlib import Path
 
 import bluetooth_server
+from bluetooth_server import QBlessServer
 import enums
 
 import json
@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QListWidgetItem, QMess
 from PySide6.QtCore import Qt, QSettings, Signal, QSize, QPoint, QTimer
 from PySide6.QtGui import QFont, QIcon, QAction, QPixmap, QPainter, QImage, QColor, QPen, QPolygon, QRadialGradient
 from PySide6.QtSvg import QSvgRenderer
+import qasync
 
 
 # Important:
@@ -30,6 +31,8 @@ class MainWindow(QMainWindow):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        
+        self._bless_server = QBlessServer()
 
         self.settings = QSettings("YourCompany", "PocketPad")
 
@@ -175,7 +178,8 @@ class MainWindow(QMainWindow):
             already_initiated.exec()
     # NEEDS WORK
 
-    def start_bluetooth_server(self):
+    @qasync.asyncSlot()
+    async def start_bluetooth_server(self):
         """
         This function will start up a bluetooth server (and eventually shut down a network server) using the
         functionality implemented for server start-up in bluetooth_server.py. If the bluetooth server is
@@ -189,16 +193,17 @@ class MainWindow(QMainWindow):
         self.network_server_initiated=False
         if not self.bluetooth_server_initiated:
             self.bluetooth_server_initiated=True
-            bluetooth_server.start_server()
+            await self._bless_server.start()
         else:
             already_initiated = QMessageBox()
             already_initiated.setText("Bluetooth Server is already running")
             already_initiated.exec()
     
-    def stop_server(self):
+    @qasync.asyncSlot()
+    async def stop_server(self):
         if self.bluetooth_server_initiated:
             self.bluetooth_server_initiated=False
-            bluetooth_server.stop_server()
+            await self._bless_server.stop()
             # Hardcode player disconnect
             #
             for player_id in self.connected_players:
@@ -1534,7 +1539,11 @@ class ControllerWidget(QWidget):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    loop = qasync.QEventLoop(app)
+    asyncio.set_event_loop(loop)
     app.setWindowIcon(QIcon("icons/logo.png"))
     widget = MainWindow()
     widget.show()
-    sys.exit(app.exec())
+    with loop:
+        loop.run_forever()
+    # sys.exit(app.exec())
