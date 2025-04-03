@@ -13,10 +13,12 @@ from struct import unpack
 # Same logging setup as bluetooth.py
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(name=__name__)
+input_error_tuple = (-1, -1, None)
 
 # Parses raw input data bytes
-# Returns 0 on success, -1 on error
-def parse_input(raw_data) -> int:
+# Returns player_id, input_id, event
+# Or input_error_tuple on error
+def parse_input(raw_data) -> tuple[int, int, ButtonEvent]:
     # Find number of bytes in input data
     data_length_in_bytes = len(raw_data)
     format_str = "B" * data_length_in_bytes
@@ -33,15 +35,16 @@ def parse_input(raw_data) -> int:
         input_id = unpacked_data[1]
         raw_type = unpacked_data[2]
         raw_event = unpacked_data[3]
+        # return player_id, input_id, raw_event
     except:
         logger.error("Input format missing common fields")
-        return -1
+        return input_error_tuple
 
     # # Identify the current player layout
     # layout = layouts_by_player_id.get(player_id)
     # if layout is None:
     #     logger.error("Player layout not found")
-    #     return -1
+    #     return input_error_tuple
 
     # # Identify the list of buttons, based on either portrait or layout mode 
     # in_portrait_mode = True # Hardcoded for now
@@ -54,31 +57,21 @@ def parse_input(raw_data) -> int:
     # button = buttons_by_input_id.get(input_id)
     # if button is None:
     #     logger.error("Invalid button input id")
-    #     return -1
+    #     return input_error_tuple
 
     # Check if button type is valid
     try:
         button_type = ButtonType(raw_type)
     except:
         logger.error("Invalid button type")
-        return -1
+        return input_error_tuple
     
     # Check if button event is valid
     try:
         button_event = ButtonEvent(raw_event)
     except:
         logger.error("Invalid button event")
-        return -1
-    
-    # Temporary map for parsing button event
-    event_map: dict[ButtonEvent, str] = {
-        ButtonEvent.PRESSED: "PRESSED",
-        ButtonEvent.RELEASED: "RELEASED",
-        ButtonEvent.HELD: "HELD"
-    }
-    event_string = event_map[button_event]
-
-    logger.debug(f"Input is of type {event_string}")
+        return input_error_tuple
     
     # Find the input string based on the button type
     if button_type == ButtonType.REGULAR:
@@ -94,7 +87,7 @@ def parse_input(raw_data) -> int:
             raw_magnitude = unpacked_data[NUM_COMMON_FIELDS + 1]
         except:
             logger.error("Joystick input format missing fields")
-            return -1
+            return input_error_tuple
         
         logger.debug(f"Received input from joystick {input_id} from player"
         f" {player_id} with angle {raw_angle} and magnitude {raw_magnitude}")
@@ -105,14 +98,14 @@ def parse_input(raw_data) -> int:
             raw_direction = unpacked_data[NUM_COMMON_FIELDS]
         except:
             logger.error("D-Pad input format missing fields")
-            return -1
+            return input_error_tuple
 
         # Check if the value is a valid DPad direction
         try:
             direction = DPadDirection(raw_direction)
         except:
             logger.error("Invalid DPad direction")
-            return -1
+            return input_error_tuple
         
         # # Find the input corresponding to the specified DPad direction
         # dpad_inputs: dict[DPadDirection, str] = button.inputs
@@ -120,7 +113,7 @@ def parse_input(raw_data) -> int:
         #     dpad_input = dpad_inputs[direction]
         # except:
         #     logger.error("No input found for DPad direction")
-        #     return -1
+        #     return input_error_tuple
         
         # Temporary map for parsing direction
         direction_map: dict[DPadDirection, str] = {
@@ -134,7 +127,7 @@ def parse_input(raw_data) -> int:
         logger.debug(f"Received DPad input {dpad_input} from DPad {input_id} from player {player_id}")
     else:
         logger.error("Button type not handled")
-        return -1
+        return input_input_error_tuple
 
 
-    return 0
+    return player_id, input_id, button_event

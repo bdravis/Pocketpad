@@ -10,10 +10,12 @@ import SwiftUI
 @main
 struct PocketPad_ClientApp: App {
     @State private var isShowingSplash = true
+    @StateObject private var motionManager = MotionManager()
     
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(motionManager)
                 .overlay {
                     LaunchScreen()
                         .opacity(isShowingSplash ? 1.0 : 0.0)

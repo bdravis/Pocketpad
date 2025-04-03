@@ -8,22 +8,22 @@
 import SwiftUI
 
 struct ApplyButtonStyle: ViewModifier {
-    let shape: RegularButtonShape
+    var style: RegularButtonStyle
     
     func body(content: Content) -> some View {
-        switch shape { // TODO: Fix the hitbox being a square/larger than it is supposed to be
+        switch style.shape { // TODO: Fix the hitbox being a square/larger than it is supposed to be
         case .Circle:
             content
-                .buttonStyle(CircularButtonStyle())
+                .buttonStyle(CircularButtonStyle(style: style))
         case .Pill:
             content
-                .buttonStyle(PillButtonStyle())
+                .buttonStyle(PillButtonStyle(style: style))
         }
     }
 }
 
 extension View {
-    func applyButtonStyle(shape: RegularButtonShape) -> some View {
-        self.modifier(ApplyButtonStyle(shape: shape))
+    func applyButtonStyle(_ style: RegularButtonStyle) -> some View {
+        self.modifier(ApplyButtonStyle(style: style))
     }
 }

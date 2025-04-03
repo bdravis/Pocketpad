@@ -230,9 +230,10 @@ extension BluetoothManager: CBPeripheralDelegate {
                 
                 let response_data = [LayoutManager.shared.player_id, ConnectionMessage.connecting.rawValue, UInt8(selectedControllerValue)]
                 
+                sendLayout(layout: LayoutManager.shared.currentController)
+
                 peripheral.writeValue(Data(response_data), for: characteristic, type: .withResponse)
                 peripheral.readValue(for: characteristic)
-
             }
         }
     }
@@ -298,5 +299,95 @@ extension BluetoothManager: CBPeripheralDelegate {
             print("Error changing notification state: \(error.localizedDescription)")
             return
         }
+    }
+    
+    func sendLayout(layout: LayoutConfig) {
+        
+        guard let service = selectedService else { return }
+        
+        let encoder = JSONEncoder()
+        
+        var data = Data()
+        
+        do {
+            data = try encoder.encode(layout)
+        } catch {
+            print("encoding error when sending layout")
+            return
+        }
+        
+        let packet_size = 20
+        let code_size = 1
+        let id_size = 1
+        let size_size = 1
+        let subdata_size = 17
+        var position = 0
+        
+        guard let characteristics = service.characteristics else { return }
+        
+        for characteristic in characteristics {
+            if characteristic.uuid == CONNECTION_CHARACTERISTIC {
+                
+                let init_transmission_packet = Data([UInt8(LayoutManager.shared.player_id),
+                                                     UInt8(ConnectionMessage.transmitting_layout.rawValue),
+                                                     UInt8(255)
+                                                     ])
+                while position < data.count {
+                    
+                    let chunk_size: UInt8 = UInt8(min(position + subdata_size, data.count) - position)
+                    
+                    let chunk = data.subdata(in: position..<position + Int(chunk_size))
+                    
+                    let packet = Data([UInt8(LayoutManager.shared.player_id),
+                                       UInt8(ConnectionMessage.transmitting_layout.rawValue),
+                                       UInt8(chunk_size)
+                                       ]) + chunk
+                    
+                    service.peripheral?.writeValue(packet, for: characteristic, type: .withResponse)
+                    service.peripheral?.readValue(for: characteristic)
+                    position += subdata_size
+                }
+                
+                let end_transmission_packet = Data([UInt8(LayoutManager.shared.player_id),
+                                   UInt8(ConnectionMessage.transmitting_layout.rawValue),
+                                   UInt8(0)
+                                   ])
+                
+                service.peripheral?.writeValue(end_transmission_packet, for: characteristic, type: .withResponse)
+                service.peripheral?.readValue(for: characteristic)
+
+            }
+        }
+        
+    }
+}
+
+extension BluetoothManager {
+    //- Parameters:
+    //  - playerId: The player's ID as a UInt8.
+    //  - pitch: The pitch value (Float).
+    //   - roll: The roll value (Float).
+    //  - yaw: The yaw value (Float).
+    func sendMotionData(playerId: UInt8, pitch: Float, roll: Float, yaw: Float) {
+        guard let _ = selectedService else { return }
+        
+        // Convert the Float values to raw bytes (4 bytes each, little endian)
+        // We use the bitPattern property (UInt32) for consistent endianness
+        let pitchBytes = withUnsafeBytes(of: pitch.bitPattern.littleEndian) { Data($0) }
+        let rollBytes  = withUnsafeBytes(of: roll.bitPattern.littleEndian)  { Data($0) }
+        let yawBytes   = withUnsafeBytes(of: yaw.bitPattern.littleEndian)   { Data($0) }
+        
+        // Define a unique event code for motion data (e.g., 99)
+        let motionEvent: UInt8 = 99
+        
+        // Build the data packet:
+        // [playerId (1 byte), motionEvent (1 byte), pitch(4 bytes), roll(4 bytes), yaw(4 bytes)]
+        var packet = Data([playerId, motionEvent])
+        packet.append(pitchBytes)
+        packet.append(rollBytes)
+        packet.append(yawBytes)
+        
+        // Send the packet using the existing sendInput method
+        sendInput(packet)
     }
 }

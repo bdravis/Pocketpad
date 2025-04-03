@@ -15,3 +15,4 @@ class ConnectionMessage(Enum):
     received = 0
     connecting = 1
     disconnecting = 2
+    transmitting_layout = 3
