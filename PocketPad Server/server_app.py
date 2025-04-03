@@ -1,9 +1,9 @@
-import random
-
+import asyncio
 import sys
 from pathlib import Path
 
 import bluetooth_server
+from bluetooth_server import QBlessServer
 import enums
 
 import json
@@ -12,8 +12,9 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QListWidgetItem, QMess
                                 QWidget, QLabel, QHBoxLayout, QFrame, QGridLayout, QSystemTrayIcon, QMenu, QDialog,
                                 QPushButton, QColorDialog, QSizePolicy, QSpacerItem)
 from PySide6.QtCore import Qt, QSettings, Signal, QSize, QPoint, QTimer
-from PySide6.QtGui import QFont, QIcon, QAction, QPixmap, QPainter, QImage, QColor, QPen, QPolygon, QRadialGradient, QKeyEvent
+from PySide6.QtGui import QFont, QIcon, QAction, QPixmap, QPainter, QImage, QColor, QPen, QPolygon, QRadialGradient
 from PySide6.QtSvg import QSvgRenderer
+import qasync
 
 
 # Important:
@@ -30,6 +31,8 @@ class MainWindow(QMainWindow):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        
+        self._bless_server = QBlessServer()
 
         self.settings = QSettings("YourCompany", "PocketPad")
 
@@ -175,7 +178,8 @@ class MainWindow(QMainWindow):
             already_initiated.exec()
     # NEEDS WORK
 
-    def start_bluetooth_server(self):
+    @qasync.asyncSlot()
+    async def start_bluetooth_server(self):
         """
         This function will start up a bluetooth server (and eventually shut down a network server) using the
         functionality implemented for server start-up in bluetooth_server.py. If the bluetooth server is
@@ -189,16 +193,17 @@ class MainWindow(QMainWindow):
         self.network_server_initiated=False
         if not self.bluetooth_server_initiated:
             self.bluetooth_server_initiated=True
-            bluetooth_server.start_server()
+            await self._bless_server.start()
         else:
             already_initiated = QMessageBox()
             already_initiated.setText("Bluetooth Server is already running")
             already_initiated.exec()
     
-    def stop_server(self):
+    @qasync.asyncSlot()
+    async def stop_server(self):
         if self.bluetooth_server_initiated:
             self.bluetooth_server_initiated=False
-            bluetooth_server.stop_server()
+            await self._bless_server.stop()
             # Hardcode player disconnect
             #
             for player_id in self.connected_players:
@@ -234,7 +239,6 @@ class MainWindow(QMainWindow):
                 
                 # Creating icons
                 #
-                #base_path = Path(__file__).resolve().parent 
                 if (controller_type == enums.ControllerType.Playstation):
                     icon_type = "icons/playstation.svg"
                 elif (controller_type == enums.ControllerType.Switch):
@@ -246,8 +250,6 @@ class MainWindow(QMainWindow):
                 else:
                     icon_type = "icons/pencil.svg"
 
-                #icon_type = icon_type.resolve()
-                #icon_type = str(icon_type)
                 self.player_svg_paths_for_icons[player_id] = icon_type
                 self.player_latency[player_id] = 0
                 if (self.ui.latency_setting_box.isChecked()):
@@ -280,7 +282,7 @@ class MainWindow(QMainWindow):
 
                 # Create a vertical layout for controller_widget
                 controller_layout = QVBoxLayout()
-                controller_layout.setContentsMargins(0, 0, 0, 0)  # Remove extra spacing
+                controller_layout.setContentsMargins(0, 0, 0, 0)
 
                 # Add controller name and latency info
                 controller_name = QLabel(f"<h2>{player_id}</h2>")
@@ -342,6 +344,7 @@ class MainWindow(QMainWindow):
 
                 self.player_controller_mapping[player_id] = {
                     "widget": controller_widget,
+                    "player_label": controller_name,
                     "glow_button": player_glow_selector,
                     "latency_label": controller_latency,
                     "display": controller_display
@@ -572,7 +575,6 @@ class MainWindow(QMainWindow):
 
         # Create a new instance of ControllerWidget with the updated controller JSON file
         new_controller_display = ControllerWidget(controller_json_file, self.application_widgets_color)
-        print("\n\n\nHello World\n\n\n")
         new_controller_layout.addWidget(new_controller_display)
 
         player_glow_selector.clicked.connect(lambda: self.choose_glow_color(new_controller_display))
@@ -586,6 +588,7 @@ class MainWindow(QMainWindow):
         # Update player controller mapping
         self.player_controller_mapping[player_id] = {
             "widget": new_controller_widget,
+            "player_label": controller_name,
             "glow_button": player_glow_selector,
             "latency_label": controller_latency,
             "display": new_controller_display
@@ -1311,7 +1314,6 @@ class ControllerWidget(QWidget):
         self.update()
     
     def resizeEvent(self, event):
-        # Update the cache when the widget resizes
         self.update_cache()
         super().resizeEvent(event)
 
@@ -1537,7 +1539,11 @@ class ControllerWidget(QWidget):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    loop = qasync.QEventLoop(app)
+    asyncio.set_event_loop(loop)
     app.setWindowIcon(QIcon("icons/logo.png"))
     widget = MainWindow()
     widget.show()
-    sys.exit(app.exec())
+    with loop:
+        loop.run_forever()
+    # sys.exit(app.exec())
