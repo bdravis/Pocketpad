@@ -77,6 +77,7 @@ struct SettingsMenuView: View {
                             settingsContent
                                 .padding(.bottom, 20)
                         }
+                        .accessibilityIdentifier("SettingsScrollView")
                         Spacer()
                     }
                     .frame(width: menuWidth, height: menuHeight)
@@ -146,7 +147,7 @@ struct SettingsMenuView: View {
                 Text("Current Layout")
                     .foregroundColor(.primary)
                 Spacer()
-                Picker("Current Layout", selection: $selectedController) {
+                Picker("Picker\(selectedController)", selection: $selectedController) {
 //                    ForEach(ControllerType.allCases, id: \.self) { type in
 //                        Label(type.stringValue, image: type.stringValue).tag(type.stringValue)
 //                    }
@@ -184,8 +185,11 @@ struct SettingsMenuView: View {
                 Text("Create New Layout")
             }
             .padding(.horizontal, 16)
+            .accessibilityIdentifier("CreateNewLayoutButton")
             .alert("New Layout", isPresented: $makingNewLayout) {
-                TextField("Name", text: $newLayoutName)
+                TextField("Layout Name", text: $newLayoutName)
+                    .accessibilityIdentifier("Name")
+                
                 Button("OK", action: {
                     if newLayoutName != "" {
                         do {
@@ -200,6 +204,7 @@ struct SettingsMenuView: View {
                         }
                     }
                 })
+                .accessibilityIdentifier("LayoutNameOK")
                 Button("Cancel", role: .cancel) { }
             } message: {
                 Text("What will the name of the layout be?")
@@ -408,7 +413,7 @@ struct SettingsMenuView: View {
         let malformedAction = UIAlertAction(title: "Malformed", style: .default) { (action) in
             // make a malformed layout
             let badLayout = LayoutConfig.init(name: "Malformed", buttons: [
-//                BadButtonTypeConfig(position: CGPointZero, scale: 0, type: .joystick, inputId: 0)
+                BadButtonTypeConfig(position: .init(scaledPos: CGPointZero), scale: 0.0, rotation: 0.0, type: .joystick, inputId: 0)
             ])
             do {
                 try LayoutManager.shared.saveLayout(badLayout)

@@ -163,12 +163,13 @@ final class PocketPad_ClientUITests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
 
-        let validControllers = ["Xbox", "PlayStation", "Switch", "Wii"]
+        let validControllers = ["Xbox", "PlayStation", "Switch", "Wii", "GameCube"]
         let controllerBtnCount = [
             "Xbox": 14,
             "PlayStation": 13,
             "Switch": 15,
-            "Wii": 9
+            "Wii": 8,
+            "GameCube": 11
         ]
         
         // Define the buttons
@@ -282,6 +283,7 @@ final class PocketPad_ClientUITests: XCTestCase {
         
         // try to save malformed wii
         let saveMalformed = app.switches["SaveAsMalformed"]
+        app.scrollViews["SettingsScrollView"].scrollToElement(saveMalformed, upward: false)
         XCTAssertTrue(saveMalformed.waitForExistence(timeout: 2))
         saveMalformed.tap()
         XCTAssertTrue(chooseTemplate.exists)

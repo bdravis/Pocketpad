@@ -117,6 +117,7 @@ struct ContentView: View {
                         NavigationLink(destination: ControllerView(isEditor: true), label: {
                             Text("Modify Layout")
                         })
+                        .accessibilityIdentifier("ModifyLayoutView")
                     }
                     
                     Spacer()

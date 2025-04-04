@@ -12,31 +12,37 @@ struct TriggerShape: Shape {
     
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        
+
         let width = rect.width
         let height = rect.height
-        
+
         if side == .middle {
             path.move(to: CGPoint(x: width * 0.2, y: 0)) // Top left corner
             path.addQuadCurve(to: CGPoint(x: width * 0.8, y: 0), control: CGPoint(x: width / 2, y: height * 0.1)) // Curved top
-            
+
             path.addQuadCurve(to: CGPoint(x: width * 0.90, y: height * 0.9), control: CGPoint(x: height * 0.8, y: height * 0.7)) // Right side, sloping down
             path.addQuadCurve(to: CGPoint(x: width * 0.10, y: height * 0.9), control: CGPoint(x: width / 2, y: height)) // Rounded bottom
-            
+
             path.addQuadCurve(to: CGPoint(x: width * 0.2, y: 0), control: CGPoint(x: width * 0.2, y: height * 0.7)) // Rounded bottom
-            
-            path.closeSubpath()
+        } else if side == .left {
+            path.move(to: CGPoint(x: width * 0.2, y: 0)) // Top left corner
+            path.addQuadCurve(to: CGPoint(x: width * 0.8, y: 0), control: CGPoint(x: width / 2, y: height * 0.1)) // Curved top
+
+            path.addLine(to: CGPoint(x: width * 0.8, y: height * 0.9)) // Right side, sloping down
+            path.addQuadCurve(to: CGPoint(x: width * 0.05, y: height * 0.9), control: CGPoint(x: width / 2, y: height)) // Rounded bottom
+
+            path.addQuadCurve(to: CGPoint(x: width * 0.2, y: 0), control: CGPoint(x: width * 0.2, y: height * 0.7)) // Rounded bottom
         } else {
-            path.move(to: CGPoint(x: width * abs(CGFloat(side.rawValue) - 0.2), y: 0)) // Top left corner
-            path.addQuadCurve(to: CGPoint(x: width * abs(CGFloat(side.rawValue) - 0.8), y: 0), control: CGPoint(x: width / 2, y: height * 0.1)) // Curved top
-            
-            path.addLine(to: CGPoint(x: width * abs(CGFloat(side.rawValue) - 0.8), y: height * 0.9)) // Right side, sloping down
-            path.addQuadCurve(to: CGPoint(x: width * abs(CGFloat(side.rawValue) - 0.05), y: height * 0.9), control: CGPoint(x: width / 2, y: height)) // Rounded bottom
-            
-            path.addQuadCurve(to: CGPoint(x: width * abs(CGFloat(side.rawValue) - 0.2), y: 0), control: CGPoint(x: width * abs(CGFloat(side.rawValue) - 0.2), y: height * 0.7)) // Rounded bottom
-            
-            path.closeSubpath()
+            path.move(to: CGPoint(x: width * 0.8, y: 0)) // Top left corner
+            path.addQuadCurve(to: CGPoint(x: width * 0.2, y: 0), control: CGPoint(x: width / 2, y: height * 0.1)) // Curved top
+
+            path.addLine(to: CGPoint(x: width * 0.2, y: height * 0.9)) // Right side, sloping down
+            path.addQuadCurve(to: CGPoint(x: width * 0.95, y: height * 0.9), control: CGPoint(x: width / 2, y: height)) // Rounded bottom
+
+            path.addQuadCurve(to: CGPoint(x: width * 0.8, y: 0), control: CGPoint(x: width * 0.8, y: height * 0.7)) // Rounded bottom
         }
+
+        path.closeSubpath()
 
         return path
     }
