@@ -14,6 +14,7 @@ struct JoystickButtonView: View {
     var config: JoystickConfig
 
     @State private var offset: CGSize = .zero
+    @State private var hapticTriggered: Bool = false
     
     private var STICK_SIZE: CGFloat {
         return DEFAULT_BUTTON_SIZE / 3
@@ -53,6 +54,10 @@ struct JoystickButtonView: View {
                 if (clampedDistance >= deadzoneRadius) {
 #if DEBUG
                     print("SENDING, OUTSIDE DEADZONE)")
+                    if !hapticTriggered && dist > 5 {
+                      HapticsManager.playHaptic()
+                      hapticTriggered = true
+                    }
 #endif
                     if let service = bluetoothManager.selectedService {
                         let ui8_playerId: UInt8 = LayoutManager.shared.player_id
@@ -109,9 +114,12 @@ struct JoystickButtonView: View {
                     bluetoothManager.sendInput(data)
                 }
                 
+                HapticsManager.playHaptic()
+                
                 withAnimation(.easeOut(duration: 0.15)) {
                     offset = .zero // Reset to center when released
                 }
+                hapticTriggered = false
             }
     }
 
