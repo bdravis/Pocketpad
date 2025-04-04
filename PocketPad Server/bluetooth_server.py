@@ -373,7 +373,9 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
         
         player_id = information[0]
         code = list(map(chr, information[1:]))
-        code_str = ''.join(code).zfill(3) + " " + ''.join(code[3:6]).zfill(3)
+        code_str = ''.join(code[:3]).zfill(3) + " " + ''.join(code[3:6]).zfill(3)
+        print( f"Received Paircode: {code_str} from player {player_id}")
+        print(paircode)
         if code_str != paircode:
             char = __server.server.get_characteristic(CONNECTION_CHARACTERISTIC)
             char.value = bytearray([player_id, 0]) + bytearray("Paircode Incorrect".encode('utf-8'))
