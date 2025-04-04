@@ -50,6 +50,7 @@ final class TurboManagerTests: XCTestCase {
         XCTAssertFalse(turboManager.isTurboEnabled(buttonInput)) // Button should start out not being turbo-enabled
                       
         turboManager.activateTurboMode() // Simulates holding down turbo button
+        mockBluetoothManager.sendInputCalled = false
         turboManager.toggleTurboForButton(buttonInput) // Simulates pressing a button while turbo mode is active
         
         XCTAssertTrue(turboManager.isTurboEnabled(buttonInput)) //  Button should now be turbo-enabled
@@ -67,6 +68,7 @@ final class TurboManagerTests: XCTestCase {
         
         XCTAssertTrue(turboManager.isTurboEnabled(buttonInput)) // Precondition: Button is turbo-enabled
         
+        mockBluetoothManager.sendInputCalled = false
         turboManager.toggleTurboForButton(buttonInput) // Toggle again to disable
         XCTAssertFalse(turboManager.isTurboEnabled(buttonInput)) // The button should no longer be turbo-enabled
         XCTAssertFalse(mockBluetoothManager.sendInputCalled) // There should be no input sending when toggling
