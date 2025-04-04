@@ -32,7 +32,7 @@ class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
         
-        self._bless_server = QBlessServer()
+        self._bless_server = QBlessServer.instance()
 
         self.settings = QSettings("YourCompany", "PocketPad")
 
@@ -152,6 +152,12 @@ class MainWindow(QMainWindow):
         # Dev testing function calls
 
         self.load_application_settings(None)
+        
+        QTimer.singleShot(100, self.ble_initialize)
+        
+    @qasync.asyncSlot()
+    async def ble_initialize(self):
+        await self._bless_server.initialize()
 
     # REMOVE AFTER SPRINTS
     def dev_testing(self, player_id, num):
@@ -973,7 +979,7 @@ class MainWindow(QMainWindow):
             self.ui.view_code_button.setIcon(QIcon(colored_pixmap))
             self.ui.view_code_button.setIconSize(icon_size)
 
-            self.ui.pair_code_label.setText("123 456")
+            self.ui.pair_code_label.setText(bluetooth_server.paircode)
 
     def get_icon_from_svg(self, svg_path, color):
         """

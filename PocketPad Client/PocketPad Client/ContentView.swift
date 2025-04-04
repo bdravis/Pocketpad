@@ -12,6 +12,8 @@ struct ContentView: View {
     @State private var isShowingSettings = false
     @State private var exitAllMenusCallback: (() -> Void)? = nil
     @State private var showModifyBtn = false
+    
+    @State private var paircode = ""
 
     @StateObject private var bluetoothManager = BluetoothManager.shared
     
@@ -181,6 +183,27 @@ struct ContentView: View {
             Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
                 bluetoothManager.pingServer()
             }
+        }
+        .alert("New Layout", isPresented: $bluetoothManager.paircodeNeeded) {
+            TextField("Pair Code", text: $paircode)
+                .keyboardType(.numberPad)
+            Button("OK", action: {
+                if paircode.isEmpty {
+                    bluetoothManager.paircodeNeeded = true
+                    return
+                }
+                if paircode.count != 6 {
+                    bluetoothManager.paircodeNeeded = true
+                    return
+                }
+                bluetoothManager.sendPaircode(paircode)
+            })
+            .disabled(paircode.isEmpty || paircode.count != 6)
+            Button("Cancel", role: .cancel) {
+                bluetoothManager.disconnect()
+            }
+        } message: {
+            Text("Enter the code shown on the GUI")
         }
     }
 }

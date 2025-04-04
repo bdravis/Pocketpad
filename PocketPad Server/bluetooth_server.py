@@ -8,10 +8,7 @@ import time
 import enums
 from struct import unpack
 from typing import Any, Dict, Union
-from server_constants import (POCKETPAD_SERVICE, LATENCY_CHARACTERISTIC, 
-                       CONNECTION_CHARACTERISTIC, PLAYER_ID_CHARACTERISTIC, 
-                       CONTROLLER_TYPE_CHARACTERISTIC, INPUT_CHARACTERISTIC,
-                       ConnectionMessage)
+from server_constants import *
 from inputs import parse_input, input_error_tuple
 
 from bless import (  # type: ignore
@@ -24,10 +21,14 @@ from bless import (  # type: ignore
 from PySide6.QtCore import QObject
 from dataclasses import dataclass
 
+from random import randint
+
 logger = None
 trigger: Union[asyncio.Event, threading.Event] = None
 thread = None
 loop = None
+
+paircode = "xxx xxx"
 
 num_players = 0
 next_id = 0
@@ -71,6 +72,19 @@ gatt: Dict = {
         # Store when client connects or disconnects
 
         CONNECTION_CHARACTERISTIC: {
+            "Properties": (
+                GATTCharacteristicProperties.read
+                | GATTCharacteristicProperties.write
+                | GATTCharacteristicProperties.indicate
+            ),
+            "Permissions": (
+                GATTAttributePermissions.readable
+                | GATTAttributePermissions.writeable
+            ),
+            "Value": None,
+        },
+        
+        PAIRCODE_CHARACTERISTIC: {
             "Properties": (
                 GATTCharacteristicProperties.read
                 | GATTCharacteristicProperties.write
@@ -131,7 +145,6 @@ gatt: Dict = {
 }
 
 class BlessServer(BlessServer):
-
     async def add_new_descriptor(self, service_uuid, char_uuid, desc_uuid, properties, value, permissions):
         print(f"Adding descriptor {desc_uuid} to {char_uuid} in {service_uuid}")
         return super().add_new_descriptor(service_uuid, char_uuid, desc_uuid, properties, value, permissions)
@@ -176,6 +189,8 @@ def read_request(characteristic: BlessGATTCharacteristic, **kwargs) -> bytearray
     
 def write_request(characteristic: BlessGATTCharacteristic, value: Any):
     print(f"Writing {characteristic.uuid} - {value}")
+    
+    __server = QBlessServer.instance()
     
     characteristic.value = value
 
@@ -358,13 +373,43 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
                 response_data = [0, ConnectionMessage.transmitting_layout.value]
                 response = bytearray(response_data)
                 characteristic.value = response
+                
+
+    if characteristic.uuid.upper() == PAIRCODE_CHARACTERISTIC:
+        data_length_in_bytes = len(characteristic.value)
+        format_str = "B" * data_length_in_bytes
+        information = unpack(format_str, characteristic.value)
+
+        logger.debug("Received PAIRCODE", information)
+        
+        player_id = information[0]
+        code = list(map(chr, information[1:]))
+        code_str = ''.join(code).zfill(3) + " " + ''.join(code[3:6]).zfill(3)
+        if code_str != paircode:
+            char = __server.server.get_characteristic(CONNECTION_CHARACTERISTIC)
+            char.value = bytearray([player_id, 0]) + bytearray("Paircode Incorrect".encode('utf-8'))
+            __server.server.update_value(POCKETPAD_SERVICE, CONNECTION_CHARACTERISTIC)
+        
+            connection_function("disconnect", str(player_id), None, None)
+        
+        return
 
 logger = logging.getLogger(name=__name__)
 
 @dataclass
 class QBlessServer(QObject):
+    _instance = None
+    
+    @staticmethod
+    def instance():
+        """Singleton instance of QBlessServer."""
+        if QBlessServer._instance is None:
+            QBlessServer._instance = QBlessServer()
+            logger.debug("Created new QBlessServer instance")
+        return QBlessServer._instance
+    
     @cached_property
-    def server(self):
+    def server(self) -> BlessServer:
         server = BlessServer(name="PocketPad")
         
         server.read_request_func = read_request
@@ -372,21 +417,32 @@ class QBlessServer(QObject):
         
         return server
     
+    async def initialize(self):
+        await self.server.add_gatt(gatt)
+        logger.debug("BLE Server initialized")
+    
     async def start(self):
         logger = logging.getLogger(name=__name__)
         logger.debug("Starting server")
+        
+        global paircode
+        paircode = str(randint(000, 999)).zfill(3) + " " + str(randint(000, 999)).zfill(3)
         
         await self.server.add_gatt(gatt)
         await self.server.start(prioritize_local_name=True)
         logger.debug("Advertising")
     
     async def stop(self):
+        global next_id
+        
         logger.debug("Stopping server")
         char = self.server.get_characteristic(CONNECTION_CHARACTERISTIC)
-        char.value = bytearray([0, 0])
+        char.value = bytearray([255, 0]) + bytearray("Server Shutdown".encode('utf-8'))
         self.server.update_value(POCKETPAD_SERVICE, CONNECTION_CHARACTERISTIC)
         
         await asyncio.sleep(0.5) # small buffer
+        
+        next_id = 0
 
         await self.server.stop()
 
