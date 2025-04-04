@@ -98,6 +98,23 @@ class DSU_Server:
 
         print(struct.unpack("<IHHIIII", data[:24]))
 
+        # for debugging
+
+        input_with_crc = struct.unpack("<IHHIIIII", data)
+        input_without_crc = struct.pack(
+                "<IHHIIIII",
+                input_with_crc[0],
+                input_with_crc[1],
+                input_with_crc[2],
+                0,
+                input_with_crc[4],
+                input_with_crc[5],
+                input_with_crc[6],
+                input_with_crc[7],
+                )
+        print("exp crc: ", input_with_crc[3])
+        print("alc crc: ", zlib.crc32(input_without_crc))
+
         ports = struct.unpack("<I", data[20:24])[0]
         print("ports: ", ports)
 
@@ -143,7 +160,7 @@ class DSU_Server:
                     0) # Null byte
 
             #crc = self.crc32custom(slot_packet_no_crc)
-            crc = zlib.crc32(slot_packet_no_crc)
+            crc = zlib.crc32(slot_packet_no_crc) & 0xFFFFFFFF
 
             slot_packet = struct.pack(
                     "<IHHIIIBBBB6BBB",
@@ -164,6 +181,7 @@ class DSU_Server:
             print("responding info ::::::::::::::::::::::::::::::::::::::::::::::::::::")
 
             print(struct.unpack("<IHHIIIBBBB6BBB", slot_packet))
+            print("Raw bytes:", slot_packet.hex(' '))
             print(addr)
             self.sock.sendto(slot_packet, addr)
 

@@ -319,6 +319,29 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
 
         with num_players_lock:
 
+            if signal == ConnectionMessage.requesting_id_change.value:
+
+                print("received request")
+
+                string_bytes = characteristic.value[3:3+connection_information[2]]
+                requested_id = ''.join([chr(byte) for byte in string_bytes])
+
+                if requested_id in player_id_str_arr:
+                    # DUPLICATE ID
+
+                    print("duplicate id detected, try again with a different id")
+
+                    response_data = pack("<BB", 255, ConnectionMessage.requesting_id.value)
+
+                    characteristic.value = bytearray(response_data)
+                    return
+
+                player_id_str_arr[player_id] = requested_id
+
+                print("approved request: ", player_id)
+                response_data = pack("<BB", player_id, ConnectionMessage.requesting_id.value)
+                characteristic.value = bytearray(response_data)
+
             if signal == ConnectionMessage.requesting_id.value:
 
                 print("received request")

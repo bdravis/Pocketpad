@@ -16,6 +16,9 @@ class LayoutManager: ObservableObject {
     // This is to avoid duplicates whenever no custom name is chosen
     var player_id_string: String = "Player"
     
+    // This is used when requesting a new string to get around scope stuff
+    var requested_player_id_string: String = "Player"
+    
     @Published var availableLayouts: [String] = []
     
     // Current Layout Information
