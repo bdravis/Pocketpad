@@ -80,8 +80,10 @@ struct EditButtonView: View {
                             switch button.iconType {
                             case .Text:
                                 TextField("Icon", text: $button.icon)
+                                    .textFieldStyle(RoundedBorderTextFieldStyle())
                                     .multilineTextAlignment(.trailing)
                                     .autocorrectionDisabled(true)
+                                    .accessibilityIdentifier("Icon")
                             case .SFSymbol:
                                 Button(action: {
                                     showSymbolPicker.toggle()
@@ -224,6 +226,7 @@ struct EditorSlider<V>: View where V : BinaryFloatingPoint, V.Stride : BinaryFlo
                         Text("\(max)\(units)")
                     }
                 }
+                .accessibilityIdentifier("Slider\(title)")
             }
         }
     }

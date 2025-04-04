@@ -159,9 +159,19 @@ final class PocketPad_EditorUITests: XCTestCase {
                 XCTAssertTrue(button.exists, "The button no longer exists!")
                 
                 // configure certain properties for certain elements
+                let editList = app.otherElements["EditBtnList"]
                 if inp == "Start" {
                     // turn it into a pill, set to plus symbol, and rotate 40º
                     let shapePicker = app.buttons["ButtonShapePicker"]
+                    // first do slanted pill
+                    XCTAssertTrue(shapePicker.exists, "The button shape picker does not exist.")
+                    shapePicker.tap()
+                    let slantedPillShape = app.buttons["Slanted Pill"]
+                    XCTAssertTrue(slantedPillShape.waitForExistence(timeout: 4), "The slanted pill shape choice could not be found.")
+                    slantedPillShape.tap()
+                    XCTAssertTrue(slantedPillShape.waitForNonExistence(timeout: 4), "The slanted pill shape choice did not disappear.")
+                    
+                    // next try regular pill
                     XCTAssertTrue(shapePicker.exists, "The button shape picker does not exist.")
                     shapePicker.tap()
                     let pillShape = app.buttons["Pill"]
@@ -170,7 +180,6 @@ final class PocketPad_EditorUITests: XCTestCase {
                     XCTAssertTrue(pillShape.waitForNonExistence(timeout: 4), "The pill shape choice did not disappear.")
                     
                     // set icon type to sf symbol
-                    let editList = app.otherElements["EditBtnList"]
                     let iconTypePicker = app.buttons["IconTypePicker"]
                     editList.scrollToElement(iconTypePicker, upward: false, amt: -100)
                     iconTypePicker.tap()
@@ -216,10 +225,29 @@ final class PocketPad_EditorUITests: XCTestCase {
                     doneButton.tap()
                     XCTAssertTrue(doneButton.waitForNonExistence(timeout: 3), "Done button did not disappear.")
                     XCTAssertEqual(scaleBtn.label, "1.50", "Scale label is incorrect.")
+                } else if inp == "A" {
+                    // set border thickness and text label
+                    let iconField = app.textFields["Icon"]
+                    editList.scrollToElement(iconField, upward: false, amt: -100)
+                    iconField.tap()
+                    let endCoord = iconField.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5))
+                    endCoord.tap()
+                    let deleteString = String(repeating: XCUIKeyboardKey.delete.rawValue, count: 100)
+                    iconField.typeText(deleteString)
+                    let newIcon = "Go"
+                    iconField.typeText(newIcon)
+                    XCTAssertEqual(iconField.value as? String, newIcon, "Icon text field did not update correctly.")
+                    
+                    // set border
+                    let thicknessSlider = app.sliders["SliderStroke Thickness"]
+                    editList.scrollToElement(thicknessSlider, upward: false)
+                    thicknessSlider.adjust(toNormalizedSliderPosition: 0.6)
+                    let thicknessBtn = app.buttons["EditorStroke ThicknessBtn"]
+                    XCTAssertEqual(thicknessBtn.label, "9.00", "Thickness label was not properly updated.")
                 } else if inp == "Middle" {
                     // delete the middle trigger
                     let deleteBtn = app.buttons["DeleteButtonBtn"]
-                    app.groups["EditBtnList"].scrollToElement(deleteBtn, upward: false)
+                    editList.scrollToElement(deleteBtn, upward: false)
                     deleteBtn.tap()
                     let confirmDel = app.buttons["ConfirmDelete"]
                     XCTAssertTrue(confirmDel.waitForExistence(timeout: 4), "The delete confirmation could not be found.")
