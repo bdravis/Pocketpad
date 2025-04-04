@@ -1,3 +1,4 @@
+from functools import cached_property
 import sys
 import logging
 import asyncio
@@ -19,6 +20,9 @@ from bless import (  # type: ignore
     GATTCharacteristicProperties,
     GATTAttributePermissions,
 )
+
+from PySide6.QtCore import QObject
+from dataclasses import dataclass
 
 logger = None
 trigger: Union[asyncio.Event, threading.Event] = None
@@ -44,6 +48,87 @@ send_latency = None
 connection_function = None
 controller_function = None
 input_function = None
+
+gatt: Dict = {
+    POCKETPAD_SERVICE: {
+
+        # Client writes time of pckage sent to LATENCY_CHARACTERISTIC
+        # This is used to calculate latency by comparing to time received
+
+        LATENCY_CHARACTERISTIC: {
+            "Properties": (
+                GATTCharacteristicProperties.read
+                | GATTCharacteristicProperties.write
+                | GATTCharacteristicProperties.indicate
+            ),
+            "Permissions": (
+                GATTAttributePermissions.readable
+                | GATTAttributePermissions.writeable
+            ),
+            "Value": None,
+        },
+
+        # Store when client connects or disconnects
+
+        CONNECTION_CHARACTERISTIC: {
+            "Properties": (
+                GATTCharacteristicProperties.read
+                | GATTCharacteristicProperties.write
+                | GATTCharacteristicProperties.indicate
+            ),
+            "Permissions": (
+                GATTAttributePermissions.readable
+                | GATTAttributePermissions.writeable
+            ),
+            "Value": None,
+        },
+
+        # Store an id to differentiate between connected players
+
+        PLAYER_ID_CHARACTERISTIC: {
+            "Properties": (
+                GATTCharacteristicProperties.read
+                | GATTCharacteristicProperties.write_without_response
+                | GATTCharacteristicProperties.indicate
+            ),
+            "Permissions": (
+                GATTAttributePermissions.readable
+                | GATTAttributePermissions.writeable
+            ),
+            "Value": None,
+        },
+
+        # Store what type of controller the packet was sent from
+
+        CONTROLLER_TYPE_CHARACTERISTIC: {
+            "Properties": (
+                GATTCharacteristicProperties.read
+                | GATTCharacteristicProperties.write_without_response
+                | GATTCharacteristicProperties.indicate
+            ),
+            "Permissions": (
+                GATTAttributePermissions.readable
+                | GATTAttributePermissions.writeable
+            ),
+            "Value": None,
+        },
+
+        # Store inputs sent from client (Implementation undecided)
+
+        INPUT_CHARACTERISTIC: { # UNUSED RIGHT NOW
+            "Properties": (
+                GATTCharacteristicProperties.read
+                | GATTCharacteristicProperties.write_without_response
+                | GATTCharacteristicProperties.indicate
+            ),
+            "Permissions": (
+                GATTAttributePermissions.readable
+                | GATTAttributePermissions.writeable
+            ),
+            "Value": None,
+        }
+    },
+}
 
 class BlessServer(BlessServer):
 
@@ -162,17 +247,6 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
 
             input_function(str(player_id), input_id, event)
 
-        # # If press & release -> send release (not supported by current impl)
-        # input_function(str(player_id), input_id, enums.ButtonEvent.RELEASED)
-
-        # # If press & and held -> send pressed
-        # input_function(str(player_id), input_id, enums.ButtonEvent.PRESSED)
-
-        # # If release -> send release
-        # input_function(str(player_id), input_id, enums.ButtonEvent.RELEASED)
-
-
-
     if (characteristic.uuid.upper() == CONNECTION_CHARACTERISTIC):
 
         # encoded as a tuple so we can expand this packet with more information
@@ -274,168 +348,53 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
                 response = bytearray(response_data)
                 characteristic.value = response
 
-async def run(loop):
-    global logger, trigger
-    
-    trigger.clear()
-
-    # Instantiate the server
-    gatt: Dict = {
-        POCKETPAD_SERVICE: {
-
-            # Client writes time of pckage sent to LATENCY_CHARACTERISTIC
-            # This is used to calculate latency by comparing to time received
-
-            LATENCY_CHARACTERISTIC: {
-                "Properties": (
-                    GATTCharacteristicProperties.read
-                    | GATTCharacteristicProperties.write
-                    | GATTCharacteristicProperties.indicate
-                ),
-                "Permissions": (
-                    GATTAttributePermissions.readable
-                    | GATTAttributePermissions.writeable
-                ),
-                "Value": None,
-            },
-
-            # Store when client connects or disconnects
-
-            CONNECTION_CHARACTERISTIC: {
-                "Properties": (
-                    GATTCharacteristicProperties.read
-                    | GATTCharacteristicProperties.write
-                    | GATTCharacteristicProperties.indicate
-                ),
-                "Permissions": (
-                    GATTAttributePermissions.readable
-                    | GATTAttributePermissions.writeable
-                ),
-                "Value": None,
-            },
-
-            # Store an id to differentiate between connected players
-
-            PLAYER_ID_CHARACTERISTIC: {
-                "Properties": (
-                    GATTCharacteristicProperties.read
-                    | GATTCharacteristicProperties.write_without_response
-                    | GATTCharacteristicProperties.indicate
-                ),
-                "Permissions": (
-                    GATTAttributePermissions.readable
-                    | GATTAttributePermissions.writeable
-                ),
-                "Value": None,
-            },
-
-            # Store what type of controller the packet was sent from
-
-            CONTROLLER_TYPE_CHARACTERISTIC: {
-                "Properties": (
-                    GATTCharacteristicProperties.read
-                    | GATTCharacteristicProperties.write_without_response
-                    | GATTCharacteristicProperties.indicate
-                ),
-                "Permissions": (
-                    GATTAttributePermissions.readable
-                    | GATTAttributePermissions.writeable
-                ),
-                "Value": None,
-            },
-
-            # Store inputs sent from client (Implementation undecided)
-
-            INPUT_CHARACTERISTIC: { # UNUSED RIGHT NOW
-                "Properties": (
-                    GATTCharacteristicProperties.read
-                    | GATTCharacteristicProperties.write_without_response
-                    | GATTCharacteristicProperties.indicate
-                ),
-                "Permissions": (
-                    GATTAttributePermissions.readable
-                    | GATTAttributePermissions.writeable
-                ),
-                "Value": None,
-            }
-        },
-    }
-    my_service_name = "PocketPad"
-    server = BlessServer(name=my_service_name, loop=loop)
-
-    server.read_request_func = read_request
-    server.write_request_func = write_request
-    
-    await server.add_gatt(gatt)
-    await server.start(prioritize_local_name=True)
-    logger.debug("Advertising")
-    #if trigger.__module__ == "threading":
-    #    trigger.wait()
-    #else:
-    await trigger.wait()
-    await asyncio.sleep(5)
-    await server.stop()
-
 logger = logging.getLogger(name=__name__)
 
-#   This function is starts advertising the BLESS server to 
-#   the users creating a thread for an instance of the server
-#   loop
-#
-#   @param: NONE
-#
-#   @return: NONE
-#
-def start_server():
-    global logger, trigger, thread, loop
-    logging.basicConfig(level=logging.DEBUG)
-    logger = logging.getLogger(__name__)
+@dataclass
+class QBlessServer(QObject):
+    @cached_property
+    def server(self):
+        server = BlessServer(name="PocketPad")
+        
+        server.read_request_func = read_request
+        server.write_request_func = write_request
+        
+        return server
+    
+    async def start(self):
+        logger = logging.getLogger(name=__name__)
+        logger.debug("Starting server")
+        
+        await self.server.add_gatt(gatt)
+        await self.server.start(prioritize_local_name=True)
+        logger.debug("Advertising")
+    
+    async def stop(self):
+        logger.debug("Stopping server")
+        char = self.server.get_characteristic(CONNECTION_CHARACTERISTIC)
+        char.value = bytearray([0, 0])
+        self.server.update_value(POCKETPAD_SERVICE, CONNECTION_CHARACTERISTIC)
+        
+        await asyncio.sleep(0.5) # small buffer
 
-    #if sys.platform in ["darwin", "win32"]:
-    #    trigger = threading.Event()
-    #else:
-    trigger = asyncio.Event()
-
-    loop = asyncio.new_event_loop()
-
-    def run_loop():
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(run(loop))
-        loop.close()
-
-    thread = threading.Thread(target=run_loop, daemon=True)
-    thread.start()
-
-# NEEDS WORK
-def stop_server():
-    global trigger, thread, loop
-    logger.info("Shutting Down Server")
-    if trigger and loop:
-        loop.call_soon_threadsafe(trigger.set)
-        #trigger.set()  # Signal the server loop to stop
-
-    if thread and thread.is_alive():
-        thread.join()  # Ensure the server thread is properly stopped
-
-    if loop and loop.is_running():
-        loop.call_soon_threadsafe(loop.stop)
-# NEEDS WORK
+        await self.server.stop()
 
 # Main function to start the bluetooth server for testing purposes
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+    print("[OHNO] Run the server from GUI now please")
+    # logging.basicConfig(level=logging.DEBUG)
 
-    if sys.platform in ["darwin", "win32"]:
-        trigger = threading.Event()
-    else:
-        trigger = asyncio.Event()
+    # if sys.platform in ["darwin", "win32"]:
+    #     trigger = threading.Event()
+    # else:
+    #     trigger = asyncio.Event()
 
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
+    # loop = asyncio.new_event_loop()
+    # asyncio.set_event_loop(loop)
 
-    try:
-        loop.run_until_complete(run(loop))  # Ensure `run(loop)` correctly starts the server
-    except KeyboardInterrupt:
-        print("Server shutting down...")
-    finally:
-        loop.close()
+    # try:
+    #     loop.run_until_complete(run(loop))  # Ensure `run(loop)` correctly starts the server
+    # except KeyboardInterrupt:
+    #     print("Server shutting down...")
+    # finally:
+    #     loop.close()
