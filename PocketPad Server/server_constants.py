@@ -16,3 +16,4 @@ class ConnectionMessage(Enum):
     connecting = 1
     disconnecting = 2
     transmitting_layout = 3
+    requesting_id = 4
