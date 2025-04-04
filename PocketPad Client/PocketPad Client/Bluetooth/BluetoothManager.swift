@@ -27,6 +27,9 @@ class BluetoothManager: NSObject, ObservableObject {
     @Published var writeStatus: String = ""
     @Published var isConnecting = false
     
+    @Published var paircodeNeeded = false
+    @Published var fullyConnected = false
+    
     @Published var connectionError: String?
     
     private override init() {
@@ -72,6 +75,22 @@ class BluetoothManager: NSObject, ObservableObject {
         }
     }
     
+    func sendPaircode(_ paircode: String) {
+        guard let service = selectedService else { return }
+        if let char = discoveredCharacteristics.first(where: { $0.uuid == PAIRCODE_CHARACTERISTIC }) {
+            guard var data = paircode.data(using: .utf8) else {
+                self.disconnect()
+                self.connectionError = "Paircode error"
+                return
+            }
+            let playerIDBytes = withUnsafeBytes(of: LayoutManager.shared.player_id.littleEndian) { Data($0) }
+            
+            data = playerIDBytes + data
+            
+            peripheral?.writeValue(data, for: char, type: .withResponse)
+        }
+    }
+    
     func pingServer() {
         guard let service = selectedService else { return }
 //        if let char = discoveredCharacteristics.first(where: { $0.uuid == LATENCY_CHARACTERISTIC }) {
@@ -100,6 +119,18 @@ class BluetoothManager: NSObject, ObservableObject {
                 peripheral.writeValue(Data(response_data), for: characteristic, type: .withResponse)
                 peripheral.readValue(for: characteristic)
             }
+            
+            self.centralManager.cancelPeripheralConnection(peripheral)
+            self.discoveredServices.removeAll()
+            self.discoveredCharacteristics.removeAll()
+            self.selectedService = nil
+            self.connectedDevice = nil
+            self.isConnecting = false
+            self.lastMessage = ""
+            self.writeStatus = ""
+            self.connectionError = "Disconnected"
+            self.fullyConnected = false
+            self.paircodeNeeded = false
 
         }
     }
@@ -137,6 +168,7 @@ extension BluetoothManager: CBCentralManagerDelegate {
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         DispatchQueue.main.async {
             self.connectedDevice = peripheral
+            self.paircodeNeeded = true
             self.isConnecting = false
             self.stopScanning()
             peripheral.discoverServices(nil)
@@ -161,7 +193,11 @@ extension BluetoothManager: CBCentralManagerDelegate {
             self.lastMessage = ""
             self.writeStatus = ""
             self.peripheral = nil
-            self.connectionError = "Connection lost"
+            if self.connectionError == nil {
+                self.connectionError = "Connection Lost"
+            }
+            self.fullyConnected = false
+            self.paircodeNeeded = false
         }
     }
 }
@@ -256,11 +292,15 @@ extension BluetoothManager: CBPeripheralDelegate {
             if let value = characteristic.value {
                 let newId = value[0] // Assuming the response is a single byte
                 let signal = value[1] // Assuming the response is a single byte
+            
                 print("Server response: \(signal)")
                 
                 // Check if the response is RECIEVED_CONNECTION_INFORMATION
-                if signal == ConnectionMessage.recieved.rawValue {
+                if signal == ConnectionMessage.recieved.rawValue && (newId == LayoutManager.shared.player_id || newId == UInt8.max) {
                     print("Server acknowledged disconnection")
+                    peripheral.setNotifyValue(false, for: characteristic)
+                    
+                    let errorString = String(data: value[2...], encoding: .utf8) ?? ""
                     
                     // Disconnect after receiving the response
                     centralManager.cancelPeripheralConnection(peripheral)
@@ -269,12 +309,14 @@ extension BluetoothManager: CBPeripheralDelegate {
                     selectedService = nil
                     isConnecting = false
                     connectedDevice = nil
+                    connectionError = errorString
                 }
                 
                 // Check if the response is RECIEVED_CONNECTION_INFORMATION
                 if signal == ConnectionMessage.connecting.rawValue {
+                    peripheral.setNotifyValue(true, for: characteristic)
                     print("Server acknowledged connection")
-                    print("player_id: \(value)")
+                    print("player_id: \(newId)")
                     
                     LayoutManager.shared.player_id = newId
 
