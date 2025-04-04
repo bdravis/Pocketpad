@@ -121,14 +121,8 @@ class TurboManager : ObservableObject {
             print(#"TURBO-ENABLED DPad \#(isPressed ? "PRESS" : "RELEASE")"#)
 #endif
             let data = Data([playerId, inputId, buttonType, ui8_event, dpadDirection])
-            bluetoothManager.sendInput(data)
+            BluetoothManager.shared.sendInput(data)
         }
-    }
-    
-    func stopTurboForDPad(_ input: ButtonInput) {
-        // destroy the timer objects
-        turboTimers[input]?.invalidate()
-        turboTimers.removeValue(forKey: input)
     }
     
     // First stops the timers for all turbo-enabled buttons that are held
