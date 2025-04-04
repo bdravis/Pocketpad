@@ -99,7 +99,7 @@ def parse_input(raw_data) -> tuple[int, int, ButtonEvent]:
             raw_angle = unpacked_data[NUM_COMMON_FIELDS]
             raw_magnitude = unpacked_data[NUM_COMMON_FIELDS + 1]
 
-            input_server.update_controller_state(player_id, ControllerUpdateTypes.JOYSTICK.value, [raw_angle, raw_magnitude])
+            #input_server.update_controller_state(player_id, ControllerUpdateTypes.JOYSTICK.value, [raw_angle, raw_magnitude])
         except:
             logger.error("Joystick input format missing fields")
             return input_error_tuple
