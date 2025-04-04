@@ -20,6 +20,7 @@ class EditingButtonVM: ObservableObject {
     @Published var type: ButtonType = .regular
     
     @Published var input: ButtonInput = .A
+    @Published var triggerSide: TriggerSide = .left
     
     // Regular Button styling
     @Published var shape: RegularButtonShape = .Circle
@@ -72,6 +73,11 @@ class EditingButtonVM: ObservableObject {
             self.fgColor = btn.style.foregroundColor ?? Color(uiColor: .label)
             self.fgPressedColor = btn.style.foregroundPressedColor ?? Color(uiColor: .systemBackground)
             self.stroke = btn.style.borderThickness
+        } else if let btn = config as? BumperConfig {
+            self.input = btn.input
+        } else if let btn = config as? TriggerConfig {
+            self.input = btn.input
+            self.triggerSide = btn.side
         }
     }
     
@@ -112,9 +118,9 @@ class EditingButtonVM: ObservableObject {
         case .dpad:
             return DPadConfig(position: .init(scaledPos: self.scaledPos, offset: self.offset), scale: self.scale, rotation: rotation, style: getGeneralStyle(), inputId: self.inputId, inputs: [:])
         case .bumper:
-            return BumperConfig(position: .init(scaledPos: self.scaledPos, offset: self.offset), scale: self.scale, rotation: rotation, inputId: self.inputId, input: .LB)
+            return BumperConfig(position: .init(scaledPos: self.scaledPos, offset: self.offset), scale: self.scale, rotation: rotation, inputId: self.inputId, input: self.input)
         case .trigger:
-            return TriggerConfig(position: .init(scaledPos: self.scaledPos, offset: self.offset), scale: self.scale, rotation: rotation, inputId: self.inputId, input: .LT, side: .left)
+            return TriggerConfig(position: .init(scaledPos: self.scaledPos, offset: self.offset), scale: self.scale, rotation: rotation, inputId: self.inputId, input: self.input, side: self.triggerSide)
         }
     }
 }

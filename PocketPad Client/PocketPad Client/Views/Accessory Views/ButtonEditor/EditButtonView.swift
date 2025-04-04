@@ -93,6 +93,18 @@ struct EditButtonView: View {
                     Text("Icon")
                 }
             }
+//            else if button.type == .trigger {
+//                Section(isExpanded: $iconExpanded) {
+//                    Picker("Side", selection: $button.triggerSide) {
+//                        ForEach(TriggerSide.allCases, id: \.self) { side in
+//                            Text(side.getName()).tag(side.getName())
+//                        }
+//                    }
+//                    .pickerStyle(.segmented)
+//                } header: {
+//                    Text("Trigger Properties")
+//                }
+//            }
             if button.type == .regular || button.type == .joystick || button.type == .dpad {
                 Section(isExpanded: $styleExpanded) {
                     // MARK: Icon Colors

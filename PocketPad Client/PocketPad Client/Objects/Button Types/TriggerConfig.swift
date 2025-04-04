@@ -11,6 +11,17 @@ enum TriggerSide: UInt8, ConfigType, CaseIterable {
     case left = 0
     case middle = 1
     case right = 2
+    
+    func getName() -> String {
+        switch self {
+        case .left:
+            return "Left"
+        case .middle:
+            return "Middle"
+        case .right:
+            return "Right"
+        }
+    }
 }
 
 struct TriggerConfig: ButtonConfig, ConfigType {

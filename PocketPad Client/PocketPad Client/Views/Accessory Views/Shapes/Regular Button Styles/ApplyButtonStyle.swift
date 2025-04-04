@@ -18,6 +18,9 @@ struct ApplyButtonStyle: ViewModifier {
         case .Pill:
             content
                 .buttonStyle(PillButtonStyle(style: style))
+        case .SlantedPill:
+            content
+                .buttonStyle(SlantedPillButtonStyle(style: style))
         }
     }
 }
