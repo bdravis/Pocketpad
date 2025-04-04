@@ -13,7 +13,7 @@ class TurboManager : ObservableObject {
     
     @Published var turboActive: Bool = false // true iff turbo button is behind held
     @Published var turboRate: Double = 10.0 // number of presses per second
-    let MAX_TURBO_RATE: Double = 25.0 // maximum turbo rate in number of presses per second
+    let MAX_TURBO_RATE: Double = 30.0 // maximum turbo rate in number of presses per second (Value 30.0 used for UI tests)
     
     private var turboEnabledButtons: Set<ButtonInput> = [] // List of all turbo enabled buttons, regardless of whether they are held
     private var turboTimers: [ButtonInput: Timer] = [:]  // A turbo enabled button has a timer iff it is being held

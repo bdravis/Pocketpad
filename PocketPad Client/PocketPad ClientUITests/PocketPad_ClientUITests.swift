@@ -6,7 +6,6 @@
 //
 
 import XCTest
-@testable import PocketPad_Client
 
 final class PocketPad_ClientUITests: XCTestCase {
 
@@ -366,7 +365,7 @@ final class PocketPad_ClientUITests: XCTestCase {
     }
     
     @MainActor
-    func changeTurboRateTest() throws {
+    func testChangeTurboRate() throws {
         let app = XCUIApplication()
         app.launch()
         
@@ -376,11 +375,8 @@ final class PocketPad_ClientUITests: XCTestCase {
         
         let turboSettingsCloseBtn = app.buttons["TurboSettingsCloseButton"]
         let turboRateSlider = app.sliders["TurboRateSlider"]
+        let turboSettingsRateTextField = app.textFields["TurboSettingsRate"]
         let applyTurboRateBtn = app.buttons["ApplyTurboRateButton"]
-        
-        let turboManager = TurboManager.shared
-        
-        print("DEBUGGING Old turbo rate: \(turboManager.turboRate)")
         
         // Open settings menu
         guard settingsBtn.waitForExistence(timeout: 3) else {
@@ -401,11 +397,15 @@ final class PocketPad_ClientUITests: XCTestCase {
             XCTFail("Slider not found")
             return
         }
-        let randomTurboRate: Int = Int.random(in: 1...Int(turboManager.MAX_TURBO_RATE)) // Generate random value to move slider to
-        print("DEBUGGING random turbo rate: \(randomTurboRate)")
-        let normalizedRandomTurboRate: Double = (Double(randomTurboRate) - 1) / (turboManager.MAX_TURBO_RATE  - 1) // Map number into the range [0, 1] for slider
-        print("DEBUGGING normalized random turbo rate: \(normalizedRandomTurboRate)")
-        turboRateSlider.adjust(toNormalizedSliderPosition: normalizedRandomTurboRate) // Adjust slider
+        turboRateSlider.adjust(toNormalizedSliderPosition: Double.random(in: 0.0...1.0)) // random value
+        
+        // Store the new value that the turbo rate slider was set to
+        guard turboSettingsRateTextField.waitForExistence(timeout: 1) else {
+            XCTFail("Turbo settings rate text field not found")
+            return
+        }
+        let turboRateExpectedFull: String = turboSettingsRateTextField.value as! String // full string
+        let turboRateExpected: String? = turboRateExpectedFull.components(separatedBy: " ").first // extract number
         
         // Apply changes
         guard applyTurboRateBtn.waitForExistence(timeout: 1) else {
@@ -414,16 +414,24 @@ final class PocketPad_ClientUITests: XCTestCase {
         }
         applyTurboRateBtn.tap()
         
-        // Close turbo settings
-        XCTAssertTrue(turboSettingsCloseBtn.exists)
-        turboSettingsCloseBtn.tap()
-        
         // Close settings
         XCTAssertTrue(settingsCloseBtn.exists)
         settingsCloseBtn.tap()
         
-        // Check if new turbo rate is updated
-        XCTAssertTrue(abs(turboManager.turboRate - Double(randomTurboRate)) < 0.000001);
-        print("DEBUGGING New turbo rate: \(turboManager.turboRate)")
+        // Reopen settings menu to check new turbo rate value
+        guard settingsBtn.waitForExistence(timeout: 3) else {
+            XCTFail("Settings button open not found")
+            return
+        }
+        settingsBtn.tap()
+        
+        // Check new turbo rate value
+        guard turboRateBtn.waitForExistence(timeout: 1) else {
+            XCTFail("Turbo rate button not found")
+            return
+        }
+        print("DEBUGGING Label is: \(turboRateBtn.label)")
+        let turboRateActual: String? = turboRateBtn.label.components(separatedBy: " ").first // extract number
+        XCTAssertTrue(turboRateActual != nil && turboRateExpected != nil && turboRateActual == turboRateExpected)
     }
 }
