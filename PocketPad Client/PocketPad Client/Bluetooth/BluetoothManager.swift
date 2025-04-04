@@ -93,19 +93,19 @@ class BluetoothManager: NSObject, ObservableObject {
     
     func pingServer() {
         guard let service = selectedService else { return }
-        if let char = discoveredCharacteristics.first(where: { $0.uuid == LATENCY_CHARACTERISTIC }) {
-            let now = UInt32(min((Date().timeIntervalSinceReferenceDate * 1000).truncatingRemainder(dividingBy: 100000), Double(UInt32.max)))
-            //service.peripheral?.writeValue(String(now).data(using: .utf8)!, for: char, type: .withResponse)
-            
-            let playerIDBytes = withUnsafeBytes(of: LayoutManager.shared.player_id.littleEndian) { Data($0) }
-
-            let timestampBytes = withUnsafeBytes(of: now.littleEndian) { Data($0) }
-
-            // Concatenates, not bitwise add
-            let dataToSend = Data(playerIDBytes + timestampBytes)
-            
-            service.peripheral?.writeValue(dataToSend, for: char, type: .withResponse)
-        }
+//        if let char = discoveredCharacteristics.first(where: { $0.uuid == LATENCY_CHARACTERISTIC }) {
+//            let now = UInt32(min((Date().timeIntervalSinceReferenceDate * 1000).truncatingRemainder(dividingBy: 100000), Double(UInt32.max)))
+//            //service.peripheral?.writeValue(String(now).data(using: .utf8)!, for: char, type: .withResponse)
+//            
+//            let playerIDBytes = withUnsafeBytes(of: LayoutManager.shared.player_id.littleEndian) { Data($0) }
+//
+//            let timestampBytes = withUnsafeBytes(of: now.littleEndian) { Data($0) }
+//
+//            // Concatenates, not bitwise add
+//            let dataToSend = Data(playerIDBytes + timestampBytes)
+//            
+//            service.peripheral?.writeValue(dataToSend, for: char, type: .withResponse)
+//        }
     }
      
     func disconnect() {

@@ -262,17 +262,6 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
 
             input_function(str(player_id), input_id, event)
 
-        # # If press & release -> send release (not supported by current impl)
-        # input_function(str(player_id), input_id, enums.ButtonEvent.RELEASED)
-
-        # # If press & and held -> send pressed
-        # input_function(str(player_id), input_id, enums.ButtonEvent.PRESSED)
-
-        # # If release -> send release
-        # input_function(str(player_id), input_id, enums.ButtonEvent.RELEASED)
-
-
-
     if (characteristic.uuid.upper() == CONNECTION_CHARACTERISTIC):
 
         # encoded as a tuple so we can expand this packet with more information
