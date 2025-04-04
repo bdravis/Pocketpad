@@ -8,8 +8,9 @@
 import Foundation
 import Combine
 
-class TurboManager : ObservableObject {
+class TurboManager: ObservableObject {
     static let shared = TurboManager()
+    private let bluetoothManager: BluetoothManaging
     
     @Published var turboActive: Bool = false // true iff turbo button is behind held
     @Published var turboRate: Double = 10.0 // number of presses per second
@@ -19,8 +20,10 @@ class TurboManager : ObservableObject {
     private var turboTimers: [ButtonInput: Timer] = [:]  // A turbo enabled button has a timer iff it is being held
     // Having no held buttons implies that turboTimers is empty
     
-    init() {
-        // Save the turbo rate to user defaults
+    init(bluetoothManager: BluetoothManaging = BluetoothManager.shared) {
+        self.bluetoothManager = bluetoothManager // Injected or default bluetooth manager
+        
+        // Load initial turboRate
         self.turboRate = UserDefaults.standard.double(forKey: "turboRate")
         if self.turboRate <= 0.0 {
             self.turboRate = 10.0 // Default is 10 presses a second
@@ -89,7 +92,7 @@ class TurboManager : ObservableObject {
             print(#"TURBO-ENABLED REGULAR BUTTON \#(isPressed ? "PRESS" : "RELEASE")"#)
 #endif
             let data = Data([playerId, inputId, buttonType, ui8_event])
-            BluetoothManager.shared.sendInput(data)
+            bluetoothManager.sendInput(data)
         }
     }
     
@@ -122,7 +125,7 @@ class TurboManager : ObservableObject {
             print(#"TURBO-ENABLED DPad \#(isPressed ? "PRESS" : "RELEASE")"#)
 #endif
             let data = Data([playerId, inputId, buttonType, ui8_event, dpadDirection])
-            BluetoothManager.shared.sendInput(data)
+            bluetoothManager.sendInput(data)
         }
     }
     

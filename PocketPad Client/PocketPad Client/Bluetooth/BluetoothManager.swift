@@ -9,8 +9,13 @@ import CoreBluetooth
 import SwiftUI
 import Combine
 
+// MARK: - Used for mock bluetooth managers (for testing)
+protocol BluetoothManaging {
+    func sendInput(_ data: Data)
+}
+
 // MARK: - Bluetooth Manager
-class BluetoothManager: NSObject, ObservableObject {
+class BluetoothManager: NSObject, ObservableObject, BluetoothManaging {
     static let shared = BluetoothManager()
     
     private var centralManager: CBCentralManager!

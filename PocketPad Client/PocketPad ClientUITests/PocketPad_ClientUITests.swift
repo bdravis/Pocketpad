@@ -373,9 +373,8 @@ final class PocketPad_ClientUITests: XCTestCase {
         let settingsCloseBtn = app.buttons["SettingsCloseButton"]
         let turboRateBtn = app.buttons["TurboRateButton"]
         
-        let turboSettingsCloseBtn = app.buttons["TurboSettingsCloseButton"]
         let turboRateSlider = app.sliders["TurboRateSlider"]
-        let turboSettingsRateTextField = app.textFields["TurboSettingsRate"]
+        let turboSettingsRateStaticText = app.staticTexts["TurboSettingsRate"]
         let applyTurboRateBtn = app.buttons["ApplyTurboRateButton"]
         
         // Open settings menu
@@ -399,13 +398,14 @@ final class PocketPad_ClientUITests: XCTestCase {
         }
         turboRateSlider.adjust(toNormalizedSliderPosition: Double.random(in: 0.0...1.0)) // random value
         
+        print(app.debugDescription)
+        
         // Store the new value that the turbo rate slider was set to
-        guard turboSettingsRateTextField.waitForExistence(timeout: 1) else {
-            XCTFail("Turbo settings rate text field not found")
+        guard turboSettingsRateStaticText.waitForExistence(timeout: 5) else {
+            XCTFail("Turbo settings rate static text not found")
             return
         }
-        let turboRateExpectedFull: String = turboSettingsRateTextField.value as! String // full string
-        let turboRateExpected: String? = turboRateExpectedFull.components(separatedBy: " ").first // extract number
+        let turboRateExpected: String? = turboSettingsRateStaticText.label.components(separatedBy: " ").first // extract number
         
         // Apply changes
         guard applyTurboRateBtn.waitForExistence(timeout: 1) else {
