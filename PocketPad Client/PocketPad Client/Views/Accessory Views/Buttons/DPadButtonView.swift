@@ -53,6 +53,7 @@ struct DPadButtonView: View {
 // Style for the directional arrow on the D-Pad
 struct DirectionalArrow: View {
     @StateObject private var bluetoothManager = BluetoothManager.shared
+    @StateObject private var networkManager = TCPClient.shared
     @StateObject private var turboManager = TurboManager.shared
     
     var split: Bool
@@ -119,6 +120,14 @@ struct DirectionalArrow: View {
             
             let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event, ui8_dpadDirection])
             bluetoothManager.sendInput(data)
+        } else if bluetoothManager.serverType == 0 {
+            networkManager.sendInput(
+                pid: LayoutManager.shared.player_id,
+                iid: config.inputId,
+                btype: config.type.rawValue,
+                event: ButtonEvent.pressed.rawValue,
+                dpadDirection: direction.rawValue
+            )
         }
     }
     private func send_dpad_release() {
@@ -135,6 +144,14 @@ struct DirectionalArrow: View {
             
             let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event, ui8_dpadDirection])
             bluetoothManager.sendInput(data)
+        } else if bluetoothManager.serverType == 0 {
+            networkManager.sendInput(
+                pid: LayoutManager.shared.player_id,
+                iid: config.inputId,
+                btype: config.type.rawValue,
+                event: ButtonEvent.released.rawValue,
+                dpadDirection: direction.rawValue
+            )
         }
     }
 }

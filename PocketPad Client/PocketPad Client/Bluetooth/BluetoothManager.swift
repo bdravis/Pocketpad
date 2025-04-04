@@ -13,6 +13,8 @@ import Combine
 class BluetoothManager: NSObject, ObservableObject {
     static let shared = BluetoothManager()
     
+    @AppStorage("connectionType") var serverType: Int = 0
+    
     private var centralManager: CBCentralManager!
     private var peripheral: CBPeripheral?
     

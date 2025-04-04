@@ -1,0 +1,300 @@
+{
+  "name": "Xbox",
+  "wrappedButtons": [
+    {
+      "payload": {
+        "turbo": 0,
+        "scale": 1,
+        "type": 0,
+        "rotation": 0,
+        "inputId": 0,
+        "style": {
+          "iconType": {
+            "Text": {}
+          },
+          "shape": {
+            "Circle": {}
+          },
+          "icon": "Y"
+        }, 
+        "input": "Y",
+        "position": {
+          "scaledPos": [0.8, 0.6],
+          "offset": [0, -50]
+        }
+      }, 
+      "base": 2
+    },
+    {
+      "payload": {
+        "inputId": 1,
+        "input": "X",
+        "scale": 1,
+        "style": {
+          "iconType": {
+            "Text": {}
+          },
+          "shape": {
+            "Circle": {}
+          },
+          "icon": "X"
+        },
+        "turbo": 0,
+        "type": 0, 
+        "position": {
+          "scaledPos": [0.8, 0.6],
+          "offset": [-50, 0]
+        }, "rotation": 0
+      }, 
+      "base": 2
+    },
+    {
+      "payload": {
+        "input": "B",
+        "inputId": 2,
+        "rotation": 0,
+        "style": {
+          "icon": "B",
+          "shape": {
+            "Circle": {}
+          },
+          "iconType": {
+            "Text": {}
+          }
+        }, 
+        "position": {
+          "offset": [50, 0],
+          "scaledPos": [0.8, 0.6]
+        }, 
+        "scale": 1, 
+        "type": 0, 
+        "turbo": 0
+      }, "base": 2
+    }, 
+    {
+      "base": 2, 
+      "payload": {
+        "inputId": 3, 
+        "type": 0, 
+        "scale": 1, 
+        "rotation": 0, 
+        "style": {
+          "icon": "A", 
+          "shape": {
+            "Circle": {}
+          }, 
+          "iconType": {
+            "Text": {}
+          }
+        }, 
+        "input": "A", 
+        "turbo": 0, 
+        "position": {
+          "scaledPos": [0.8, 0.6], 
+          "offset": [0, 50]
+        }
+      }
+    }, 
+    {
+      "base": 1, 
+      "payload": {
+        "sensitivity": 0, 
+        "type": 1, 
+        "input": "RightJoystick", 
+        "scale": 1.5, "deadzone": 0, 
+        "inputId": 4, 
+        "rotation": 0, 
+        "position": {
+          "scaledPos": [0.6, 0.8], 
+          "offset": [0, 0]
+        }
+      }
+    }, 
+    {
+      "base": 0, 
+      "payload": {
+        "inputs": [
+          2, "DPadLeft", 
+          3, "DPadRight", 
+          1, "DPadDown", 
+          0, "DPadUp"
+        ], 
+        "scale": 1.5, 
+        "position": {
+          "scaledPos": [0.4, 0.8], 
+          "offset": [0, 0]
+        }, 
+        "type": 2, 
+        "inputId": 5, 
+        "rotation": 0
+      }
+    }, 
+    {
+      "payload": {
+        "deadzone": 0, 
+        "position": {
+          "offset": [0, 0], 
+          "scaledPos": [0.2, 0.6]
+        }, 
+        "rotation": 0, 
+        "sensitivity": 0, 
+        "type": 1, 
+        "inputId": 6, 
+        "input": "LeftJoystick", 
+        "scale": 1.5
+      }, 
+      "base": 1
+    }, 
+    {
+      "base": 2, 
+      "payload": {
+        "type": 0, 
+        "style": {
+          "shape": {
+            "Circle": {}
+          }, 
+          "iconType": {
+            "SFSymbol": {}
+          }, 
+          "icon": "line.3.horizontal"
+        }, 
+        "inputId": 7, 
+        "position": {
+          "scaledPos": [0.5, 0.2], 
+          "offset": [-30, 0]
+        }, 
+        "scale": 0.6, 
+        "input": "Menu", 
+        "rotation": 0, 
+        "turbo": 0
+      }
+    }, 
+    {
+      "base": 2, 
+      "payload": {
+        "position": {
+          "offset": [30, 0], 
+          "scaledPos": [0.5, 0.2]
+        }, 
+        "turbo": 0, 
+        "inputId": 8, 
+        "style": {
+          "shape": {
+            "Circle": {}
+          }, 
+          "icon": "macwindow.on.rectangle", 
+          "iconType": {
+            "SFSymbol": {}
+          }
+        }, 
+        "input": "Window", 
+        "scale": 0.6, 
+        "type": 0, 
+        "rotation": 0
+      }
+    }, 
+    {
+      "base": 2,
+      "payload": {
+        "type": 0, 
+        "input": "Share", 
+        "inputId": 9, 
+        "style": {
+          "shape": {
+            "Circle": {}
+          }, 
+          "icon": "square.and.arrow.up",
+          "iconType": {
+            "SFSymbol": {}
+          }
+        }, 
+        "rotation": 0, 
+        "turbo": 0, 
+        "position": {
+          "offset": [0, 30], 
+          "scaledPos": [0.5, 0.2]
+        }, "scale": 0.6
+      }
+    }, 
+    {
+      "payload": {
+        "type": 3, 
+        "inputId": 10, 
+        "position": {
+          "scaledPos": [0.1, 0.1], 
+          "offset": [25, 75]
+        }, 
+        "scale": 1.5, 
+        "rotation": 0, 
+        "input": "LB", 
+        "style": {
+          "iconType": {
+            "Text": {}
+          }, 
+          "icon": "LB", 
+          "shape": {
+            "Pill": {}
+          }
+        }, 
+        "turbo": 0
+      }, 
+      "base": 3
+    }, 
+    {
+      "payload": {
+        "input": "RB", 
+        "turbo": 0, 
+        "rotation": 0, 
+        "inputId": 11, 
+        "scale": 1.5, 
+        "style": {
+          "shape": {
+            "Pill": {}
+          }, 
+          "iconType": {
+            "Text": {}
+          }, 
+          "icon": "RB"
+        }, 
+        "position": {
+          "scaledPos": [0.9, 0.1], 
+          "offset": [-25, 75]
+        }, 
+        "type": 3
+      }, 
+      "base": 3
+    }, 
+    {
+      "base": 4, 
+      "payload": {
+        "position": {
+          "offset": [0, 0], 
+          "scaledPos": [0.1, 0.1]
+        }, 
+        "rotation": 0, 
+        "turbo": 0, 
+        "scale": 1.5, 
+        "input": "LT", 
+        "side": 1, 
+        "inputId": 12, 
+        "type": 4
+      }
+    }, 
+    {
+      "base": 4, 
+      "payload": {
+        "position": {
+          "offset": [0, 0], 
+          "scaledPos": [0.9, 0.1]
+        }, 
+        "input": "RT", 
+        "turbo": 0, 
+        "inputId": 13, 
+        "scale": 1.5, 
+        "rotation": 0, 
+        "type": 4, 
+        "side": 0
+      }
+    }
+  ]
+}

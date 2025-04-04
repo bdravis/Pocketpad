@@ -4,6 +4,8 @@ from pathlib import Path
 
 import bluetooth_server
 from bluetooth_server import QBlessServer
+from network_server import QNetworkServer
+from utils import Paircode
 import enums
 
 import json
@@ -33,6 +35,7 @@ class MainWindow(QMainWindow):
         super().__init__(parent)
         
         self._bless_server = QBlessServer.instance()
+        self._tcp_server = QNetworkServer.instance()
 
         self.settings = QSettings("YourCompany", "PocketPad")
 
@@ -111,6 +114,8 @@ class MainWindow(QMainWindow):
         # Callback function for updating a given player's controller type (Idk if function name will differ so feel free to change)
         #
         bluetooth_server.set_input_callback(self.input_updated.emit)
+        self._tcp_server.connection_function = self.connection_updated.emit
+        self._tcp_server.input_function = self.input_updated.emit
         #
         # Callback function for updating a given player's controller type
 
@@ -155,6 +160,8 @@ class MainWindow(QMainWindow):
         
         QTimer.singleShot(100, self.ble_initialize)
         
+        self._tcp_server.update_paircode = self.update_paircode
+        
     @qasync.asyncSlot()
     async def ble_initialize(self):
         await self._bless_server.initialize()
@@ -167,16 +174,19 @@ class MainWindow(QMainWindow):
     # REMOVE AFTER SPRINTS
     
     # NEEDS WORK
-    def start_network_server(self):
+    @qasync.asyncSlot()
+    async def start_network_server(self):
         self.bluetooth_server_initiated=False
         if (self.network_server_initiated == False):
             self.network_server_initiated=True
-            bluetooth_server.stop_server()
+            await self._bless_server.stop()
             # Hardcode player disconnect
             #
             for player_id in self.connected_players:
                 self.update_player_connection("disconnect", player_id, enums.ControllerType.Xbox, None)
             #
+            
+            await self._tcp_server.start()
             # Hardcode player disconnect
         else:
             already_initiated = QMessageBox()
@@ -220,7 +230,7 @@ class MainWindow(QMainWindow):
             self.network_server_initiated=False
             # Network Function
             #
-
+            await self._tcp_server.stop()
             #
             # Network Function
         else:
@@ -953,8 +963,6 @@ class MainWindow(QMainWindow):
 
             self.ui.view_code_button.setIcon(QIcon(colored_pixmap))
             self.ui.view_code_button.setIconSize(icon_size)
-
-            self.ui.pair_code_label.setText("--- ---")
         else:
             self.view_code = True
 
@@ -976,8 +984,9 @@ class MainWindow(QMainWindow):
 
             self.ui.view_code_button.setIcon(QIcon(colored_pixmap))
             self.ui.view_code_button.setIconSize(icon_size)
-
-            self.ui.pair_code_label.setText(bluetooth_server.paircode)
+            
+    def update_paircode(self, code):
+        self.ui.pair_code_label.setText(str(code))
 
     def get_icon_from_svg(self, svg_path, color):
         """

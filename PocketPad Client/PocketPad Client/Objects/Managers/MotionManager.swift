@@ -48,12 +48,21 @@ class MotionManager: ObservableObject {
                              pitchVal, rollVal, yawVal))
                 
                 // Send the motion data to the server
-                BluetoothManager.shared.sendMotionData(
-                    playerId: LayoutManager.shared.player_id,
-                    pitch: Float(pitchVal),
-                    roll:  Float(rollVal),
-                    yaw:   Float(yawVal)
-                )
+                if (BluetoothManager.shared.serverType == 0) {
+//                    TCPClient.shared.sendMotionData(
+//                        playerId: LayoutManager.shared.player_id,
+//                        pitch: Float(pitchVal),
+//                        roll:  Float(rollVal),
+//                        yaw:   Float(yawVal)
+//                    )
+                } else {
+                    BluetoothManager.shared.sendMotionData(
+                        playerId: LayoutManager.shared.player_id,
+                        pitch: Float(pitchVal),
+                        roll:  Float(rollVal),
+                        yaw:   Float(yawVal)
+                    )
+                }
             }
         }
     }

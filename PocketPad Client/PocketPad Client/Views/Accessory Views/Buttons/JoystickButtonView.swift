@@ -55,44 +55,46 @@ struct JoystickButtonView: View {
 #if DEBUG
                     print("SENDING, OUTSIDE DEADZONE)")
                     if !hapticTriggered && dist > 5 {
-                      HapticsManager.playHaptic()
-                      hapticTriggered = true
+                        HapticsManager.playHaptic()
+                        hapticTriggered = true
                     }
 #endif
+                    let ui8_playerId: UInt8 = LayoutManager.shared.player_id
+                    let ui8_inputId : UInt8 = config.inputId
+                    let ui8_buttonType : UInt8 = config.type.rawValue
+                    let ui8_event : UInt8 = ButtonEvent.pressed.rawValue
+                    
+                    var degrees = angle * 180 / .pi
+                    while degrees < 0 {
+                        degrees += 360
+                    }
+                    while degrees > 360 {
+                        degrees -= 360
+                    }
+                    let ui8_angle: UInt8
+                    if degrees.isNaN || degrees.isInfinite {
+                        ui8_angle = 0
+                    } else {
+                        ui8_angle = UInt8(Int((degrees * 256 / 360)) & 255)
+                    }
+                    // Convert to degrees in range of 255
+                    
+                    let normalizedMagnitude = (clampedDistance - deadzoneRadius) / (DEFAULT_BUTTON_SIZE / 2 - deadzoneRadius) * 100
+                    //#if DEBUG
+                    //                    print("Normalized magnitude: \(normalizedMagnitude)")
+                    //#endif
+                    let ui8_magnitude: UInt8
+                    if normalizedMagnitude.isNaN || normalizedMagnitude.isInfinite {
+                        ui8_magnitude = 0
+                    } else {
+                        ui8_magnitude = UInt8(min(max(normalizedMagnitude, 0), 255))
+                    }
+                    
+                    let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event, ui8_angle, ui8_magnitude])
                     if let service = bluetoothManager.selectedService {
-                        let ui8_playerId: UInt8 = LayoutManager.shared.player_id
-                        let ui8_inputId : UInt8 = config.inputId
-                        let ui8_buttonType : UInt8 = config.type.rawValue
-                        let ui8_event : UInt8 = ButtonEvent.pressed.rawValue
-                        
-                        var degrees = angle * 180 / .pi
-                        while degrees < 0 {
-                            degrees += 360
-                        }
-                        while degrees > 360 {
-                            degrees -= 360
-                        }
-                        let ui8_angle: UInt8
-                        if degrees.isNaN || degrees.isInfinite {
-                            ui8_angle = 0
-                        } else {
-                            ui8_angle = UInt8(Int((degrees * 256 / 360)) & 255)
-                        }
-                        // Convert to degrees in range of 255
-                        
-                        let normalizedMagnitude = (clampedDistance - deadzoneRadius) / (DEFAULT_BUTTON_SIZE / 2 - deadzoneRadius) * 100
-//#if DEBUG
-//                    print("Normalized magnitude: \(normalizedMagnitude)")
-//#endif
-                        let ui8_magnitude: UInt8
-                        if normalizedMagnitude.isNaN || normalizedMagnitude.isInfinite {
-                            ui8_magnitude = 0
-                        } else {
-                            ui8_magnitude = UInt8(min(max(normalizedMagnitude, 0), 255))
-                        }
-                        
-                        let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event, ui8_angle, ui8_magnitude])
                         bluetoothManager.sendInput(data)
+                    } else if bluetoothManager.serverType == 0 {
+                        TCPClient.shared.sendInput(pid: ui8_playerId, iid: ui8_inputId, btype: ui8_buttonType, event: ui8_event, angle: ui8_angle, magnitude: ui8_magnitude)
                     }
                 } else {
 #if DEBUG

@@ -9,6 +9,7 @@ import SwiftUI
 
 struct TriggerButtonView: View {
     @StateObject private var bluetoothManager = BluetoothManager.shared
+    @StateObject private var networkManager = TCPClient.shared
     var config: TriggerConfig
     
     var body: some View {
@@ -28,6 +29,13 @@ struct TriggerButtonView: View {
                 let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
                 print("PRESS TRIGGER")
                 bluetoothManager.sendInput(data)
+            } else if bluetoothManager.serverType == 0 {
+                networkManager.sendInput(
+                    pid: LayoutManager.shared.player_id,
+                    iid: config.inputId,
+                    btype: config.type.rawValue,
+                    event: ButtonEvent.pressed.rawValue
+                )
             }
         }, onRelease: {
             if let service = bluetoothManager.selectedService {
@@ -39,6 +47,13 @@ struct TriggerButtonView: View {
                 let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
                 print("RELEASE TRIGGER")
                 bluetoothManager.sendInput(data)
+            } else if bluetoothManager.serverType == 0 {
+                networkManager.sendInput(
+                    pid: LayoutManager.shared.player_id,
+                    iid: config.inputId,
+                    btype: config.type.rawValue,
+                    event: ButtonEvent.released.rawValue
+                )
             }
         })
     }

@@ -10,6 +10,9 @@ from struct import unpack
 from typing import Any, Dict, Union
 from server_constants import *
 from inputs import parse_input, input_error_tuple
+from utils import Paircode
+
+import struct
 
 from bless import (  # type: ignore
     BlessServer,
@@ -23,12 +26,12 @@ from dataclasses import dataclass
 
 from random import randint
 
+paircode = None
+
 logger = None
 trigger: Union[asyncio.Event, threading.Event] = None
 thread = None
 loop = None
-
-paircode = "xxx xxx"
 
 num_players = 0
 next_id = 0
@@ -237,7 +240,6 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
             player_id = characteristic.value[0]
             event_code = characteristic.value[1]
             if event_code == 99:
-                import struct
                 pitch = struct.unpack('<f', characteristic.value[2:6])[0]
                 roll  = struct.unpack('<f', characteristic.value[6:10])[0]
                 yaw   = struct.unpack('<f', characteristic.value[10:14])[0]
@@ -372,11 +374,9 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
         logger.debug("Received PAIRCODE", information)
         
         player_id = information[0]
-        code = list(map(chr, information[1:]))
-        code_str = ''.join(code[:3]).zfill(3) + " " + ''.join(code[3:6]).zfill(3)
-        print( f"Received Paircode: {code_str} from player {player_id}")
-        print(paircode)
-        if code_str != paircode:
+        code = int("".join(list(map(chr, information[1:]))))
+        print( f"Received Paircode: {code} from player {player_id}")
+        if Paircode(code) != paircode:
             char = __server.server.get_characteristic(CONNECTION_CHARACTERISTIC)
             char.value = bytearray([player_id, 0]) + bytearray("Paircode Incorrect".encode('utf-8'))
             __server.server.update_value(POCKETPAD_SERVICE, CONNECTION_CHARACTERISTIC)
@@ -417,7 +417,6 @@ class QBlessServer(QObject):
         logger.debug("Starting server")
         
         global paircode
-        paircode = str(randint(000, 999)).zfill(3) + " " + str(randint(000, 999)).zfill(3)
         
         await self.server.add_gatt(gatt)
         await self.server.start(prioritize_local_name=True)

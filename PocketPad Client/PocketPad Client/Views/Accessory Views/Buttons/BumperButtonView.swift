@@ -9,6 +9,8 @@ import SwiftUI
 
 struct BumperButtonView: View {
     @StateObject private var bluetoothManager = BluetoothManager.shared
+    @StateObject private var networkManager = TCPClient.shared
+    
     var config: BumperConfig
     
     var body: some View {
@@ -43,6 +45,13 @@ struct BumperButtonView: View {
                 
                 let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
                 bluetoothManager.sendInput(data)
+            } else if bluetoothManager.serverType == 0 {
+                networkManager.sendInput(
+                    pid: LayoutManager.shared.player_id,
+                    iid: config.inputId,
+                    btype: config.type.rawValue,
+                    event: ButtonEvent.pressed.rawValue
+                )
             }
         }, onRelease: {
 #if DEBUG

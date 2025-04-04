@@ -12,10 +12,13 @@ struct ContentView: View {
     @State private var isShowingSettings = false
     @State private var exitAllMenusCallback: (() -> Void)? = nil
     @State private var showModifyBtn = false
+    @AppStorage("connectionType") private var serverType: Int = 0
     
     @State private var paircode = ""
 
     @StateObject private var bluetoothManager = BluetoothManager.shared
+    
+    @StateObject private var networkManager = TCPClient.shared
     
     var body: some View {
         NavigationStack {
@@ -37,72 +40,171 @@ struct ContentView: View {
                     }
                     
                     // Bluetooth Connection Status
-                    HStack {
-                        if bluetoothManager.bluetoothState != .poweredOn {
-                            Text("Bluetooth is Off")
-                                .foregroundColor(.red)
-                                .bold()
-                        } else if let device = bluetoothManager.connectedDevice {
-                            if let name = device.name {
-                                Text("Connected to '\(name)'")
-                                    .foregroundColor(.green)
+                    if serverType == 1 {
+                        HStack {
+                            Image("logo.bluetooth")
+                                .resizable()
+                                .frame(width: 20, height: 30)
+                                .scaledToFill()
+                                .foregroundColor(bluetoothManager.bluetoothState != .poweredOn ? .red : .blue)
+                            
+                            if bluetoothManager.bluetoothState != .poweredOn {
+                                Text("Bluetooth is Off")
+                                    .foregroundColor(.red)
                                     .bold()
+                            } else if let device = bluetoothManager.connectedDevice {
+                                if let name = device.name {
+                                    Text("Connected to '\(name)'")
+                                        .foregroundColor(.green)
+                                        .bold()
+                                } else {
+                                    Text("Connected")
+                                        .foregroundColor(.green)
+                                        .bold()
+                                }
                             } else {
+                                Text("Not connected...")
+                                    .foregroundColor(.orange)
+                                    .bold()
+                            }
+                            Spacer()
+                            
+                            if bluetoothManager.connectedDevice != nil {
+                                Button(action: {
+                                    bluetoothManager.disconnect()
+                                }) {
+                                    Text("Disconnect")
+                                        .font(.system(size: 18))
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 2)
+                                        .foregroundColor(.white)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 25)
+                                                .stroke(Color.white, lineWidth: 2)
+                                        )
+                                }
+                                .background(.red.opacity(0.9))
+                                .cornerRadius(25)
+                            } else {
+                                NavigationLink(destination: BluetoothScannerView()) {
+                                    Text("Connect")
+                                        .font(.system(size: 18))
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 2)
+                                        .foregroundColor(.white)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 25)
+                                                .stroke(Color.white, lineWidth: 2)
+                                        )
+                                }
+                                .background(Color.blue)
+                                .cornerRadius(25)
+                                .opacity(bluetoothManager.bluetoothState != .poweredOn ? 0.5 : 1.0)
+                                .disabled(bluetoothManager.bluetoothState != .poweredOn)
+                            }
+                        }
+                        .padding(.horizontal)
+                        
+                        if let error = bluetoothManager.connectionError {
+                            HStack {
+                                Text(error)
+                                    .foregroundColor(.red)
+                                
+                                Spacer()
+                            }
+                            .padding(.horizontal)
+                        }
+                    } else {
+                        HStack {
+                            Image(systemName: "wifi")
+                                .resizable()
+                                .frame(width: 30, height: 23)
+                                .scaledToFill()
+                                .foregroundColor(!networkManager.networkState ? .red : .black)
+                            
+                            if !networkManager.networkState {
+                                Text("WiFi is Off")
+                                    .foregroundColor(.red)
+                                    .bold()
+                            } else if networkManager.isConnected {
                                 Text("Connected")
                                     .foregroundColor(.green)
                                     .bold()
+                            } else {
+                                Text("Not connected...")
+                                    .foregroundColor(.orange)
+                                    .bold()
                             }
-                        } else {
-                            Text("Not connected...")
-                                .foregroundColor(.orange)
-                                .bold()
-                        }
-                        Spacer()
-                        
-                        if bluetoothManager.connectedDevice != nil {
-                            Button(action: {
-                                bluetoothManager.disconnect()
-                            }) {
-                                Text("Disconnect")
-                                    .font(.system(size: 18))
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 2)
-                                    .foregroundColor(.white)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 25)
-                                            .stroke(Color.white, lineWidth: 2)
-                                    )
-                            }
-                            .background(.red.opacity(0.9))
-                            .cornerRadius(25)
-                        } else {
-                            NavigationLink(destination: BluetoothScannerView()) {
-                                Text("Connect")
-                                    .font(.system(size: 18))
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 2)
-                                    .foregroundColor(.white)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 25)
-                                            .stroke(Color.white, lineWidth: 2)
-                                    )
-                            }
-                            .background(Color.blue)
-                            .cornerRadius(25)
-                            .opacity(bluetoothManager.bluetoothState != .poweredOn ? 0.5 : 1.0)
-                            .disabled(bluetoothManager.bluetoothState != .poweredOn)
-                        }
-                    }
-                    .padding(.horizontal)
-                    
-                    if let error = bluetoothManager.connectionError {
-                        HStack {
-                            Text(error)
-                                .foregroundColor(.red)
-                            
                             Spacer()
+                            
+                            if networkManager.isConnected {
+                                Button(action: {
+                                    networkManager.disconnect()
+                                }) {
+                                    Text("Disconnect")
+                                        .font(.system(size: 18))
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 2)
+                                        .foregroundColor(.white)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 25)
+                                                .stroke(Color.white, lineWidth: 2)
+                                        )
+                                }
+                                .background(.red.opacity(0.9))
+                                .cornerRadius(25)
+                            } else {
+                                Button(action: {
+                                    networkManager.findServerAndConnect(port: 3000)
+                                }) {
+                                    Text("Connect")
+                                        .font(.system(size: 18))
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 2)
+                                        .foregroundColor(.white)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 25)
+                                                .stroke(Color.white, lineWidth: 2)
+                                        )
+                                }
+//                                NavigationLink(destination: BluetoothScannerView()) {
+//                                    Text("Connect")
+//                                        .font(.system(size: 18))
+//                                        .padding(.horizontal, 10)
+//                                        .padding(.vertical, 2)
+//                                        .foregroundColor(.white)
+//                                        .overlay(
+//                                            RoundedRectangle(cornerRadius: 25)
+//                                                .stroke(Color.white, lineWidth: 2)
+//                                        )
+//                                }
+                                .background(Color.blue)
+                                .cornerRadius(25)
+                                .opacity(networkManager.networkState != true ? 0.5 : 1.0)
+                                .disabled(networkManager.networkState != true)
+                            }
                         }
                         .padding(.horizontal)
+                        
+                        if let error = bluetoothManager.connectionError {
+                            HStack {
+                                Text(error)
+                                    .foregroundColor(.red)
+                                
+                                Spacer()
+                            }
+                            .padding(.horizontal)
+                        }
+                        
+                        if let error = networkManager.connectionError {
+                            HStack {
+                                Text(error)
+                                    .foregroundColor(.red)
+                                
+                                Spacer()
+                            }
+                            .padding(.horizontal)
+                        }
                     }
                     
                     // NavigationLink to ControllerView for Debugging
@@ -167,9 +269,9 @@ struct ContentView: View {
                         exitAllMenusCallback: $exitAllMenusCallback,
                         showModifyBtn: $showModifyBtn
                     )
-                        .offset(y: isShowingSettings ? 0 : -geometry.size.height)
-                        .transition(.move(edge: .top))
-                        .animation(.bouncy, value: isShowingSettings)
+                    .offset(y: isShowingSettings ? 0 : -geometry.size.height)
+                    .transition(.move(edge: .top))
+                    .animation(.bouncy, value: isShowingSettings)
                 }
             }
         )
@@ -184,7 +286,28 @@ struct ContentView: View {
                 bluetoothManager.pingServer()
             }
         }
-        .alert("New Layout", isPresented: $bluetoothManager.paircodeNeeded) {
+        .alert("Pair Code TCP", isPresented: $networkManager.pairing) {
+            TextField("Pair Code", text: $paircode)
+                .keyboardType(.numberPad)
+            Button("OK", action: {
+                if paircode.isEmpty {
+                    networkManager.pairing = true
+                    return
+                }
+                if paircode.count != 6 {
+                    networkManager.pairing = true
+                    return
+                }
+                networkManager.sendPaircode(paircode)
+                paircode = ""
+            })
+            .disabled(paircode.isEmpty || paircode.count != 6)
+            Button("Cancel", role: .cancel) {
+                networkManager.connectionError = "Cancelled pairing"
+                networkManager.disconnect()
+            }
+        }
+        .alert("Pair Code BLE", isPresented: $bluetoothManager.paircodeNeeded) {
             TextField("Pair Code", text: $paircode)
                 .keyboardType(.numberPad)
             Button("OK", action: {
@@ -197,6 +320,7 @@ struct ContentView: View {
                     return
                 }
                 bluetoothManager.sendPaircode(paircode)
+                paircode = ""
             })
             .disabled(paircode.isEmpty || paircode.count != 6)
             Button("Cancel", role: .cancel) {

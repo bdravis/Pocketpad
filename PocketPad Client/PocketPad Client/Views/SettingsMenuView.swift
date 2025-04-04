@@ -13,17 +13,24 @@ private let minMenuHeight: CGFloat = 500
 private let maxWidthFraction: CGFloat = 0.9
 private let maxHeightFraction: CGFloat = 0.9
 
+enum ServerType {
+    case network
+    case bluetooth
+}
+
 struct SettingsMenuView: View {
     // MARK: - Bound Properties
     @Binding var isShowingSettings: Bool
     @Binding var exitAllMenusCallback: (() -> Void)?
     @Binding var showModifyBtn: Bool
+    
     @ObservedObject private var layoutManager = LayoutManager.shared
     
     @AppStorage("splitDPad") var splitDPad: Bool = false
     @AppStorage("selectedController") var selectedController: String = ControllerType.Xbox.stringValue
     @AppStorage("controllerColor") var controllerColor: Color = .blue
     @AppStorage("controllerName") var controllerName: String = "Controller"
+    @AppStorage("connectionType") var serverType: Int = 0
 
     @AppStorage("motionControlEnabled") var motionControlEnabled: Bool = false
 
@@ -140,6 +147,21 @@ struct SettingsMenuView: View {
     // MARK: - Main Settings Content
     private var settingsContent: some View {
         VStack(alignment: .leading, spacing: 14) {
+            // Bluetooth VS Network
+            HStack {
+                Text("Connection Type")
+                    .foregroundColor(.primary)
+                Spacer()
+                Picker("Connection Type", selection: $serverType) {
+                    Text("Network").tag(0)
+                    Text("Bluetooth").tag(1)
+                }
+                .pickerStyle(.menu)
+                .accessibilityIdentifier("ConnectionTypePicker")
+            }
+            .disabled(BluetoothManager.shared.connectedDevice != nil || TCPClient.shared.isConnected || TCPClient.shared.pairing)
+            .padding(.horizontal, 16)
+            
             // Controller Type Picker
             HStack {
                 Text("Current Layout")
