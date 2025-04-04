@@ -40,6 +40,7 @@ struct ControllerView: View {
     
     // Editing Button View Values
     @State private var showAddPopup: Bool = false
+    @State private var showSymbolPicker: Bool = false
     @ObservedObject private var selectedBtn: EditingButtonVM = .init()
     @State private var btnEditViewPos: CGFloat = 1.0
     @State private var editViewOpacity: Double = 1.0
@@ -111,6 +112,8 @@ struct ControllerView: View {
                         )
                         .disabled(isEditor)
                         .gesture(tapGesture, isEnabled: isEditor)
+                        .accessibilityElement(children: .contain)
+                        .accessibilityIdentifier("Button\(btn.inputId)")
                     }
                 }
                 
@@ -139,6 +142,7 @@ struct ControllerView: View {
                             y: dragPos?.y ?? selectedBtn.scaledPos.y * geometry.size.height + selectedBtn.offset.y
                         )
                         .disabled(true)
+                        .accessibilityAddTraits(.isButton)
                         ButtonInfoView(configVM: selectedBtn, isUnsafe: $isUnsafe)
                             .scaleEffect(selectedBtn.scale)
                             .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE)
@@ -302,23 +306,33 @@ struct ControllerView: View {
                                 Image(systemName: "trash")
                             }
                             .foregroundStyle(.red)
+                            .accessibilityIdentifier("DeleteLayoutBtn")
                             Button(action: {
                                 newName = ""
                                 showRenameAlert.toggle()
                             }) {
                                 Image(systemName: "pencil")
                             }
+                            .accessibilityIdentifier("RenameLayoutBtn")
                         }
                     })
                     ToolbarItem(placement: .topBarTrailing, content: {
                         Button(action: {
+                            if !selectedBtn.isEmpty {
+                                // apply the button to not reset the config
+                                applySelectedButton()
+                            }
                             showAddPopup.toggle()
                         }) {
                             Image(systemName: "plus")
                         }
+                        .accessibilityIdentifier("NewButtonBtn")
                     })
                 }
             }
+            .sheet(isPresented: $showSymbolPicker, content: {
+                SFPickerView(button: selectedBtn)
+            })
             .sheet(isPresented: $showAddPopup) {
                 AddButtonView(selectedBtn: selectedBtn)
             }
@@ -336,7 +350,7 @@ struct ControllerView: View {
             }
             .overlay {
                 if !selectedBtn.isEmpty {
-                    EditButtonView(button: selectedBtn)
+                    EditButtonView(button: selectedBtn, showSymbolPicker: $showSymbolPicker)
                         .frame(
                             width: !isPortait ? geometry.size.width * 0.4 : geometry.size.width,
                             height: isPortait ? geometry.size.height * 0.4 : geometry.size.height
@@ -368,11 +382,13 @@ struct ControllerView: View {
                     deleting = true
                     presentationMode.wrappedValue.dismiss()
                 }
+                .accessibilityIdentifier("ConfirmDelete")
             }, message: {
                 Text("Are you sure you want to delete this layout? This cannot be undone.")
             })
             .alert("Rename Layout", isPresented: $showRenameAlert, actions: {
                 TextField("Layout Name", text: $newName)
+                    .accessibilityIdentifier("LayoutNameField")
                 Button("Cancel") {
                     showRenameAlert = false
                 }
@@ -387,12 +403,15 @@ struct ControllerView: View {
                         UIApplication.shared.alert(body: error.localizedDescription)
                     }
                 }
+                .accessibilityIdentifier("LayoutNameOK")
             }, message: {
                 Text("Choose a new name for the current layout.")
             })
         }
         .navigationTitle("Controller")
         .navigationBarTitleDisplayMode(.inline)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("MainControllerScreen")
     }
     
     func isSafe(geom: CGRect) -> Bool {
