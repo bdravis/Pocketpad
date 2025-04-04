@@ -55,7 +55,9 @@ struct JoystickButtonView: View {
 #if DEBUG
                     print("SENDING, OUTSIDE DEADZONE)")
                     if !hapticTriggered && dist > 5 {
-                      HapticsManager.playHaptic()
+                        if UserDefaults.standard.bool(forKey: "hapticsEnabled") {
+                            HapticsManager.playHaptic()
+                        }
                       hapticTriggered = true
                     }
 #endif
@@ -114,7 +116,9 @@ struct JoystickButtonView: View {
                     bluetoothManager.sendInput(data)
                 }
                 
-                HapticsManager.playHaptic()
+                if UserDefaults.standard.bool(forKey: "hapticsEnabled") {
+                    HapticsManager.playHaptic()
+                }
                 
                 withAnimation(.easeOut(duration: 0.15)) {
                     offset = .zero // Reset to center when released
