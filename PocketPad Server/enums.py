@@ -30,3 +30,28 @@ class DPadDirection(Enum):
 class ButtonEvent(Enum):
     PRESSED = 0
     RELEASED = 1
+
+class ControllerUpdateTypes(Enum):
+    BUTTON = 0
+    JOYSTICK = 1
+    MOTION = 2
+    CONNECTION = 3
+
+class AllButtons(Enum):
+    top_diamond = 0
+    bottom_diamond = 1
+    left_diamond = 2
+    right_diamond = 3
+    up_dpad = 4
+    down_dpad = 5
+    left_dpad = 6
+    right_dpad = 7
+    left_bumper = 8
+    right_bumper = 9
+    left_trigger = 10
+    right_trigger = 11
+    options = 12
+
+class Sticks(Enum):
+    left = 0
+    right = 1

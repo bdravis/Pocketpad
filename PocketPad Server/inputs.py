@@ -7,8 +7,9 @@ import logging
 from configs import (
     ButtonConfig, RegularButtonConfig, DPadConfig, JoystickConfig, LayoutConfig
 )
-from enums import (ButtonType, DPadDirection, ButtonEvent)
+from enums import (ButtonType, DPadDirection, ButtonEvent, ControllerUpdateTypes)
 from struct import unpack
+from shared_definitions import inputId_to_inputs, input_server
 
 # Same logging setup as bluetooth.py
 logging.basicConfig(level=logging.DEBUG)
@@ -19,6 +20,9 @@ input_error_tuple = (-1, -1, None)
 # Returns player_id, input_id, event
 # Or input_error_tuple on error
 def parse_input(raw_data) -> tuple[int, int, ButtonEvent]:
+
+    print("parsing input!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+
     # Find number of bytes in input data
     data_length_in_bytes = len(raw_data)
     format_str = "B" * data_length_in_bytes
@@ -76,15 +80,26 @@ def parse_input(raw_data) -> tuple[int, int, ButtonEvent]:
     # Find the input string based on the button type
     if button_type == ButtonType.REGULAR:
         logger.debug(f"Received input from button {input_id} from player {player_id}")
+
+        input_server.update_controller_state(player_id, ControllerUpdateTypes.BUTTON.value, [inputId_to_inputs[input_id].value, raw_event])
+
     elif button_type == ButtonType.BUMPER:
         logger.debug(f"Received input from bumper {input_id} from player {player_id}")
+
+        input_server.update_controller_state(player_id, ControllerUpdateTypes.BUTTON.value, [inputId_to_inputs[input_id].value, raw_event])
+
     elif button_type == ButtonType.TRIGGER:
         logger.debug(f"Received input from trigger {input_id} from player {player_id}")
+
+        input_server.update_controller_state(player_id, ControllerUpdateTypes.BUTTON.value, [inputId_to_inputs[input_id].value, raw_event])
+
     elif button_type == ButtonType.JOYSTICK:
         # Check if the data contains values for angle and magnitude
         try:
             raw_angle = unpacked_data[NUM_COMMON_FIELDS]
             raw_magnitude = unpacked_data[NUM_COMMON_FIELDS + 1]
+
+            #input_server.update_controller_state(player_id, ControllerUpdateTypes.JOYSTICK.value, [raw_angle, raw_magnitude])
         except:
             logger.error("Joystick input format missing fields")
             return input_error_tuple

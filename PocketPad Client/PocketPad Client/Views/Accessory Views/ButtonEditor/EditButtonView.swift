@@ -10,8 +10,8 @@ import SwiftUI
 struct EditButtonView: View {
     @ObservedObject var button: EditingButtonVM
     
+    @Binding var showSymbolPicker: Bool
     @State private var showDeleteAlert: Bool = false
-    @State private var showSymbolPicker: Bool = false
     
     // Values for if the sections are expanded
     @State private var positionExpanded: Bool = false
@@ -59,6 +59,7 @@ struct EditButtonView: View {
                             }
                         }
                         .pickerStyle(.menu)
+                        .accessibilityIdentifier("ButtonShapePicker")
                     }
                     
                     // MARK: Icon Configuration
@@ -71,6 +72,7 @@ struct EditButtonView: View {
                                 }
                             }
                             .pickerStyle(.menu)
+                            .accessibilityIdentifier("IconTypePicker")
                         }
                         HStack {
                             Text("Icon")
@@ -78,14 +80,17 @@ struct EditButtonView: View {
                             switch button.iconType {
                             case .Text:
                                 TextField("Icon", text: $button.icon)
+                                    .textFieldStyle(RoundedBorderTextFieldStyle())
                                     .multilineTextAlignment(.trailing)
                                     .autocorrectionDisabled(true)
+                                    .accessibilityIdentifier("Icon")
                             case .SFSymbol:
                                 Button(action: {
                                     showSymbolPicker.toggle()
                                 }) {
                                     Label(button.icon, systemImage: button.icon)
                                 }
+                                .accessibilityIdentifier("PickSymbolBtn")
                             }
                         }
                     }
@@ -132,6 +137,7 @@ struct EditButtonView: View {
                 }) {
                     Text("Delete Button")
                 }
+                .accessibilityIdentifier("DeleteButtonBtn")
                 .foregroundStyle(.red)
                 .frame(maxWidth: .infinity)
             }
@@ -144,14 +150,16 @@ struct EditButtonView: View {
                     showDeleteAlert = false
                     button.clear()
                 }
+                .accessibilityIdentifier("ConfirmDelete")
             }, message: {
                 Text("Are you sure you want to delete this button? This cannot be undone.")
             })
-            .sheet(isPresented: $showSymbolPicker, content: {
-                SFPickerView(chosenSymbol: $button.icon)
-            })
         }
         .listStyle(.sidebar)
+        .background {
+            Color(uiColor: .systemGroupedBackground)
+                .accessibilityIdentifier("EditBtnList")
+        }
     }
 }
 
@@ -184,9 +192,11 @@ struct EditorSlider<V>: View where V : BinaryFloatingPoint, V.Stride : BinaryFlo
                 }) {
                     Text("\(Double(value), specifier: "%.2f")\(units)")
                 }
+                .accessibilityIdentifier("Editor\(title)Btn")
                 .alert("Enter Value", isPresented: $enterAlert, actions: {
                     TextField(title, value: $enteringValue, formatter: formatter)
                         .keyboardType(keyboardType)
+                        .accessibilityIdentifier("EditorValueField")
                     Button("Cancel") {
                         enterAlert = false
                     }
@@ -195,6 +205,7 @@ struct EditorSlider<V>: View where V : BinaryFloatingPoint, V.Stride : BinaryFlo
                         value = enteringValue
                         enterAlert = false
                     }
+                    .accessibilityIdentifier("EditorDoneBtn")
                 }) {
                     Text("Enter a value for \(title).")
                 }
@@ -215,6 +226,7 @@ struct EditorSlider<V>: View where V : BinaryFloatingPoint, V.Stride : BinaryFlo
                         Text("\(max)\(units)")
                     }
                 }
+                .accessibilityIdentifier("Slider\(title)")
             }
         }
     }

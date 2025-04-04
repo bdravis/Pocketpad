@@ -20,6 +20,7 @@ struct ButtonInfoView: View {
             Rectangle()
                 .stroke(isUnsafe ? Color.red : Color.blue, style: StrokeStyle(lineWidth: 4, lineJoin: .bevel))
                 .frame(width: INFO_OVERLAY_SIZE, height: INFO_OVERLAY_SIZE)
+                .accessibilityIdentifier("SelectedBtn")
             
             // Position tag
 //            HStack {

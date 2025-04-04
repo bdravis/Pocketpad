@@ -23,7 +23,7 @@ struct SettingsMenuView: View {
     @Binding var isShowingSettings: Bool
     @Binding var exitAllMenusCallback: (() -> Void)?
     @Binding var showModifyBtn: Bool
-    
+    @AppStorage("hapticsEnabled") var hapticsEnabled: Bool = true
     @ObservedObject private var layoutManager = LayoutManager.shared
     
     @AppStorage("splitDPad") var splitDPad: Bool = false
@@ -36,10 +36,13 @@ struct SettingsMenuView: View {
 
     @EnvironmentObject var motionManager: MotionManager
 
+    @State private var playerName: String = LayoutManager.shared.player_id_string
     @State private var showDPadStyle: Bool = false
     @State private var saveAsMalformed: Bool = false
     @State private var makingNewLayout: Bool = false
     @State private var newLayoutName: String = ""
+    
+    @EnvironmentObject private var alertManager: AlertManager
     
     @State private var showingLeftDeadzoneView: Bool = false
     @State private var showingRightDeadzoneView: Bool = false
@@ -83,6 +86,7 @@ struct SettingsMenuView: View {
                             settingsContent
                                 .padding(.bottom, 20)
                         }
+                        .accessibilityIdentifier("SettingsScrollView")
                         Spacer()
                     }
                     .frame(width: menuWidth, height: menuHeight)
@@ -167,7 +171,7 @@ struct SettingsMenuView: View {
                 Text("Current Layout")
                     .foregroundColor(.primary)
                 Spacer()
-                Picker("Current Layout", selection: $selectedController) {
+                Picker("Picker\(selectedController)", selection: $selectedController) {
 //                    ForEach(ControllerType.allCases, id: \.self) { type in
 //                        Label(type.stringValue, image: type.stringValue).tag(type.stringValue)
 //                    }
@@ -205,8 +209,11 @@ struct SettingsMenuView: View {
                 Text("Create New Layout")
             }
             .padding(.horizontal, 16)
+            .accessibilityIdentifier("CreateNewLayoutButton")
             .alert("New Layout", isPresented: $makingNewLayout) {
-                TextField("Name", text: $newLayoutName)
+                TextField("Layout Name", text: $newLayoutName)
+                    .accessibilityIdentifier("Name")
+                
                 Button("OK", action: {
                     if newLayoutName != "" {
                         do {
@@ -221,6 +228,7 @@ struct SettingsMenuView: View {
                         }
                     }
                 })
+                .accessibilityIdentifier("LayoutNameOK")
                 Button("Cancel", role: .cancel) { }
             } message: {
                 Text("What will the name of the layout be?")
@@ -265,6 +273,26 @@ struct SettingsMenuView: View {
                     .accessibilityIdentifier("NameField")
             }
             .padding(.horizontal, 16)
+             HStack {
+                Text("Player Name")
+                    .foregroundColor(.primary)
+                Spacer()
+                TextField("Enter Player Name", text: $playerName, onCommit: {
+                    // Update the shared LayoutManager when editing is complete
+                    LayoutManager.shared.player_id_string = playerName
+                })
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .accessibilityIdentifier("NameField")
+            }
+            .padding(.horizontal, 16)
+            
+            .alert(
+                alertManager.alertTitle,
+                isPresented: $alertManager.showAlert
+            ) {
+            } message: {
+                Text(alertManager.alertMessage)
+            }
             
             // MARK: - Joystick deadzone
             Section {
@@ -339,6 +367,17 @@ struct SettingsMenuView: View {
                             motionManager.stopUpdates()
                         }
                     }
+            }
+            .padding(.horizontal, 16)
+            
+            // MARK: - Haptic Feedback Toggle
+            HStack {
+                Text("Enable Haptic Feedback")
+                    .foregroundColor(.primary)
+                Spacer()
+                Toggle("", isOn: $hapticsEnabled)
+                    .labelsHidden()
+                    .accessibilityIdentifier("HapticFeedbackToggle")
             }
             .padding(.horizontal, 16)
             
@@ -418,7 +457,7 @@ struct SettingsMenuView: View {
         let malformedAction = UIAlertAction(title: "Malformed", style: .default) { (action) in
             // make a malformed layout
             let badLayout = LayoutConfig.init(name: "Malformed", buttons: [
-//                BadButtonTypeConfig(position: CGPointZero, scale: 0, type: .joystick, inputId: 0)
+                BadButtonTypeConfig(position: .init(scaledPos: CGPointZero), scale: 0.0, rotation: 0.0, type: .joystick, inputId: 0)
             ])
             do {
                 try LayoutManager.shared.saveLayout(badLayout)

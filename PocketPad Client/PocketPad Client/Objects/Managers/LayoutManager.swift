@@ -12,6 +12,13 @@ class LayoutManager: ObservableObject {
     
     var player_id: UInt8 = 0
     
+    // If this is "Player", then a number will be added at the end to avoid duplicates
+    // This is to avoid duplicates whenever no custom name is chosen
+    var player_id_string: String = "Player"
+    
+    // This is used when requesting a new string to get around scope stuff
+    var requested_player_id_string: String = "Player"
+    
     @Published var availableLayouts: [String] = []
     
     // Current Layout Information
@@ -82,8 +89,8 @@ class LayoutManager: ObservableObject {
             let url = getLayoutsFolder()
             try FileManager.default.removeItem(at: url.appendingPathComponent("\(name).plist", conformingTo: .propertyList))
             if currentController.name == name {
-                currentController = try self.loadLayout(for: self.availableLayouts.first!)
-                UserDefaults.standard.set(currentController, forKey: "selectedController")
+                UserDefaults.standard.set(self.availableLayouts.first!, forKey: "selectedController")
+                try self.setCurrentLayout(to: self.availableLayouts.first!)
             }
         }
     }
