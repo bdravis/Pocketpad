@@ -18,6 +18,7 @@ struct SettingsMenuView: View {
     @Binding var isShowingSettings: Bool
     @Binding var exitAllMenusCallback: (() -> Void)?
     @Binding var showModifyBtn: Bool
+    @AppStorage("hapticsEnabled") var hapticsEnabled: Bool = true
     @ObservedObject private var layoutManager = LayoutManager.shared
     
     @AppStorage("splitDPad") var splitDPad: Bool = false
@@ -317,6 +318,17 @@ struct SettingsMenuView: View {
                             motionManager.stopUpdates()
                         }
                     }
+            }
+            .padding(.horizontal, 16)
+            
+            // MARK: - Haptic Feedback Toggle
+            HStack {
+                Text("Enable Haptic Feedback")
+                    .foregroundColor(.primary)
+                Spacer()
+                Toggle("", isOn: $hapticsEnabled)
+                    .labelsHidden()
+                    .accessibilityIdentifier("HapticFeedbackToggle")
             }
             .padding(.horizontal, 16)
             
