@@ -36,6 +36,10 @@ class MainWindow(QMainWindow):
         
         self._bless_server = QBlessServer.instance()
         self._tcp_server = QNetworkServer.instance()
+        
+        self.code = Paircode.generate()
+        self._bless_server.code = self.code
+        self._tcp_server.code = self.code
 
         self.settings = QSettings("YourCompany", "PocketPad")
 
@@ -159,8 +163,6 @@ class MainWindow(QMainWindow):
         self.load_application_settings(None)
         
         QTimer.singleShot(100, self.ble_initialize)
-        
-        self._tcp_server.update_paircode = self.update_paircode
         
     @qasync.asyncSlot()
     async def ble_initialize(self):
@@ -964,6 +966,7 @@ class MainWindow(QMainWindow):
 
             self.ui.view_code_button.setIcon(QIcon(colored_pixmap))
             self.ui.view_code_button.setIconSize(icon_size)
+            self.ui.pair_code_label.setText("xxx xxx")
         else:
             self.view_code = True
 
@@ -985,9 +988,7 @@ class MainWindow(QMainWindow):
 
             self.ui.view_code_button.setIcon(QIcon(colored_pixmap))
             self.ui.view_code_button.setIconSize(icon_size)
-            
-    def update_paircode(self, code):
-        self.ui.pair_code_label.setText(str(code))
+            self.ui.pair_code_label.setText(str(self.code))
 
     def get_icon_from_svg(self, svg_path, color):
         """

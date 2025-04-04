@@ -186,24 +186,26 @@ struct ContentView: View {
                         }
                         .padding(.horizontal)
                         
-                        if let error = bluetoothManager.connectionError {
-                            HStack {
-                                Text(error)
-                                    .foregroundColor(.red)
-                                
-                                Spacer()
+                        if serverType == 1 {
+                            if let error = bluetoothManager.connectionError {
+                                HStack {
+                                    Text(error)
+                                        .foregroundColor(.red)
+                                    
+                                    Spacer()
+                                }
+                                .padding(.horizontal)
                             }
-                            .padding(.horizontal)
-                        }
-                        
-                        if let error = networkManager.connectionError {
-                            HStack {
-                                Text(error)
-                                    .foregroundColor(.red)
-                                
-                                Spacer()
+                        } else {
+                            if let error = networkManager.connectionError {
+                                HStack {
+                                    Text(error)
+                                        .foregroundColor(.red)
+                                    
+                                    Spacer()
+                                }
+                                .padding(.horizontal)
                             }
-                            .padding(.horizontal)
                         }
                     }
                     

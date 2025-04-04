@@ -29,8 +29,6 @@ from dataclasses import dataclass
 
 from random import randint
 
-paircode = None
-
 logger = None
 trigger: Union[asyncio.Event, threading.Event] = None
 thread = None
@@ -523,7 +521,7 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
         player_id = information[0]
         code = int("".join(list(map(chr, information[1:]))))
         print( f"Received Paircode: {code} from player {player_id}")
-        if Paircode(code) != paircode:
+        if Paircode(code) != __server.code:
             char = __server.server.get_characteristic(CONNECTION_CHARACTERISTIC)
             char.value = bytearray([player_id, 0]) + bytearray("Paircode Incorrect".encode('utf-8'))
             __server.server.update_value(POCKETPAD_SERVICE, CONNECTION_CHARACTERISTIC)
@@ -562,8 +560,6 @@ class QBlessServer(QObject):
     async def start(self):
         logger = logging.getLogger(name=__name__)
         logger.debug("Starting server")
-        
-        global paircode
         
         await self.server.add_gatt(gatt)
         await self.server.start(prioritize_local_name=True)

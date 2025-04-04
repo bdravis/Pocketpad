@@ -330,7 +330,7 @@ extension BluetoothManager: CBPeripheralDelegate {
         if characteristic.uuid == CONNECTION_CHARACTERISTIC {
             // Process the server's response
             if let value = characteristic.value {
-                //let newId = value[0] // Assuming the response is a single byte
+                let newId = value[0] // Assuming the response is a single byte
                 let signal = value[1] // Assuming the response is a single byte
             
                 print("Server response: \(signal)")

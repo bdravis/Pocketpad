@@ -11,7 +11,6 @@ from utils import Paircode
 
 from zeroconf.asyncio import AsyncServiceInfo, AsyncZeroconf
 
-from bluetooth_server import paircode
 from PySide6.QtCore import QObject
 
 logger = logging.getLogger(__name__)
@@ -33,8 +32,7 @@ class QNetworkServer(QObject):
         self.clients = {}
         self.next_id = 0
         self.players = {}
-        self.code = Paircode.generate()
-        self.update_paircode = None
+        self.code = None
         
         self.connection_function = None
         self.input_function = None
@@ -55,8 +53,6 @@ class QNetworkServer(QObject):
         self.server = await asyncio.start_server(self.handle_client, self.host, self.port)
         addr = self.server.sockets[0].getsockname()
         logger.info(f"Server running on {addr}")
-        self.update_paircode(self.code)
-
         
         async with self.server:
             await self.server.serve_forever()
@@ -80,13 +76,13 @@ class QNetworkServer(QObject):
                 if waiting_for_pairing:
                     if "paircode" not in message:
                         logger.warning(f"Received invalid pairing message from {addr}: {message}")
-                        writer.write(json.dumps({ "status": "disconnect", "err": "Invalid code" }).encode())
+                        writer.write(json.dumps({ "status": "disconnect", "error": "Invalid code" }).encode())
                         break
                     code = message["paircode"]
                     if Paircode(int(code)) != self.code:
                         logger.warning(f"Pairing failed for {addr}: invalid code {code}")
-                        print(paircode)
-                        writer.write(json.dumps({ "status": "disconnect", "err": "Invalid code" }).encode())
+                        print(self.code)
+                        writer.write(json.dumps({ "status": "disconnect", "error": "Invalid code" }).encode())
                         break
                     logger.info(f"Pairing successful for {addr} with code {code}")
                     writer.write(json.dumps({ "status": "connect", "pid": self.next_id }).encode())
@@ -94,7 +90,7 @@ class QNetworkServer(QObject):
                     with open(".hidden.json", "r") as f:
                         self.connection_function("connect", self.next_id, 1, f.read().strip())
                     
-                    self.players[self.next_id] = addr, writer
+                    self.players[addr] = self.next_id
                     self.next_id += 1
                     waiting_for_pairing = False
                     continue
@@ -121,6 +117,10 @@ class QNetworkServer(QObject):
         except asyncio.CancelledError:
             pass
         finally:
+            writer.write(json.dumps( {"status": "disconnect", "error": "Malformed Data Sent"}).encode())
+            self.connection_function("disconnect", self.players.get(addr, -1), None, None)
+            del self.players[addr]
+            
             logger.debug(f"Closing connection from {addr}")
             writer.close()
             await writer.wait_closed()
@@ -131,8 +131,10 @@ class QNetworkServer(QObject):
     
     async def stop(self):
         if self.server:
-            for client in self.clients.values():
+            for client in list(self.clients.values())[:]:
                 try:
+                    
+                    client.write(json.dumps({"status": "disconnect", "error": "Server shutdown"}).encode())
                     client.close()
                     await client.wait_closed()
                 except Exception as e:
