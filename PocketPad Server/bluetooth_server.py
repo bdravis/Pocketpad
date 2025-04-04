@@ -14,7 +14,7 @@ from server_constants import (POCKETPAD_SERVICE, LATENCY_CHARACTERISTIC,
                        CONTROLLER_TYPE_CHARACTERISTIC, INPUT_CHARACTERISTIC,
                        ConnectionMessage)
 from inputs import parse_input, input_error_tuple
-from shared_definitions import input_server, inputId_to_inputs
+#from shared_definitions import input_server, inputId_to_inputs
 from ctypes import c_uint8
 
 from bless import (  # type: ignore
@@ -174,6 +174,7 @@ def reconstruct_timestamp(sent_ms):
     
     return closest_time, abs(latency)
 
+"""
 def map_inputID_to_inputs(json):
     for item in json['wrappedButtons']:
         if not isinstance(item, dict) or 'base' not in item or 'payload' not in item:
@@ -217,7 +218,7 @@ def map_inputID_to_inputs(json):
             inputId_to_inputs[input_id] = AllButtons.right_trigger
         elif input_val in ('Start', 'Select', 'Share'):
             inputId_to_inputs[input_id] = AllButtons.options
-
+"""
 
 def read_request(characteristic: BlessGATTCharacteristic, **kwargs) -> bytearray:
     logger.debug(f"Reading {characteristic.uuid} - {characteristic.value}")
@@ -279,7 +280,7 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
                 yaw   = struct.unpack('<f', characteristic.value[10:14])[0]
                 print(f"Motion Data Received from player {player_id}: pitch = {pitch:.2f}, roll = {roll:.2f}, yaw = {yaw:.2f}")
 
-                input_server.update_controller_state(player_id, ControllerUpdateTypes.MOTION.value, [pitch, yaw, roll])
+                #input_server.update_controller_state(player_id, ControllerUpdateTypes.MOTION.value, [pitch, yaw, roll])
 
                 return  
       
@@ -392,7 +393,7 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
             if signal == ConnectionMessage.connecting.value:
 
                 print(player_id, ControllerUpdateTypes.CONNECTION.value, [ConnectionMessage.connecting.value])
-                input_server.update_controller_state(player_id, ControllerUpdateTypes.CONNECTION.value, [ConnectionMessage.connecting.value])
+                #input_server.update_controller_state(player_id, ControllerUpdateTypes.CONNECTION.value, [ConnectionMessage.connecting.value])
 
                 print("I am in here\n")
                 # Perhaps send playerid back here or at least generate it
@@ -419,7 +420,7 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
             if signal == ConnectionMessage.disconnecting.value:
                 # TODO change server to indicate who is leaving
                 #print(f"player {player_id} disconnected")
-                input_server.update_controller_state(player_id, ControllerUpdateTypes.CONNECTION.value, [ConnectionMessage.disconnecting.value])
+                #input_server.update_controller_state(player_id, ControllerUpdateTypes.CONNECTION.value, [ConnectionMessage.disconnecting.value])
 
                 response_data = [0, ConnectionMessage.received.value]
                 response = bytearray(response_data)
@@ -475,7 +476,7 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
                     print("that was th json")
                     json_for_input_id_workaround = json.loads(layout_jsons[player_id])
 
-                    map_inputID_to_inputs(json_for_input_id_workaround)
+                    #map_inputID_to_inputs(json_for_input_id_workaround)
 
                     # Pretty sure I need to send something back to the server
                     response_data = [0, ConnectionMessage.transmitting_layout.value]
