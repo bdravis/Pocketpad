@@ -252,6 +252,10 @@ extension BluetoothManager: CBPeripheralDelegate {
         
     }
     
+    func requestID() {
+        
+    }
+    
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         guard error == nil else {
             print("Error reading characteristic value: \(error!.localizedDescription)")
@@ -315,8 +319,31 @@ extension BluetoothManager: CBPeripheralDelegate {
                         print("invalid id")
                         
                     }
+                    
 
                 }
+                
+                if signal == ConnectionMessage.requesting_id_change.rawValue {
+                    print("Server acknowledged connection")
+                    print("player_id: \(value)")
+                    
+                    let int_player_id = value.withUnsafeBytes { $0.load(as: UInt8.self) }
+                    
+                    if int_player_id != 255 {
+                        // If requested Id is available,continue with connection
+                        
+                        LayoutManager.shared.player_id_string = LayoutManager.shared.requested_player_id_string
+                        
+                    } else {
+                        
+                        //Display to user that ID is taken
+                        print("invalid id")
+                        
+                    }
+                    
+
+                }
+                
             }
             
         }
@@ -402,6 +429,31 @@ extension BluetoothManager: CBPeripheralDelegate {
         }
         
     }
+    
+    func RequestPlayerIdStringChange(newPlayerIdString: String) {
+        
+        guard let service = selectedService else { return }
+        guard let characteristics = service.characteristics else { return }
+        
+        let requested_player_id = newPlayerIdString.utf8
+        let requested_player_id_len: UInt8 = UInt8(newPlayerIdString.count)
+        
+        LayoutManager.shared.requested_player_id_string = newPlayerIdString
+        
+        let packet = Data([LayoutManager.shared.player_id, ConnectionMessage.requesting_id_change.rawValue, requested_player_id_len] + requested_player_id)
+       
+        for characteristic in characteristics {
+            if characteristic.uuid == CONNECTION_CHARACTERISTIC {
+                
+                service.peripheral?.writeValue(packet, for: characteristic, type: .withResponse)
+                service.peripheral?.readValue(for: characteristic)
+
+                // Rest of functionality on this path is in didUpdateValueFor with ConnectionMessage.requesting_id
+            }
+        }
+        
+    }
+    
 }
 
 extension BluetoothManager {
