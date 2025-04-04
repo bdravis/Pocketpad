@@ -22,4 +22,6 @@ enum ConnectionMessage: UInt8, Codable {
     case connecting = 1
     case disconnecting = 2
     case transmitting_layout = 3
+    case requesting_id = 4
+    case requesting_id_change = 5
 }

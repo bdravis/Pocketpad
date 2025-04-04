@@ -30,10 +30,13 @@ struct SettingsMenuView: View {
 
     @EnvironmentObject var motionManager: MotionManager
 
+    @State private var playerName: String = LayoutManager.shared.player_id_string
     @State private var showDPadStyle: Bool = false
     @State private var saveAsMalformed: Bool = false
     @State private var makingNewLayout: Bool = false
     @State private var newLayoutName: String = ""
+    
+    @EnvironmentObject private var alertManager: AlertManager
     
     @State private var showingLeftDeadzoneView: Bool = false
     @State private var showingRightDeadzoneView: Bool = false
@@ -249,6 +252,26 @@ struct SettingsMenuView: View {
                     .accessibilityIdentifier("NameField")
             }
             .padding(.horizontal, 16)
+             HStack {
+                Text("Player Name")
+                    .foregroundColor(.primary)
+                Spacer()
+                TextField("Enter Player Name", text: $playerName, onCommit: {
+                    // Update the shared LayoutManager when editing is complete
+                    LayoutManager.shared.player_id_string = playerName
+                })
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .accessibilityIdentifier("NameField")
+            }
+            .padding(.horizontal, 16)
+            
+            .alert(
+                alertManager.alertTitle,
+                isPresented: $alertManager.showAlert
+            ) {
+            } message: {
+                Text(alertManager.alertMessage)
+            }
             
             // MARK: - Joystick deadzone
             Section {
