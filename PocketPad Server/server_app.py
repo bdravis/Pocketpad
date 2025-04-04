@@ -324,6 +324,7 @@ class MainWindow(QMainWindow):
                 controller_layout.addLayout(text_format_layout)
 
                 # Create ControllerWidget with scalable behavior
+                # controller_display = ControllerWidget(self.application_widgets_color)
                 controller_display = ControllerWidget(controller_json_file, self.application_widgets_color)
 
                 player_glow_selector.clicked.connect(lambda: self.choose_glow_color(controller_display))
@@ -1230,6 +1231,26 @@ class ColorPickerPopup(QDialog):
         self.accept()
 
 class ControllerWidget(QWidget):
+    # def __init__(self, widget_color) :
+    #     super().__init__()
+
+    #     self.design_width = 600
+    #     self.design_height = 600
+
+    #     self.layout_config = None
+    #     self.controller_widgets = None
+
+    #     self.color_scheme = widget_color
+    #     self.glow_color = QColor(255, 255, 0)
+
+    #     self.setMinimumSize(75, 50)
+    #     self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+    #     self.bbox = self.compute_bbox()
+
+    #     self.input_held = {}
+
+    #     self.cached_pixmap = None
+    
     def __init__(self, controller_config_file, widget_color):
         super().__init__()
 
@@ -1291,6 +1312,11 @@ class ControllerWidget(QWidget):
             self.draw_button(painter, payload, x, y)
 
         painter.end()
+
+    # def set_json_data(self, json_str):
+    #     self.layout_config = json.loads(json_str)
+    #     self.controller_widgets = self.layout_config.get("wrappedButtons", [])
+    #     self.update_cache()
 
     def update_widget_color(self, color):
         self.color_scheme = color
