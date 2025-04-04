@@ -224,18 +224,32 @@ extension BluetoothManager: CBPeripheralDelegate {
             if characteristic.uuid == CONNECTION_CHARACTERISTIC {
                 // Send the message upon discovering the characteristic
                 
-                let selectedController = UserDefaults.standard.string(forKey: "selectedController") ?? "Xbox"
+                send_string_id_and_request_string_number()
                 
-                let selectedControllerValue = ControllerType(stringValue: selectedController)?.rawValue ?? 0
-                
-                let response_data = [LayoutManager.shared.player_id, ConnectionMessage.connecting.rawValue, UInt8(selectedControllerValue)]
-                
-                sendLayout(layout: LayoutManager.shared.currentController)
-
-                peripheral.writeValue(Data(response_data), for: characteristic, type: .withResponse)
-                peripheral.readValue(for: characteristic)
             }
         }
+    }
+
+    func send_string_id_and_request_string_number() {
+        
+        guard let service = selectedService else { return }
+        guard let characteristics = service.characteristics else { return }
+        let requested_player_id = LayoutManager.shared.player_id_string.utf8
+        let requested_player_id_len: UInt8 = UInt8(LayoutManager.shared.player_id_string.count)
+        
+        let packet = Data([LayoutManager.shared.player_id, ConnectionMessage.requesting_id.rawValue, requested_player_id_len] + requested_player_id)
+       
+        for characteristic in characteristics {
+            if characteristic.uuid == CONNECTION_CHARACTERISTIC {
+                
+                service.peripheral?.writeValue(packet, for: characteristic, type: .withResponse)
+                service.peripheral?.readValue(for: characteristic)
+
+                
+                // Rest of functionality on this path is in didUpdateValueFor with ConnectionMessage.requesting_id
+            }
+        }
+        
     }
     
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
@@ -254,7 +268,7 @@ extension BluetoothManager: CBPeripheralDelegate {
         if characteristic.uuid == CONNECTION_CHARACTERISTIC {
             // Process the server's response
             if let value = characteristic.value {
-                let newId = value[0] // Assuming the response is a single byte
+                //let newId = value[0] // Assuming the response is a single byte
                 let signal = value[1] // Assuming the response is a single byte
                 print("Server response: \(signal)")
                 
@@ -272,11 +286,35 @@ extension BluetoothManager: CBPeripheralDelegate {
                 }
                 
                 // Check if the response is RECIEVED_CONNECTION_INFORMATION
-                if signal == ConnectionMessage.connecting.rawValue {
+                if signal == ConnectionMessage.requesting_id.rawValue {
                     print("Server acknowledged connection")
                     print("player_id: \(value)")
                     
-                    LayoutManager.shared.player_id = newId
+                    let int_player_id = value.withUnsafeBytes { $0.load(as: UInt8.self) }
+                    
+                    if int_player_id != 255 {
+                        // If requested Id is available,continue with connection
+                        
+                        LayoutManager.shared.player_id = int_player_id
+                        
+                        let selectedController = UserDefaults.standard.string(forKey: "selectedController") ?? "Xbox"
+                        
+                        sendLayout(layout: LayoutManager.shared.currentController)
+                        
+                        let selectedControllerValue = ControllerType(stringValue: selectedController)?.rawValue ?? 0
+                        
+                        let response_data = [LayoutManager.shared.player_id, ConnectionMessage.connecting.rawValue, UInt8(selectedControllerValue)]
+                        
+                        peripheral.writeValue(Data(response_data), for: characteristic, type: .withResponse)
+                        peripheral.readValue(for: characteristic)
+                        
+                        
+                    } else {
+                        
+                        //Display to user that ID is taken
+                        print("invalid id")
+                        
+                    }
 
                 }
             }
@@ -320,7 +358,7 @@ extension BluetoothManager: CBPeripheralDelegate {
         let code_size = 1
         let id_size = 1
         let size_size = 1
-        let subdata_size = 17
+        let subdata_size = 182
         var position = 0
         
         guard let characteristics = service.characteristics else { return }
@@ -332,6 +370,10 @@ extension BluetoothManager: CBPeripheralDelegate {
                                                      UInt8(ConnectionMessage.transmitting_layout.rawValue),
                                                      UInt8(255)
                                                      ])
+                
+                service.peripheral?.writeValue(init_transmission_packet, for: characteristic, type: .withResponse)
+                service.peripheral?.readValue(for: characteristic)
+                
                 while position < data.count {
                     
                     let chunk_size: UInt8 = UInt8(min(position + subdata_size, data.count) - position)
