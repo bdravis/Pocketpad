@@ -2,9 +2,8 @@ import sys
 import json
 import enums
 import pytest
-import asyncio
 import unittest
-from unittest.mock import MagicMock, patch, AsyncMock
+from unittest.mock import MagicMock, patch
 from PySide6.QtWidgets import QMessageBox, QListWidgetItem, QColorDialog, QDialog, QWidget, QPushButton, QApplication, QGridLayout
 from PySide6.QtGui import QIcon, QCloseEvent, QColor
 from PySide6.QtCore import Qt, QSettings
