@@ -41,7 +41,7 @@ class LayoutManager: ObservableObject {
     func saveLayout(_ layout: LayoutConfig) throws {
         let encoder = PropertyListEncoder()
         let data = try encoder.encode(layout)
-        let url = getLayoutsFolder().appendingPathComponent("\(layout.name).plist", conformingTo: .propertyList)
+        let url = getLayoutURL(for: layout)
         try data.write(to: url)
         print("written to \(url.absoluteString)")
         // update the current layout if needed
@@ -63,9 +63,16 @@ class LayoutManager: ObservableObject {
         // for testing, malform the file by encoding as a json instead
         let encoder = JSONEncoder()
         let data = try encoder.encode(layout)
-        let url = getLayoutsFolder().appendingPathComponent("\(layout.name).plist", conformingTo: .propertyList)
+        let url = getLayoutURL(for: layout)
         try data.write(to: url)
         print("written to \(url.absoluteString)")
+    }
+    
+    func getLayoutURL(name: String) -> URL {
+        return getLayoutsFolder().appendingPathComponent("\(name).pp")
+    }
+    func getLayoutURL(for layout: LayoutConfig) -> URL {
+        return getLayoutURL(name: layout.name)
     }
     
     func deleteAllLayouts() throws {
@@ -87,7 +94,7 @@ class LayoutManager: ObservableObject {
         if let idx = availableLayouts.firstIndex(where: { $0 == name }) {
             availableLayouts.remove(at: idx)
             let url = getLayoutsFolder()
-            try FileManager.default.removeItem(at: url.appendingPathComponent("\(name).plist", conformingTo: .propertyList))
+            try FileManager.default.removeItem(at: url.appendingPathComponent("\(name).pp", conformingTo: .propertyList))
             if currentController.name == name {
                 UserDefaults.standard.set(self.availableLayouts.first!, forKey: "selectedController")
                 try self.setCurrentLayout(to: self.availableLayouts.first!)
@@ -107,16 +114,20 @@ class LayoutManager: ObservableObject {
         
         let url = getLayoutsFolder()
         for name in try FileManager.default.contentsOfDirectory(atPath: url.path()) {
-            availableLayouts.append(name.replacingOccurrences(of: ".plist", with: ""))
+            availableLayouts.append(name.replacingOccurrences(of: ".pp", with: ""))
         }
     }
     
     func loadLayout(for name: String) throws -> LayoutConfig {
-        let url = getLayoutsFolder().appendingPathComponent(name, conformingTo: .propertyList)
-        let decoder = PropertyListDecoder()
-        let data = try Data(contentsOf: url)
-        let layout = try decoder.decode(LayoutConfig.self, from: data)
-        return layout
+        if let controller = getControllerType(for: name) {
+            return DefaultLayouts.getLayout(for: controller)
+        } else {
+            let url = getLayoutURL(name: name)
+            let decoder = PropertyListDecoder()
+            let data = try Data(contentsOf: url)
+            let layout = try decoder.decode(LayoutConfig.self, from: data)
+            return layout
+        }
     }
     
     func layoutExists(for name: String) -> Bool {
@@ -131,7 +142,7 @@ class LayoutManager: ObservableObject {
         self.currentController.name = newName
         try self.saveLayout(self.currentController)
         UserDefaults.standard.set(newName, forKey: "selectedController")
-        let url = getLayoutsFolder().appendingPathComponent("\(initial).plist", conformingTo: .propertyList)
+        let url = getLayoutURL(name: initial)
         do {
             try FileManager.default.removeItem(at: url)
             print("removed \(initial)")
@@ -151,12 +162,7 @@ class LayoutManager: ObservableObject {
     }
     
     func setCurrentLayout(to name: String) throws {
-        if let controller = getControllerType(for: name) {
-            // load the default config from code rather than file
-            self.currentController = DefaultLayouts.getLayout(for: controller)
-        } else {
-            self.currentController = try loadLayout(for: "\(name).plist")
-        }
+        self.currentController = try loadLayout(for: name)
         // check if it has a d-pad
         if currentController.buttons.enumerated().filter({ $0.element.type == ButtonType.dpad }).count > 0 {
             self.hasDPad = true
@@ -212,6 +218,15 @@ class LayoutManager: ObservableObject {
         currentController.buttons.enumerated().forEach { idx, _ in
             currentController.buttons[idx].inputId = currentId
             currentId += 1
+        }
+    }
+    
+    
+    // MARK: Updating layout files for new format
+    func updateLayoutFilesForNewFormat() throws {
+        for file in try FileManager.default.contentsOfDirectory(at: getLayoutsFolder(), includingPropertiesForKeys: nil, options: .skipsHiddenFiles).filter({ $0.pathExtension == "plist" }) {
+            // rename file
+            try FileManager.default.moveItem(at: file, to: file.deletingPathExtension().appendingPathExtension("pp"))
         }
     }
 }

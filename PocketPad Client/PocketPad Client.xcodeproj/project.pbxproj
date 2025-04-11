@@ -29,22 +29,9 @@
 		6FE64C722D63C7F1001BB2CC /* PocketPad ClientUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "PocketPad ClientUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		6F5F24022DA951510003F223 /* Exceptions for "PocketPad Client" folder in "PocketPad Client" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"PocketPad-Client-Info.plist",
-			);
-			target = 6FE64C572D63C7F0001BB2CC /* PocketPad Client */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		6FE64C5A2D63C7F0001BB2CC /* PocketPad Client */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				6F5F24022DA951510003F223 /* Exceptions for "PocketPad Client" folder in "PocketPad Client" target */,
-			);
 			path = "PocketPad Client";
 			sourceTree = "<group>";
 		};

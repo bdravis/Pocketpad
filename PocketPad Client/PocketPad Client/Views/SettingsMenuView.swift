@@ -17,12 +17,12 @@ struct SettingsMenuView: View {
     // MARK: - Bound Properties
     @Binding var isShowingSettings: Bool
     @Binding var exitAllMenusCallback: (() -> Void)?
-    @Binding var showModifyBtn: Bool
+    @Binding var isCustomLayout: Bool
     @AppStorage("hapticsEnabled") var hapticsEnabled: Bool = true
     @ObservedObject private var layoutManager = LayoutManager.shared
     
     @AppStorage("splitDPad") var splitDPad: Bool = false
-    @AppStorage("selectedController") var selectedController: String = ControllerType.Xbox.stringValue
+    @AppStorage("selectedController") var selectedController: String = ControllerType.getDefaultName()
     @AppStorage("controllerColor") var controllerColor: Color = .blue
     @AppStorage("controllerName") var controllerName: String = "Controller"
 
@@ -169,10 +169,10 @@ struct SettingsMenuView: View {
                         rightJoystickDeadzone = LayoutManager.shared.getRightJoystickDeadzone()
                         turboManager.stopAllTurbo()
                         
-                        showModifyBtn = !DefaultLayouts.isDefaultLayout(name: selectedController)
+                        isCustomLayout = !DefaultLayouts.isDefaultLayout(name: selectedController)
                     } catch {
                         UIApplication.shared.alert(title: "Failed to load layout", body: error.localizedDescription)
-                        selectedController = ControllerType.Xbox.stringValue
+                        selectedController = ControllerType.getDefaultName()
                     }
                 }
                 .onAppear {
@@ -180,14 +180,12 @@ struct SettingsMenuView: View {
                     showDPadStyle = LayoutManager.shared.hasDPad
                 }
             }
-            .padding(.horizontal, 16)
             Button(action: {
                 newLayoutName = ""
                 makingNewLayout.toggle()
             }) {
                 Text("Create New Layout")
             }
-            .padding(.horizontal, 16)
             .accessibilityIdentifier("CreateNewLayoutButton")
             .alert("New Layout", isPresented: $makingNewLayout) {
                 TextField("Layout Name", text: $newLayoutName)
@@ -212,6 +210,10 @@ struct SettingsMenuView: View {
             } message: {
                 Text("What will the name of the layout be?")
             }
+            // MARK: Share Layout
+            if isCustomLayout {
+                ShareLink("Share Layout", item: layoutManager.getLayoutURL(name: selectedController))
+            }
             //Picker for D-PAD (Split (True) vs Conjoined (False))
             if layoutManager.hasDPad {
                 HStack {
@@ -226,7 +228,6 @@ struct SettingsMenuView: View {
                     .accessibilityAddTraits(.isButton)
                     .accessibilityIdentifier("DPadStyle")
                 }
-                .padding(.horizontal, 16)
             }
             
             // Controller Color Section
@@ -242,7 +243,6 @@ struct SettingsMenuView: View {
                     .accessibilityIdentifier("ControllerColorPicker")
 
             }
-            .padding(.horizontal, 16)
             HStack {
                 Text("Controller Name")
                     .foregroundColor(.primary)
@@ -251,7 +251,6 @@ struct SettingsMenuView: View {
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .accessibilityIdentifier("NameField")
             }
-            .padding(.horizontal, 16)
              HStack {
                 Text("Player Name")
                     .foregroundColor(.primary)
@@ -263,7 +262,6 @@ struct SettingsMenuView: View {
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .accessibilityIdentifier("NameField")
             }
-            .padding(.horizontal, 16)
             
             .alert(
                 alertManager.alertTitle,
@@ -287,7 +285,6 @@ struct SettingsMenuView: View {
                     }
                     .accessibilityIdentifier("LeftDeadzoneButton")
                 }
-                .padding(.horizontal, 16)
                 
                 // Right joystick
                 HStack {
@@ -301,13 +298,11 @@ struct SettingsMenuView: View {
                     }
                     .accessibilityIdentifier("RightDeadzoneButton")
                 }
-                .padding(.horizontal, 16)
             } header: {
                 Text("Joystick Settings")
                     .font(.footnote)
                     .foregroundStyle(Color(uiColor: .secondaryLabel))
             }
-            .padding(.horizontal, 16)
             
             // MARK: - Turbo Settings
             Section {
@@ -322,13 +317,11 @@ struct SettingsMenuView: View {
                     }
                     .accessibilityIdentifier("TurboRateButton")
                 }
-                .padding(.horizontal, 16)
             } header: {
                 Text("Turbo Settings")
                     .font(.footnote)
                     .foregroundStyle(Color(uiColor: .secondaryLabel))
             }
-            .padding(.horizontal, 16)
             
             // MARK: Add toggle for motion control
             HStack {
@@ -339,15 +332,14 @@ struct SettingsMenuView: View {
                     .labelsHidden()
                     .accessibilityIdentifier("MotionControlToggle")
                     // Updated iOS 17 .onChange signature
-                    .onChange(of: motionControlEnabled) { newValue in
-                        if newValue {
+                    .onChange(of: motionControlEnabled) {
+                        if motionControlEnabled {
                             motionManager.startUpdates()
                         } else {
                             motionManager.stopUpdates()
                         }
                     }
             }
-            .padding(.horizontal, 16)
             
             // MARK: - Haptic Feedback Toggle
             HStack {
@@ -358,7 +350,6 @@ struct SettingsMenuView: View {
                     .labelsHidden()
                     .accessibilityIdentifier("HapticFeedbackToggle")
             }
-            .padding(.horizontal, 16)
             
             // MARK: Saving layouts (temporary)
             Section {
@@ -381,10 +372,10 @@ struct SettingsMenuView: View {
                 // Remove files for layout
                 Button(action: {
                     do {
-                        try LayoutManager.shared.setCurrentLayout(to: ControllerType.Xbox.stringValue)
+                        try LayoutManager.shared.setCurrentLayout(to: ControllerType.getDefaultName())
                         try LayoutManager.shared.deleteAllLayouts()
                         try LayoutManager.shared.loadLayouts(includeControllerTypes: true)
-                        selectedController = ControllerType.Xbox.stringValue
+                        selectedController = ControllerType.getDefaultName()
                     } catch {
                         UIApplication.shared.alert(body: error.localizedDescription)
                     }
@@ -398,8 +389,8 @@ struct SettingsMenuView: View {
                     .font(.footnote)
                     .foregroundStyle(Color(uiColor: .secondaryLabel))
             }
-            .padding(.horizontal, 16)
         }
+        .padding(.horizontal, 16)
     }
     
     func saveLayoutFile(for controller: ControllerType) {
@@ -474,7 +465,7 @@ struct SettingsMenuView: View {
     SettingsMenuView(
         isShowingSettings: .constant(true),
         exitAllMenusCallback: .constant(nil),
-        showModifyBtn: .constant(true)
+        isCustomLayout: .constant(true)
     )
 }
 
