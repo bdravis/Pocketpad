@@ -50,6 +50,7 @@ struct TriggerShape: Shape {
 
 struct TriggerButtonStyle: ButtonStyle {
     var side: TriggerSide
+    var isTurboEnabled: Bool
     
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -70,7 +71,10 @@ struct TriggerButtonStyle: ButtonStyle {
             .clipShape(TriggerShape(side: side))
             .overlay(
                 TriggerShape(side: side)
-                    .stroke(Color(uiColor: .label), style: StrokeStyle(lineWidth: 3, lineJoin: .round))
+                    .stroke(
+                        isTurboEnabled ? Color.yellow : Color(uiColor: .label),
+                        style: StrokeStyle(lineWidth: 3, lineJoin: .round)
+                    )
                     .opacity(configuration.isPressed ? 0.0 : 1.0)
             )
         //            .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
@@ -84,21 +88,21 @@ struct TriggerButtonStyle: ButtonStyle {
         }
         .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE)
         .scaleEffect(1.5)
-        .buttonStyle(TriggerButtonStyle(side: .left))
+        .buttonStyle(TriggerButtonStyle(side: .left, isTurboEnabled: false))
         .padding()
         Button(action: {}) {
             Text("MT")
         }
         .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE)
         .scaleEffect(1.5)
-        .buttonStyle(TriggerButtonStyle(side: .middle))
+        .buttonStyle(TriggerButtonStyle(side: .middle, isTurboEnabled: false))
         .padding()
         Button(action: {}) {
             Text("RT")
         }
         .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE)
         .scaleEffect(1.5)
-        .buttonStyle(TriggerButtonStyle(side: .right))
+        .buttonStyle(TriggerButtonStyle(side: .right, isTurboEnabled: false))
         .padding()
     }
 }
