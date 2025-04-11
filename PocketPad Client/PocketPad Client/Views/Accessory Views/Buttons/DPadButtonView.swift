@@ -67,7 +67,10 @@ struct DirectionalArrow: View {
             //
         }) {
             Triangle()
-                .stroke(style: StrokeStyle(lineWidth: 1.5, lineJoin: .round))
+                .stroke(
+                    turboManager.isTurboEnabled(input) ? Color.yellow : Color.primary,
+                    style: StrokeStyle(lineWidth: 1.5, lineJoin: .round)
+                )
                 .background(
                     Triangle()
                         .opacity(split ? 1.0 : 0.0)
@@ -83,58 +86,52 @@ struct DirectionalArrow: View {
             if turboManager.turboActive { // turbo button is being held and then another button is pressed
                 turboManager.toggleTurboForButton(input)
             } else if turboManager.isTurboEnabled(input) { // while turbo is not being held, a turbo-enabled button is held
-                turboManager.startTurboForDPad(
+                turboManager.startTurboForButton(
                     input,
-                    playerId: LayoutManager.shared.player_id, // Assuming one player
-                    inputId: config.inputId,
-                    buttonType: config.type.rawValue,
-                    dpadDirection: direction.rawValue
+                    buttonPressHandler: sendDPadPress,
+                    buttonReleaseHandler: sendDPadRelease
                 )
             } else {
-                send_dpad_press()
+                // this case is a simple button press/hold
+                sendDPadPress()
             }
         }, onRelease: {
             if !turboManager.turboActive { // if turbo button is not being held
                 // note: for the case of turbo button being held, do nothing to avoid duplicate toggling of turbo for a button
                 
                 // if turbo button is not being held:
-                send_dpad_release()
+                sendDPadRelease()
                 if (turboManager.isTurboEnabled(input)) { // the released button is a turbo-enabled button
                     turboManager.stopTurboForButton(input)
                 }
             }
         })
     }
-    private func send_dpad_press() {
+    
+    private func sendDPadPress() {
 #if DEBUG
-        print("TURBO-DISABLED DPad PRESS")
+        print("DPAD PRESS")
 #endif
-        if let service = bluetoothManager.selectedService {
-            let ui8_playerId: UInt8 = LayoutManager.shared.player_id
-            let ui8_inputId : UInt8 = config.inputId
-            let ui8_buttonType : UInt8 = config.type.rawValue
-            let ui8_event : UInt8 = ButtonEvent.pressed.rawValue
-            
-            let ui8_dpadDirection : UInt8 = direction.rawValue
-            
-            let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event, ui8_dpadDirection])
-            bluetoothManager.sendInput(data)
-        }
+        sendDPadInput(buttonEvent: .pressed)
     }
-    private func send_dpad_release() {
+    private func sendDPadRelease() {
 #if DEBUG
-        print("SAFETY DPad RELEASE")
+        print("DPAD RELEASE")
 #endif
-        if let service = bluetoothManager.selectedService {
-            let ui8_playerId: UInt8 = LayoutManager.shared.player_id
-            let ui8_inputId : UInt8 = config.inputId
-            let ui8_buttonType : UInt8 = config.type.rawValue
-            let ui8_event : UInt8 = ButtonEvent.released.rawValue
-            
-            let ui8_dpadDirection : UInt8 = direction.rawValue
-            
-            let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event, ui8_dpadDirection])
-            bluetoothManager.sendInput(data)
-        }
+        sendDPadInput(buttonEvent: .released)
     }
+    
+    func sendDPadInput(buttonEvent: ButtonEvent) {
+        let ui8_playerId: UInt8 = LayoutManager.shared.player_id
+        let ui8_inputId : UInt8 = config.inputId
+        let ui8_buttonType : UInt8 = config.type.rawValue
+        let ui8_event : UInt8 = buttonEvent.rawValue
+        
+        let ui8_dpadDirection : UInt8 = direction.rawValue
+        
+        let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event, ui8_dpadDirection])
+        bluetoothManager.sendInput(data)
+    }
+    
+    
 }

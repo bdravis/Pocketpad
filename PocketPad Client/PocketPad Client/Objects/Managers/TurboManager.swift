@@ -67,11 +67,12 @@ class TurboManager : ObservableObject {
     // Precondition: button is being held down
     // When the button is being held down, perform the turbo repetitive action using timers
     // This function involves sending data repeatedly
-    func startTurboForButton(_ input: ButtonInput, playerId: UInt8, inputId: UInt8, buttonType: UInt8) {
+    // Works for every type of button
+    func startTurboForButton(_ input: ButtonInput, buttonPressHandler: @escaping () -> (), buttonReleaseHandler: @escaping () -> ()) {
         // close existing timers for this button
         stopTurboForButton(input)
         
-        var isPressed = false // temp variable to store the state of the button
+        var isPressed = true // temp variable to store the state of the button
         // value is false so that the first toggle will make the first event send be 'press'
         
         turboTimers[input] = Timer.scheduledTimer(withTimeInterval: 0.5 / turboRate, repeats: true) { [weak self] _ in
@@ -79,16 +80,15 @@ class TurboManager : ObservableObject {
             // Unwraps self after capturing it weakly
             guard let self else { return }
             
-            // Toggle event
-            let ui8_event: UInt8 = isPressed ? ButtonEvent.pressed.rawValue : ButtonEvent.released.rawValue
-            isPressed.toggle()
-            
             // Send data
-#if DEBUG
-            print(#"TURBO-ENABLED REGULAR BUTTON \#(isPressed ? "PRESS" : "RELEASE")"#)
-#endif
-            let data = Data([playerId, inputId, buttonType, ui8_event])
-            BluetoothManager.shared.sendInput(data)
+            if isPressed {
+                buttonPressHandler()
+            } else {
+                buttonReleaseHandler()
+            }
+            
+            // Toggle button state
+            isPressed.toggle()
         }
     }
     
@@ -98,31 +98,6 @@ class TurboManager : ObservableObject {
         // destroy the timer objects
         turboTimers[input]?.invalidate()
         turboTimers.removeValue(forKey: input)
-    }
-    
-    func startTurboForDPad(_ input: ButtonInput, playerId: UInt8, inputId: UInt8, buttonType: UInt8, dpadDirection: UInt8) {
-        // close existing timers for this button
-        stopTurboForButton(input)
-        
-        var isPressed = false // temp variable to store the state of the button
-        // value is false so that the first toggle will make the first event send be 'press'
-        
-        turboTimers[input] = Timer.scheduledTimer(withTimeInterval: 0.5 / turboRate, repeats: true) { [weak self] _ in
-            // Prevent retain cycles
-            // Unwraps self after capturing it weakly
-            guard let self else { return }
-            
-            // Toggle event
-            let ui8_event: UInt8 = isPressed ? ButtonEvent.pressed.rawValue : ButtonEvent.released.rawValue
-            isPressed.toggle()
-            
-            // Send data
-#if DEBUG
-            print(#"TURBO-ENABLED DPad \#(isPressed ? "PRESS" : "RELEASE")"#)
-#endif
-            let data = Data([playerId, inputId, buttonType, ui8_event, dpadDirection])
-            BluetoothManager.shared.sendInput(data)
-        }
     }
     
     // First stops the timers for all turbo-enabled buttons that are held

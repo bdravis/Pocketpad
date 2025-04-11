@@ -126,6 +126,7 @@ struct JoystickButtonView: View {
                 hapticTriggered = false
             }
     }
+    
 
     var body: some View {
         ZStack {
