@@ -133,15 +133,25 @@ class LayoutManager: ObservableObject {
     func layoutExists(for name: String) -> Bool {
         return availableLayouts.filter({ $0 == name }).count > 0
     }
+    func getNewName(for name: String) -> String {
+        if !layoutExists(for: name) {
+            return name
+        }
+        var count = 2
+        // O(n^2) but ¯\_(ツ)_/¯
+        while layoutExists(for: "\(name) \(count)") {
+            count += 1
+        }
+        return "\(name) \(count)"
+    }
     
     func renameLayout(from initial: String, to newName: String) throws {
         if self.layoutExists(for: newName) {
             throw LayoutError.duplicate
         }
-        // TODO: Handle if it is not the current controller
-        self.currentController.name = newName
-        try self.saveLayout(self.currentController)
-        UserDefaults.standard.set(newName, forKey: "selectedController")
+        var layout = currentController.name == initial ? currentController : try self.loadLayout(for: initial)
+        layout.name = newName
+        try self.saveLayout(layout)
         let url = getLayoutURL(name: initial)
         do {
             try FileManager.default.removeItem(at: url)
@@ -149,7 +159,23 @@ class LayoutManager: ObservableObject {
         } catch {
             print("failed to remove \(initial): \(error.localizedDescription)")
         }
+        if self.currentController.name == initial {
+            // update the current controller
+            currentController.name = newName
+            UserDefaults.standard.set(newName, forKey: "selectedController")
+        }
         try self.loadLayouts(includeControllerTypes: true)
+    }
+    
+    func importLayoutFile(url: URL) throws -> String {
+        let decoder = PropertyListDecoder()
+        let data = try Data(contentsOf: url)
+        var layout = try decoder.decode(LayoutConfig.self, from: data)
+        // update the name to make sure they don't overlap
+        let validName = self.getNewName(for: layout.name)
+        layout.name = validName
+        try self.saveLayout(layout)
+        return validName
     }
     
     private func getControllerType(for name: String) -> ControllerType? {
