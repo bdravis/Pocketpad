@@ -36,24 +36,3 @@ struct RegularButtonStyle: ConfigType {
         self.properties = properties
     }
 }
-
-// settings to configure the general button style
-struct GeneralButtonStyle: ConfigType {
-    var color: Color?
-    var pressedColor: Color?
-    var borderThickness: CGFloat
-    var foregroundColor: Color?
-    var foregroundPressedColor: Color?
-    
-    init(
-        color: Color? = nil, pressedColor: Color? = nil,
-        borderThickness: CGFloat = 3,
-        foregroundColor: Color? = nil, foregroundPressedColor: Color? = nil
-    ) {
-        self.color = color
-        self.pressedColor = pressedColor
-        self.borderThickness = borderThickness
-        self.foregroundColor = foregroundColor
-        self.foregroundPressedColor = foregroundPressedColor
-    }
-}
