@@ -9,6 +9,22 @@ import CoreBluetooth
 import SwiftUI
 import Combine
 
+final class AlertManager: ObservableObject {
+    static let shared = AlertManager() // Singleton
+    
+    @Published var showAlert = false
+    @Published var alertTitle = ""
+    @Published var alertMessage = ""
+    
+    func show(title: String, message: String) {
+        DispatchQueue.main.async { // Must run on main thread
+            self.alertTitle = title
+            self.alertMessage = message
+            self.showAlert = true
+        }
+    }
+}
+
 // MARK: - Bluetooth Manager
 class BluetoothManager: NSObject, ObservableObject {
     static let shared = BluetoothManager()
@@ -29,6 +45,10 @@ class BluetoothManager: NSObject, ObservableObject {
     
     @Published var connectionError: String?
     
+    @State private var showingIDTakenAlert = false
+    @State private var idTakenMessage = ""
+    
+
     private override init() {
         super.init()
         centralManager = CBCentralManager(delegate: self, queue: nil)
@@ -317,7 +337,15 @@ extension BluetoothManager: CBPeripheralDelegate {
                         
                         //Display to user that ID is taken
                         print("invalid id")
+                        AlertManager.shared.show(
+                            title: "ID Taken",
+                            message: "The ID is already in use."
+                        )
                         
+                        LayoutManager.shared.requested_player_id_string = "Player"
+                        BluetoothManager.shared.connectedDevice = nil
+                        
+
                     }
                     
 
@@ -338,7 +366,13 @@ extension BluetoothManager: CBPeripheralDelegate {
                         
                         //Display to user that ID is taken
                         print("invalid id")
-                        
+                        AlertManager.shared.show(
+                            title: "ID Taken",
+                            message: "The ID is already in use."
+                        )
+                        LayoutManager.shared.requested_player_id_string = "Player"
+                        disconnect()
+
                     }
                     
 

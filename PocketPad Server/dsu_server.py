@@ -87,10 +87,7 @@ class DSU_Server:
         print(addr)
         print(data)
 
-        print("EVENT_TYPE ", event_type)
-
         if event_type == 0x100001:
-            print("info ::::::::::::::::::::::::::::::::::::::::::::::::")
             self._handle_info_request(data, addr)
 
         if event_type == 0x100002:
@@ -117,13 +114,10 @@ class DSU_Server:
                 input_with_crc[6],
                 input_with_crc[7],
                 )
-        print("exp crc: ", input_with_crc[3])
-        print("alc crc: ", zlib.crc32(input_without_crc))
 
         server_id = input_with_crc[4]
 
         ports = struct.unpack("<I", data[20:24])[0]
-        print("ports: ", ports)
 
         response_addr = addr
         
@@ -190,7 +184,6 @@ class DSU_Server:
                     battery, # Battery status
                     padding) # Null byte
 
-            print("responding info ::::::::::::::::::::::::::::::::::::::::::::::::::::")
 
             print(struct.unpack("<IHHIIIBBBB6BBB", slot_packet))
             print("Raw bytes:", slot_packet.hex(' '))
@@ -250,10 +243,9 @@ class DSU_Server:
     def _input_loop(self):
         while True:
             time.sleep(0.5)
-            print("input loop alksjdf;lkjasdf;lkjasdf;lkajsdf;lkajsdf")
             for index, state in enumerate(self.controller_states):
 
-                print(state.connected, state.sending, state.last_request_time)
+                # print(state.connected, state.sending, state.last_request_time)
 
                 if state.connected == False:
                     state.sending = False
@@ -397,8 +389,6 @@ class DSU_Server:
 
     def update_controller_state(self, player_num, event_type, value):
 
-        print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-
         # Value is always an array, but has different number of elements
         # If event type is CONNECTION, value is either connecting or disconnecting
         # If event type is BUTTON, value is [AllButtons int, ButtonEvent enum]
@@ -408,10 +398,8 @@ class DSU_Server:
         state = self.controller_states[player_num]
 
         if event_type == ControllerUpdateTypes.CONNECTION.value:
-            print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
             if value[0] == ConnectionMessage.connecting.value:
-                print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
                 state.connected = True
 
             if value[0] == ConnectionMessage.disconnecting.value:

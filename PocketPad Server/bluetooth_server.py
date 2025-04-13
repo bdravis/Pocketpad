@@ -218,7 +218,6 @@ def map_inputID_to_inputs(json):
         elif input_val in ('Start', 'Select', 'Share'):
             inputId_to_inputs[input_id] = AllButtons.options
 
-
 def read_request(characteristic: BlessGATTCharacteristic, **kwargs) -> bytearray:
     logger.debug(f"Reading {characteristic.uuid} - {characteristic.value}")
     return characteristic.value

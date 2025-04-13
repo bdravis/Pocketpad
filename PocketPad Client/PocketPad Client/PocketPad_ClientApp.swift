@@ -16,6 +16,7 @@ struct PocketPad_ClientApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(motionManager)
+                .environmentObject(AlertManager.shared)
                 .overlay {
                     LaunchScreen()
                         .opacity(isShowingSplash ? 1.0 : 0.0)

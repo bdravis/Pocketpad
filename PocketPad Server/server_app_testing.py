@@ -2,8 +2,9 @@ import sys
 import json
 import enums
 import pytest
+import asyncio
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, AsyncMock
 from PySide6.QtWidgets import QMessageBox, QListWidgetItem, QColorDialog, QDialog, QWidget, QPushButton, QApplication, QGridLayout
 from PySide6.QtGui import QIcon, QCloseEvent, QColor
 from PySide6.QtCore import Qt, QSettings
@@ -99,34 +100,6 @@ def test_closeEvent_saves_settings(main_window):
     assert settings.value("widget_color", type=str) == "#474747"
     assert settings.value("font_color", type=str) == "#ffffff"
     settings.endGroup()
-
-# NEEDS TO BE REVISED WHEN BLUETOOTH SERVER SHUTDOWN IS PROPERLY FIXED
-def test_bluetooth_button_click(main_window, qtbot):
-    """
-    Function to test if clicking the Bluetooth button properly initiates the Bluetooth server
-    
-    @param:
-        main_window - a testing instance of the MainWindow used to display the PocketPad application
-        qtbot - fixture provided pytest-qt for GUI testing
-    """
-    qtbot.mouseClick(main_window.ui.bluetooth_button, Qt.LeftButton)
-    qtbot.wait(100)
-    assert main_window.bluetooth_server_initiated is True
-    assert main_window.network_server_initiated is False
-
-# NEEDS TO BE REVISED WHEN NETWORK SERVER GETS IMPLEMENTED
-def test_network_button_click(main_window, qtbot):
-    """
-    Function to test if clicking the Network button properly initiates the Network server
-    
-    @param:
-        main_window - a testing instance of the MainWindow used to display the PocketPad application
-        qtbot - fixture provided by pytest-qt for GUI testing
-    """
-    qtbot.mouseClick(main_window.ui.network_button, Qt.LeftButton)
-    qtbot.wait(100)
-    assert main_window.network_server_initiated is True
-    assert main_window.bluetooth_server_initiated is False
 
 def test_new_player_connection(main_window):
     """

@@ -27,6 +27,7 @@ struct AddButtonView: View {
                     }
                 }
                 .pickerStyle(.menu)
+                .accessibilityIdentifier("ButtonTypePicker")
                 .onChange(of: buttonType, initial: true) {
                     if buttonType == .dpad {
                         buttonInput = .A
@@ -46,6 +47,7 @@ struct AddButtonView: View {
                         }
                     }
                     .pickerStyle(.menu)
+                    .accessibilityIdentifier("ButtonInputPicker")
                 }
                 .padding(.horizontal, 10)
             }
@@ -85,6 +87,7 @@ struct AddButtonView: View {
                 Text("Add Button")
             }
             .buttonStyle(.borderedProminent)
+            .accessibilityIdentifier("AddButtonBtn")
             Button(action: {dismiss()}) {
                 Text("Cancel")
             }

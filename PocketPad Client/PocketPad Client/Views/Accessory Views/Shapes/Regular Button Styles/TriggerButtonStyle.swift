@@ -12,31 +12,37 @@ struct TriggerShape: Shape {
     
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        
+
         let width = rect.width
         let height = rect.height
-        
+
         if side == .middle {
             path.move(to: CGPoint(x: width * 0.2, y: 0)) // Top left corner
             path.addQuadCurve(to: CGPoint(x: width * 0.8, y: 0), control: CGPoint(x: width / 2, y: height * 0.1)) // Curved top
-            
+
             path.addQuadCurve(to: CGPoint(x: width * 0.90, y: height * 0.9), control: CGPoint(x: height * 0.8, y: height * 0.7)) // Right side, sloping down
             path.addQuadCurve(to: CGPoint(x: width * 0.10, y: height * 0.9), control: CGPoint(x: width / 2, y: height)) // Rounded bottom
-            
+
             path.addQuadCurve(to: CGPoint(x: width * 0.2, y: 0), control: CGPoint(x: width * 0.2, y: height * 0.7)) // Rounded bottom
-            
-            path.closeSubpath()
+        } else if side == .left {
+            path.move(to: CGPoint(x: width * 0.2, y: 0)) // Top left corner
+            path.addQuadCurve(to: CGPoint(x: width * 0.8, y: 0), control: CGPoint(x: width / 2, y: height * 0.1)) // Curved top
+
+            path.addLine(to: CGPoint(x: width * 0.8, y: height * 0.9)) // Right side, sloping down
+            path.addQuadCurve(to: CGPoint(x: width * 0.05, y: height * 0.9), control: CGPoint(x: width / 2, y: height)) // Rounded bottom
+
+            path.addQuadCurve(to: CGPoint(x: width * 0.2, y: 0), control: CGPoint(x: width * 0.2, y: height * 0.7)) // Rounded bottom
         } else {
-            path.move(to: CGPoint(x: width * abs(CGFloat(side.rawValue) - 0.2), y: 0)) // Top left corner
-            path.addQuadCurve(to: CGPoint(x: width * abs(CGFloat(side.rawValue) - 0.8), y: 0), control: CGPoint(x: width / 2, y: height * 0.1)) // Curved top
-            
-            path.addLine(to: CGPoint(x: width * abs(CGFloat(side.rawValue) - 0.8), y: height * 0.9)) // Right side, sloping down
-            path.addQuadCurve(to: CGPoint(x: width * abs(CGFloat(side.rawValue) - 0.05), y: height * 0.9), control: CGPoint(x: width / 2, y: height)) // Rounded bottom
-            
-            path.addQuadCurve(to: CGPoint(x: width * abs(CGFloat(side.rawValue) - 0.2), y: 0), control: CGPoint(x: width * abs(CGFloat(side.rawValue) - 0.2), y: height * 0.7)) // Rounded bottom
-            
-            path.closeSubpath()
+            path.move(to: CGPoint(x: width * 0.8, y: 0)) // Top left corner
+            path.addQuadCurve(to: CGPoint(x: width * 0.2, y: 0), control: CGPoint(x: width / 2, y: height * 0.1)) // Curved top
+
+            path.addLine(to: CGPoint(x: width * 0.2, y: height * 0.9)) // Right side, sloping down
+            path.addQuadCurve(to: CGPoint(x: width * 0.95, y: height * 0.9), control: CGPoint(x: width / 2, y: height)) // Rounded bottom
+
+            path.addQuadCurve(to: CGPoint(x: width * 0.8, y: 0), control: CGPoint(x: width * 0.8, y: height * 0.7)) // Rounded bottom
         }
+
+        path.closeSubpath()
 
         return path
     }
@@ -44,6 +50,7 @@ struct TriggerShape: Shape {
 
 struct TriggerButtonStyle: ButtonStyle {
     var side: TriggerSide
+    var isTurboEnabled: Bool
     
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -64,7 +71,10 @@ struct TriggerButtonStyle: ButtonStyle {
             .clipShape(TriggerShape(side: side))
             .overlay(
                 TriggerShape(side: side)
-                    .stroke(Color(uiColor: .label), style: StrokeStyle(lineWidth: 3, lineJoin: .round))
+                    .stroke(
+                        isTurboEnabled ? Color.yellow : Color(uiColor: .label),
+                        style: StrokeStyle(lineWidth: 3, lineJoin: .round)
+                    )
                     .opacity(configuration.isPressed ? 0.0 : 1.0)
             )
         //            .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
@@ -78,21 +88,21 @@ struct TriggerButtonStyle: ButtonStyle {
         }
         .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE)
         .scaleEffect(1.5)
-        .buttonStyle(TriggerButtonStyle(side: .left))
+        .buttonStyle(TriggerButtonStyle(side: .left, isTurboEnabled: false))
         .padding()
         Button(action: {}) {
             Text("MT")
         }
         .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE)
         .scaleEffect(1.5)
-        .buttonStyle(TriggerButtonStyle(side: .middle))
+        .buttonStyle(TriggerButtonStyle(side: .middle, isTurboEnabled: false))
         .padding()
         Button(action: {}) {
             Text("RT")
         }
         .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE)
         .scaleEffect(1.5)
-        .buttonStyle(TriggerButtonStyle(side: .right))
+        .buttonStyle(TriggerButtonStyle(side: .right, isTurboEnabled: false))
         .padding()
     }
 }

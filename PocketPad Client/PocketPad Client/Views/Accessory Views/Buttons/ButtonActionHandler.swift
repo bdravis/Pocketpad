@@ -29,6 +29,9 @@ struct ButtonActionHandler: ViewModifier {
 extension View {
     func pressAction(onPress: @escaping (() -> Void), onRelease: @escaping (() -> Void)) -> some View {
         modifier(ButtonActionHandler(onPress: {
+            if UserDefaults.standard.bool(forKey: "hapticsEnabled") {
+                HapticsManager.playHaptic()
+            }
             onPress()
         }, onRelease: {
             onRelease()

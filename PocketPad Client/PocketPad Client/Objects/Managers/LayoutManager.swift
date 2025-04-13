@@ -89,8 +89,8 @@ class LayoutManager: ObservableObject {
             let url = getLayoutsFolder()
             try FileManager.default.removeItem(at: url.appendingPathComponent("\(name).plist", conformingTo: .propertyList))
             if currentController.name == name {
-                currentController = try self.loadLayout(for: self.availableLayouts.first!)
-                UserDefaults.standard.set(currentController, forKey: "selectedController")
+                UserDefaults.standard.set(self.availableLayouts.first!, forKey: "selectedController")
+                try self.setCurrentLayout(to: self.availableLayouts.first!)
             }
         }
     }
