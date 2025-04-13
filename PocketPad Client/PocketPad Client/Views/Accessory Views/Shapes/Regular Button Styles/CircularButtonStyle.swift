@@ -9,6 +9,7 @@ import SwiftUI
 
 struct CircularButtonStyle: ButtonStyle {
     var style: RegularButtonStyle
+    var isTurboEnabled: Bool
     
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -30,7 +31,7 @@ struct CircularButtonStyle: ButtonStyle {
             .clipShape(Circle())
             .overlay(
                 Circle()
-                    .strokeBorder(Color(uiColor: .label), lineWidth: style.properties.borderThickness)
+                    .strokeBorder(isTurboEnabled ? Color.yellow : Color(uiColor: .label), lineWidth: style.properties.borderThickness)
                     .opacity(configuration.isPressed ? 0.0 : 1.0)
             )
 //            .animation(.easeOut(duration: 0.15), value: configuration.isPressed)

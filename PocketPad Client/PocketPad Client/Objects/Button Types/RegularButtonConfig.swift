@@ -39,7 +39,7 @@ struct RegularButtonConfig: ButtonConfig, ConfigType {
         self.inputId = inputId
         
         self.input = input
-        self.turbo = turbo
+        self.turbo = input == .Turbo
         
         if let style = style {
             self.style = style

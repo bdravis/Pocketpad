@@ -9,6 +9,7 @@ import SwiftUI
 
 struct PillButtonStyle: ButtonStyle {
     var style: RegularButtonStyle
+    var isTurboEnabled: Bool
     
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -31,7 +32,7 @@ struct PillButtonStyle: ButtonStyle {
             .clipShape(Capsule())
             .overlay(
                 Capsule()
-                    .strokeBorder(Color(uiColor: .label), lineWidth: style.properties.borderThickness)
+                    .strokeBorder(isTurboEnabled ? Color.yellow : Color(uiColor: .label), lineWidth: style.properties.borderThickness)
                     .opacity(configuration.isPressed ? 0.0 : 1.0)
             )
 //            .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
@@ -42,6 +43,6 @@ struct PillButtonStyle: ButtonStyle {
     Button(action: {}) {
         Text("Button")
     }
-    .buttonStyle(PillButtonStyle(style: .init(shape: .Pill, iconType: .Text)))
+    .buttonStyle(PillButtonStyle(style: .init(shape: .Pill, iconType: .Text), isTurboEnabled: false))
     .padding()
 }

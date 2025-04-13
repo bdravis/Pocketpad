@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SlantedPillButtonStyle: ButtonStyle {
     var style: RegularButtonStyle
+    var isTurboEnabled: Bool
     
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -34,7 +35,7 @@ struct SlantedPillButtonStyle: ButtonStyle {
             .lineLimit(1)
             .overlay(
                 CurvedCapsule()
-                    .stroke(Color(uiColor: .label), lineWidth: style.properties.borderThickness)
+                    .stroke(isTurboEnabled ? Color.yellow : Color(uiColor: .label), lineWidth: style.properties.borderThickness)
                     .opacity(configuration.isPressed ? 0.0 : 1.0)
                     .offset(y: DEFAULT_BUTTON_SIZE * 0.04)
             )
@@ -45,6 +46,6 @@ struct SlantedPillButtonStyle: ButtonStyle {
     Button(action: {}) {
         Text("X")
     }
-    .buttonStyle(SlantedPillButtonStyle(style: .init(shape: .SlantedPill, iconType: .Text)))
+    .buttonStyle(SlantedPillButtonStyle(style: .init(shape: .SlantedPill, iconType: .Text), isTurboEnabled: false))
     .padding()
 }
