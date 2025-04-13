@@ -91,8 +91,8 @@ struct DirectionalArrow: View {
                 } else if turboManager.isTurboEnabled(input) { // while turbo is not being held, a turbo-enabled button is held
                     turboManager.startTurboForButton(
                         input,
-                        buttonPressHandler: sendDPadPress,
-                        buttonReleaseHandler: sendDPadRelease
+                        buttonPressHandler: send_dpad_press,
+                        buttonReleaseHandler: send_dpad_release
                     )
                 } else {
                     // this case is a simple button press/hold

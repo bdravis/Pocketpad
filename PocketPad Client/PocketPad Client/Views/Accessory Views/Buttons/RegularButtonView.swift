@@ -92,11 +92,12 @@ struct RegularButtonView: View {
 #if DEBUG
         print("Button Tapped")
 #endif
-        sendButtonPress()
+        sendRegularButtonPress()
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-            sendButtonRelease()
+            sendRegularButtonRelease()
         }
+    }
     
     // send button press
     private func sendRegularButtonPress() {
