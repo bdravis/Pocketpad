@@ -62,8 +62,8 @@ jobs:
 
             - name: Run tests
               run: |
-                xcodebuild test -scheme "PocketPad ClientTests" -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' CODE_SIGNING_ALLOWED='NO' | xcbeautify --renderer github-actions
+                set -o pipefail && xcodebuild test -scheme "PocketPad ClientTests" -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' CODE_SIGNING_ALLOWED='NO' | xcbeautify --renderer github-actions
 
             - name: Run UI tests
               run: |
-                xcodebuild test -scheme "PocketPad ClientUITests" -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' CODE_SIGNING_ALLOWED='NO' | xcbeautify --renderer github-actions
+                set -o pipefail && xcodebuild test -scheme "PocketPad ClientUITests" -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' CODE_SIGNING_ALLOWED='NO' | xcbeautify --renderer github-actions
