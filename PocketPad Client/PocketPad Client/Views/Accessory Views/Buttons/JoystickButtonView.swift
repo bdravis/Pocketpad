@@ -15,6 +15,7 @@ struct JoystickButtonView: View {
 
     @State private var offset: CGSize = .zero
     @State private var hapticTriggered: Bool = false
+    @State private var isSendingPress: Bool = false
     
     private var STICK_SIZE: CGFloat {
         return DEFAULT_BUTTON_SIZE / 3
@@ -52,6 +53,7 @@ struct JoystickButtonView: View {
 //#endif
                 
                 if (clampedDistance >= deadzoneRadius) {
+                    isSendingPress = true
 #if DEBUG
                     print("SENDING, OUTSIDE DEADZONE)")
                     if !hapticTriggered && dist > 5 {
@@ -100,24 +102,16 @@ struct JoystickButtonView: View {
 #if DEBUG
                     print("NOT SENDING, WITHIN DEADZONE)")
 #endif
+                    if isSendingPress {
+                        sendJoystickRelease()
+                    }
                 }
             }
             .onEnded { _ in
-                if let service = bluetoothManager.selectedService {
-                    let ui8_playerId: UInt8 = LayoutManager.shared.player_id
-                    let ui8_inputId : UInt8 = config.inputId
-                    let ui8_buttonType : UInt8 = config.type.rawValue
-                    let ui8_event : UInt8 = ButtonEvent.released.rawValue
-                    
-                    let ui8_angle : UInt8 = UInt8(0) // Convert to degrees
-                    let ui8_magnitude : UInt8 = UInt8(0) // Convert to percentage
-                    
-                    let now = UInt32(min((Date().timeIntervalSinceReferenceDate * 1000).truncatingRemainder(dividingBy: 100000), Double(UInt32.max)))
-                    let timestampBytes = withUnsafeBytes(of: now.littleEndian) { Data($0) }
-                    
-                    let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event, ui8_angle, ui8_magnitude])
-                    bluetoothManager.sendInput(data)
-                }
+                let now = UInt32(min((Date().timeIntervalSinceReferenceDate * 1000).truncatingRemainder(dividingBy: 100000), Double(UInt32.max)))
+                let timestampBytes = withUnsafeBytes(of: now.littleEndian) { Data($0) }
+                
+                sendJoystickRelease()
                 
                 if UserDefaults.standard.bool(forKey: "hapticsEnabled") {
                     HapticsManager.playHaptic()
@@ -128,6 +122,22 @@ struct JoystickButtonView: View {
                 }
                 hapticTriggered = false
             }
+        
+    }
+    
+    func sendJoystickRelease() {
+        isSendingPress = false
+        
+        let ui8_playerId: UInt8 = LayoutManager.shared.player_id
+        let ui8_inputId : UInt8 = config.inputId
+        let ui8_buttonType : UInt8 = config.type.rawValue
+        let ui8_event : UInt8 = ButtonEvent.released.rawValue
+        
+        let ui8_angle : UInt8 = UInt8(0) // Convert to degrees
+        let ui8_magnitude : UInt8 = UInt8(0) // Convert to percentage
+        
+        let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event, ui8_angle, ui8_magnitude])
+        bluetoothManager.sendInput(data)
     }
     
 
