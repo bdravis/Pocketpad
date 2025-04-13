@@ -10,6 +10,7 @@ import time
 from enums import ControllerUpdateTypes, AllButtons, Sticks, ButtonEvent
 from server_constants import ConnectionMessage
 import math
+import random
 
 # If this doesn't work first try I am going to drive my car into a telephone pole
 
@@ -41,7 +42,7 @@ class DSU_Server:
         self.server_id = 5
         self.packet_counter = 0
 
-        self.addr = ("127.0.0.1",0)
+        self.addr = ("127.0.0.1",26760)
 
         self.nullstate = self.Controller_State(True)
 
@@ -74,6 +75,7 @@ class DSU_Server:
                 self._handle_message(data, addr)
                 
             except OSError:
+                print("OSError")
                 break  # Socket closed
 
 
@@ -81,6 +83,9 @@ class DSU_Server:
 
         # packet_length does not include header
         event_type = struct.unpack("<I", data[16:20])[0]
+        print("event type:", event_type)
+        print(addr)
+        print(data)
 
         print("EVENT_TYPE ", event_type)
 
@@ -115,10 +120,12 @@ class DSU_Server:
         print("exp crc: ", input_with_crc[3])
         print("alc crc: ", zlib.crc32(input_without_crc))
 
+        server_id = input_with_crc[4]
+
         ports = struct.unpack("<I", data[20:24])[0]
         print("ports: ", ports)
 
-        self.addr = addr
+        response_addr = addr
         
         requested_slots = struct.unpack(f"<{ports}B", data[24:24+ports])
         for slot_number in requested_slots:
@@ -134,22 +141,26 @@ class DSU_Server:
             connection_type = 0
             slot_number_to_report = slot_number
             battery = 0
+            padding = 0
             if self.controller_states[slot_number].connected == True:
                 slot_state = 2
                 gyro = 2 # Partial gyro 1, full is 2
                 connection_type = 2
                 slot_number_to_report = slot_number
                 battery = 0x04
+                padding = 1
 
 
+            randmac = random.randint(0,255)
 
             slot_packet_no_crc = struct.pack(
                     "<IHHIIIBBBB6BBB",
-                    0x44535553, # Magic string
+                    #0x44535553, # Magic string
+                    0x53555344,
                     1001, # Protocol version
                     16, # Packet length without header
                     0, # Will be crc
-                    self.server_id, # Server id
+                    server_id, # Server id
                     0x100001, # Event type
                     slot_number_to_report, # slot number
                     slot_state, # Slot state
@@ -157,18 +168,19 @@ class DSU_Server:
                     connection_type, # Connection type
                     0,0,0,0,0,0, # MAC address
                     battery, # Battery status
-                    0) # Null byte
+                    padding) # Null byte
 
             #crc = self.crc32custom(slot_packet_no_crc)
             crc = zlib.crc32(slot_packet_no_crc) & 0xFFFFFFFF
 
             slot_packet = struct.pack(
                     "<IHHIIIBBBB6BBB",
-                    0x44535553, # Magic string
+                    #0x44535553, # Magic string
+                    0x53555344,
                     1001, # Protocol version
                     16, # Packet length without header
                     crc, # crc
-                    self.server_id, # Server id
+                    server_id, # Server id
                     0x100001, # Event type
                     slot_number_to_report, # slot number
                     slot_state, # Slot state
@@ -176,14 +188,14 @@ class DSU_Server:
                     connection_type, # Connection type
                     0,0,0,0,0,0, # MAC address
                     battery, # Battery status
-                    0) # Null byte
+                    padding) # Null byte
 
             print("responding info ::::::::::::::::::::::::::::::::::::::::::::::::::::")
 
             print(struct.unpack("<IHHIIIBBBB6BBB", slot_packet))
             print("Raw bytes:", slot_packet.hex(' '))
-            print(addr)
-            self.sock.sendto(slot_packet, addr)
+            print(response_addr)
+            self.sock.sendto(slot_packet, response_addr)
 
     def crc32custom(self, s: bytes) -> int:
         crc = 0xFFFFFFFF
@@ -207,6 +219,8 @@ class DSU_Server:
     def _handle_controller_data(self, data, addr):
 
         actions_requested = int.from_bytes(struct.unpack("<B", data[20:21]))
+
+        self.addr = addr
 
         if actions_requested == 1:
             slot_requested = int.from_bytes(struct.unpack("<B", data[21:22]))
@@ -248,7 +262,7 @@ class DSU_Server:
                 if state.sending == False:
                     continue
 
-                if state.last_request_ != 0 and time.time() - state.last_request_time > self.request_timeout:
+                if state.last_request_time != 0 and time.time() - state.last_request_time > self.request_timeout:
                     state.sending = False
                     continue
 
@@ -264,10 +278,12 @@ class DSU_Server:
 
                 packet_number = self.packet_counter
                 self.packet_counter += 1
+                
+                randmac = random.randint(0,255)
 
                 input_packet_no_crc = struct.pack(
-                        "IHHIIIBBBBHHHBBIBBBBBBBBBBBBBBBBBBBBBBBHHBBHHQIIIIII",
-                        "DSUS".encode(), # Magic string
+                        "IHHIIIBBBBHHHBBIBBBBBBBBBBBBBBBBBBBBHHHHHHQIIIIII",
+                        0x53555344,
                         1001, # Protocol version
                         84, # Len without header
                         0, # crc
@@ -309,8 +325,6 @@ class DSU_Server:
                         0,
                         0,
                         0,
-                        0,
-                        0,
                         state.motion_timestamp,
                         0,
                         0,
@@ -323,58 +337,56 @@ class DSU_Server:
                 crc = zlib.crc32(input_packet_no_crc)
 
                 input_packet = struct.pack(
-                        "IHHIIIBBBBHHHBBIBBBBBBBBBBBBBBBBBBBBBBBHHBBHHQIIIIII",
-                        "DSUS".encode(), # Magic string
-                        1001, # Protocol version
-                        84, # Len without header
+                        "IHHIIIBBBBHHHBBIBBBBBBBBBBBBBBBBBBBBHHHHHHQIIIIII",
+                        input_packet_no_crc[0],
+                        input_packet_no_crc[1],
+                        input_packet_no_crc[2],
                         crc, # crc
-                        self.server_id,
-                        0x100002, #event type
-                        index, # slot
-                        slot_state_int, # slot state (connected / not connected)
-                        2, # device model (gyro)
-                        0, # Connection type
-                        0, #MAC
-                        0, #MAC
-                        0, #MAC
-                        0, #Battery
-                        connected_int,
-                        packet_number,
-                        state.dpad_mask,
-                        state.button_mask,
-                        state.home,
-                        state.touch_button,
-                        state.left_stick_x,
-                        state.left_stick_y,
-                        state.right_stick_x,
-                        state.right_stick_y,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        state.motion_timestamp,
-                        0,
-                        0,
-                        0,
-                        state.pitch,
-                        state.yaw,
-                        state.roll
+                        input_packet_no_crc[4],
+                        input_packet_no_crc[5],
+                        input_packet_no_crc[6],
+                        input_packet_no_crc[7],
+                        input_packet_no_crc[8],
+                        input_packet_no_crc[9],
+                        input_packet_no_crc[10],
+                        input_packet_no_crc[11],
+                        input_packet_no_crc[12],
+                        input_packet_no_crc[13],
+                        input_packet_no_crc[14],
+                        input_packet_no_crc[15],
+                        input_packet_no_crc[16],
+                        input_packet_no_crc[17],
+                        input_packet_no_crc[18],
+                        input_packet_no_crc[19],
+                        input_packet_no_crc[20],
+                        input_packet_no_crc[21],
+                        input_packet_no_crc[22],
+                        input_packet_no_crc[23],
+                        input_packet_no_crc[24],
+                        input_packet_no_crc[25],
+                        input_packet_no_crc[26],
+                        input_packet_no_crc[27],
+                        input_packet_no_crc[28],
+                        input_packet_no_crc[29],
+                        input_packet_no_crc[30],
+                        input_packet_no_crc[31],
+                        input_packet_no_crc[32],
+                        input_packet_no_crc[33],
+                        input_packet_no_crc[34],
+                        input_packet_no_crc[35],
+                        input_packet_no_crc[36],
+                        input_packet_no_crc[37],
+                        input_packet_no_crc[38],
+                        input_packet_no_crc[39],
+                        input_packet_no_crc[40],
+                        input_packet_no_crc[41],
+                        input_packet_no_crc[42],
+                        input_packet_no_crc[43],
+                        input_packet_no_crc[44],
+                        input_packet_no_crc[45],
+                        input_packet_no_crc[46],
+                        input_packet_no_crc[47],
+                        input_packet_no_crc[48],
                         )
 
 
