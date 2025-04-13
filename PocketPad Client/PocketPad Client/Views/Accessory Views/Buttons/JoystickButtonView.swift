@@ -4,6 +4,8 @@
 //
 //  Created by lemin on 2/18/25.
 //
+//  Edited by Benjamin Dravis on 4/13/25
+//
 
 import SwiftUI
 
@@ -17,21 +19,23 @@ struct JoystickButtonView: View {
     @State private var hapticTriggered: Bool = false
     @State private var isSendingPress: Bool = false
     
-    private var STICK_SIZE: CGFloat {
-        return DEFAULT_BUTTON_SIZE / 3
-    }
+    private var STICK_SIZE: CGFloat { return DEFAULT_BUTTON_SIZE / 3 }
     
-    private var deadzoneRadius: Double {
-        return (DEFAULT_BUTTON_SIZE / 2) * config.deadzone
-    }
-
+    private var deadzoneRadius: Double { return (DEFAULT_BUTTON_SIZE / 2) * config.deadzone }
+    
+    @State private var last_send_time: Date? = nil
+    @State private var last_sent_angle: UInt8 = 0
+    @State private var last_sent_magnitude: UInt8 = 0
+    
+    let minimum_time_interval: TimeInterval = 0.05
+    let minimum_angle_threshold: UInt8 = 2
+    let minimum_magnitude_threshold: UInt8 = 5
+    
     var joyDrag: some Gesture {
         DragGesture(minimumDistance: 0)
             .onChanged { value in
                 let dx = value.translation.width
-                print(String(format: "DX: %.2f", dx))
                 let dy = value.translation.height
-                print(String(format: "DY: %.2f", dy))
                 let dist = sqrt(dx * dx + dy * dy)
                 let angle = atan2(dy, dx)
 
@@ -45,7 +49,6 @@ struct JoystickButtonView: View {
                     width: cos(angle) * clampedDistance,
                     height: sin(angle) * clampedDistance
                 )
-                print(String(format: "Clamped Distance -> %.2f", clampedDistance))
             
 //#if DEBUG
 //                print("Joystick moved: \(offset)") // Debugging output
@@ -94,6 +97,18 @@ struct JoystickButtonView: View {
                         } else {
                             ui8_magnitude = UInt8(min(max(normalizedMagnitude, 0), 255))
                         }
+                        
+                        let now = Date()
+                        if let last_time = last_send_time, now.timeIntervalSince(last_time) < minimum_time_interval { return }
+                        
+                        if abs(Int(ui8_angle) - Int(last_sent_angle)) < Int(minimum_angle_threshold) &&
+                            abs(Int(ui8_magnitude) - Int(last_sent_magnitude)) < Int(minimum_angle_threshold) {
+                            return
+                        }
+                        
+                        last_send_time = now
+                        last_sent_angle = ui8_angle
+                        last_sent_magnitude = ui8_magnitude
                         
                         let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event, ui8_angle, ui8_magnitude])
                         bluetoothManager.sendInput(data)

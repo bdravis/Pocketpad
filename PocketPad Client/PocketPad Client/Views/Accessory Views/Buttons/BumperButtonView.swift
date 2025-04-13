@@ -12,11 +12,16 @@ import SwiftUI
 struct BumperButtonView: View {
     @StateObject private var bluetoothManager = BluetoothManager.shared
     @StateObject private var turboManager = TurboManager.shared
+    @State private var longPressed = false
+    
     var config: BumperConfig
     
     var body: some View {
         Button(action: {
-            handleTap()
+            if !longPressed {
+                handleTap()
+            }
+            longPressed = false
         }) {
             if let icon = config.style.icon {
                 switch config.style.iconType {
@@ -55,6 +60,7 @@ struct BumperButtonView: View {
         )
         .onLongPressGesture(minimumDuration: 0.5, maximumDistance: 50, pressing: { isPressing in
             if isPressing {
+                longPressed = true
                 if turboManager.turboActive { // turbo button is being held and then another button is pressed
                     turboManager.toggleTurboForButton(config.input)
                 } else if turboManager.isTurboEnabled(config.input) { // while turbo is not being held, a turbo-enabled button is held
@@ -65,7 +71,7 @@ struct BumperButtonView: View {
                     )
                 } else { // turbo button is not being held, button is not turbo-enabled
                     // this case is a simple button press/hold
-                    send_bumper_press()
+                    sendBumperPress()
                 }
             }
             else {
@@ -73,7 +79,7 @@ struct BumperButtonView: View {
                     // note: for the case of turbo button being held, do nothing to avoid duplicate toggling of turbo for a button
                     
                     // if turbo button is not being held:
-                    send_bumper_release()
+                    sendBumperRelease()
                     if (turboManager.isTurboEnabled(config.input)) { // the released button is a turbo-enabled button
                         turboManager.stopTurboForButton(config.input)
                     }
@@ -86,14 +92,14 @@ struct BumperButtonView: View {
 #if DEBUG
         print("Bumper Tapped")
 #endif
-        send_bumper_press()
+        sendBumperPress()
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-            send_bumper_release()
+            sendBumperRelease()
         }
     }
     
-    private func send_bumper_press() {
+    private func sendBumperPress() {
 #if DEBUG
             print("PRESS BUMPER")
 #endif
@@ -108,7 +114,7 @@ struct BumperButtonView: View {
         }
     }
     
-    private func send_bumper_release() {
+    private func sendBumperRelease() {
 #if DEBUG
             print("RELEASE BUMPER")
 #endif
@@ -122,32 +128,7 @@ struct BumperButtonView: View {
             bluetoothManager.sendInput(data)
         }
     }
-    
-    // send button press
-    private func sendBumperPress() {
-#if DEBUG
-        print("BUMPER PRESS")
-#endif
-        sendBumperInput(buttonEvent: .pressed)
-    }
-    
-    // send button release
-    private func sendBumperRelease() {
-#if DEBUG
-        print("BUMPER RELEASE")
-#endif
-        sendBumperInput(buttonEvent: .released)
-    }
-    
-    func sendBumperInput(buttonEvent: ButtonEvent) {
-        let ui8_playerId: UInt8 = LayoutManager.shared.player_id
-        let ui8_inputId : UInt8 = config.inputId
-        let ui8_buttonType : UInt8 = config.type.rawValue
-        let ui8_event : UInt8 = buttonEvent.rawValue;
-        
-        let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
-        bluetoothManager.sendInput(data);
-    }
+
 }
 
 //

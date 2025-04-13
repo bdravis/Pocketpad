@@ -48,10 +48,22 @@ class BluetoothManager: NSObject, ObservableObject {
     @State private var showingIDTakenAlert = false
     @State private var idTakenMessage = ""
     
-
+    private var latency_timer: AnyCancellable?
+    
     private override init() {
         super.init()
         centralManager = CBCentralManager(delegate: self, queue: nil)
+        //start_latency_sending()
+    }
+    
+    deinit {
+        latency_timer?.cancel()
+    }
+    
+    private func start_latency_sending() {
+        latency_timer = Timer.publish(every: 3.0, on: .main, in: .common).autoconnect().sink { [weak self] _ in
+            self?.pingServer()
+        }
     }
     
     // MARK: - Public Methods

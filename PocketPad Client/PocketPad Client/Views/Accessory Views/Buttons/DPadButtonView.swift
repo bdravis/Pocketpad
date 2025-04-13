@@ -56,6 +56,7 @@ struct DPadButtonView: View {
 struct DirectionalArrow: View {
     @StateObject private var bluetoothManager = BluetoothManager.shared
     @StateObject private var turboManager = TurboManager.shared
+    @State private var longPressed = false
     
     var split: Bool
     
@@ -66,7 +67,10 @@ struct DirectionalArrow: View {
     
     var body: some View {
         Button(action: {
-            handleTap()
+            if !longPressed {
+                handleTap()
+            }
+            longPressed = false
         }) {
             Triangle()
                 .stroke(
@@ -86,17 +90,18 @@ struct DirectionalArrow: View {
         .buttonStyle(DPadButtonStyle(style: config.style, split: split))
         .onLongPressGesture(minimumDuration: 0.5, maximumDistance: 50, pressing: { isPressing in
             if isPressing {
+                longPressed = true
                 if turboManager.turboActive { // turbo button is being held and then another button is pressed
                     turboManager.toggleTurboForButton(input)
                 } else if turboManager.isTurboEnabled(input) { // while turbo is not being held, a turbo-enabled button is held
                     turboManager.startTurboForButton(
                         input,
-                        buttonPressHandler: send_dpad_press,
-                        buttonReleaseHandler: send_dpad_release
+                        buttonPressHandler: sendDpadPress,
+                        buttonReleaseHandler: sendDpadRelease
                     )
                 } else {
                     // this case is a simple button press/hold
-                    send_dpad_press()
+                    sendDpadPress()
                 }
             }
             else {
@@ -104,7 +109,7 @@ struct DirectionalArrow: View {
                     // note: for the case of turbo button being held, do nothing to avoid duplicate toggling of turbo for a button
                     
                     // if turbo button is not being held:
-                    send_dpad_release()
+                    sendDpadRelease()
                     if (turboManager.isTurboEnabled(input)) { // the released button is a turbo-enabled button
                         turboManager.stopTurboForButton(input)
                     }
@@ -117,14 +122,14 @@ struct DirectionalArrow: View {
 #if DEBUG
         print("DPad Tapped")
 #endif
-        send_dpad_press()
+        sendDpadPress()
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-            send_dpad_release()
+            sendDpadRelease()
         }
     }
     
-    private func send_dpad_press() {
+    private func sendDpadPress() {
 #if DEBUG
         print("TURBO-DISABLED DPad PRESS")
 #endif
@@ -140,7 +145,7 @@ struct DirectionalArrow: View {
             bluetoothManager.sendInput(data)
         }
     }
-    private func send_dpad_release() {
+    private func sendDpadRelease() {
 #if DEBUG
         print("SAFETY DPad RELEASE")
 #endif
