@@ -4,6 +4,8 @@
 //
 //  Created by lemin on 2/18/25.
 //
+//  Edited by Benjamin Dravis on 4/13/25
+//
 
 import SwiftUI
 
@@ -64,7 +66,7 @@ struct DirectionalArrow: View {
     
     var body: some View {
         Button(action: {
-            //
+            handleTap()
         }) {
             Triangle()
                 .stroke(
@@ -82,56 +84,76 @@ struct DirectionalArrow: View {
                 .aspectRatio(1.0, contentMode: .fit)
         }
         .buttonStyle(DPadButtonStyle(style: config.style, split: split))
-        .pressAction(onPress: {
-            if turboManager.turboActive { // turbo button is being held and then another button is pressed
-                turboManager.toggleTurboForButton(input)
-            } else if turboManager.isTurboEnabled(input) { // while turbo is not being held, a turbo-enabled button is held
-                turboManager.startTurboForButton(
-                    input,
-                    buttonPressHandler: sendDPadPress,
-                    buttonReleaseHandler: sendDPadRelease
-                )
-            } else {
-                // this case is a simple button press/hold
-                sendDPadPress()
-            }
-        }, onRelease: {
-            if !turboManager.turboActive { // if turbo button is not being held
-                // note: for the case of turbo button being held, do nothing to avoid duplicate toggling of turbo for a button
-                
-                // if turbo button is not being held:
-                sendDPadRelease()
-                if (turboManager.isTurboEnabled(input)) { // the released button is a turbo-enabled button
-                    turboManager.stopTurboForButton(input)
+        .onLongPressGesture(minimumDuration: 0.5, maximumDistance: 50, pressing: { isPressing in
+            if isPressing {
+                if turboManager.turboActive { // turbo button is being held and then another button is pressed
+                    turboManager.toggleTurboForButton(input)
+                } else if turboManager.isTurboEnabled(input) { // while turbo is not being held, a turbo-enabled button is held
+                    turboManager.startTurboForButton(
+                        input,
+                        buttonPressHandler: sendDPadPress,
+                        buttonReleaseHandler: sendDPadRelease
+                    )
+                } else {
+                    // this case is a simple button press/hold
+                    send_dpad_press()
                 }
             }
-        })
+            else {
+                if !turboManager.turboActive { // if turbo button is not being held
+                    // note: for the case of turbo button being held, do nothing to avoid duplicate toggling of turbo for a button
+                    
+                    // if turbo button is not being held:
+                    send_dpad_release()
+                    if (turboManager.isTurboEnabled(input)) { // the released button is a turbo-enabled button
+                        turboManager.stopTurboForButton(input)
+                    }
+                }
+            }
+        }, perform: {})
     }
     
-    private func sendDPadPress() {
+    private func handleTap() {
 #if DEBUG
-        print("DPAD PRESS")
+        print("DPad Tapped")
 #endif
-        sendDPadInput(buttonEvent: .pressed)
+        send_dpad_press()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            send_dpad_release()
+        }
     }
-    private func sendDPadRelease() {
+    
+    private func send_dpad_press() {
 #if DEBUG
-        print("DPAD RELEASE")
+        print("TURBO-DISABLED DPad PRESS")
 #endif
-        sendDPadInput(buttonEvent: .released)
+        if let service = bluetoothManager.selectedService {
+            let ui8_playerId: UInt8 = LayoutManager.shared.player_id
+            let ui8_inputId : UInt8 = config.inputId
+            let ui8_buttonType : UInt8 = config.type.rawValue
+            let ui8_event : UInt8 = ButtonEvent.pressed.rawValue
+            
+            let ui8_dpadDirection : UInt8 = direction.rawValue
+            
+            let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event, ui8_dpadDirection])
+            bluetoothManager.sendInput(data)
+        }
     }
-    
-    func sendDPadInput(buttonEvent: ButtonEvent) {
-        let ui8_playerId: UInt8 = LayoutManager.shared.player_id
-        let ui8_inputId : UInt8 = config.inputId
-        let ui8_buttonType : UInt8 = config.type.rawValue
-        let ui8_event : UInt8 = buttonEvent.rawValue
-        
-        let ui8_dpadDirection : UInt8 = direction.rawValue
-        
-        let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event, ui8_dpadDirection])
-        bluetoothManager.sendInput(data)
+    private func send_dpad_release() {
+#if DEBUG
+        print("SAFETY DPad RELEASE")
+#endif
+        if let service = bluetoothManager.selectedService {
+            let ui8_playerId: UInt8 = LayoutManager.shared.player_id
+            let ui8_inputId : UInt8 = config.inputId
+            let ui8_buttonType : UInt8 = config.type.rawValue
+            let ui8_event : UInt8 = ButtonEvent.released.rawValue
+            
+            let ui8_dpadDirection : UInt8 = direction.rawValue
+            
+            let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event, ui8_dpadDirection])
+            bluetoothManager.sendInput(data)
+        }
     }
-    
-    
 }

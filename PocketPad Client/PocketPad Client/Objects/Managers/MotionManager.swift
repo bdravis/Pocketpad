@@ -23,8 +23,8 @@ class MotionManager: ObservableObject {
             return
         }
         
-        // Set the update interval to 60 times per second
-        motionManager.deviceMotionUpdateInterval = 1.0 / 60.0
+        // Set the update interval to 6 times per second
+        motionManager.deviceMotionUpdateInterval = 1.0 / 6.0
         
         // Start device motion updates on the main thread
         motionManager.startDeviceMotionUpdates(to: .main) { [weak self] motionData, error in

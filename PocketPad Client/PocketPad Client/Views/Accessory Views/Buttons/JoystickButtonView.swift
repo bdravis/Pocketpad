@@ -21,17 +21,16 @@ struct JoystickButtonView: View {
     }
     
     private var deadzoneRadius: Double {
-//        return (DEFAULT_BUTTON_SIZE / 2) * 0.4 // hardcoded 40% deadzone for testing
-        
         return (DEFAULT_BUTTON_SIZE / 2) * config.deadzone
-        
     }
 
     var joyDrag: some Gesture {
         DragGesture(minimumDistance: 0)
             .onChanged { value in
                 let dx = value.translation.width
+                print(String(format: "DX: %.2f", dx))
                 let dy = value.translation.height
+                print(String(format: "DY: %.2f", dy))
                 let dist = sqrt(dx * dx + dy * dy)
                 let angle = atan2(dy, dx)
 
@@ -45,6 +44,7 @@ struct JoystickButtonView: View {
                     width: cos(angle) * clampedDistance,
                     height: sin(angle) * clampedDistance
                 )
+                print(String(format: "Clamped Distance -> %.2f", clampedDistance))
             
 //#if DEBUG
 //                print("Joystick moved: \(offset)") // Debugging output
@@ -111,6 +111,9 @@ struct JoystickButtonView: View {
                     
                     let ui8_angle : UInt8 = UInt8(0) // Convert to degrees
                     let ui8_magnitude : UInt8 = UInt8(0) // Convert to percentage
+                    
+                    let now = UInt32(min((Date().timeIntervalSinceReferenceDate * 1000).truncatingRemainder(dividingBy: 100000), Double(UInt32.max)))
+                    let timestampBytes = withUnsafeBytes(of: now.littleEndian) { Data($0) }
                     
                     let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event, ui8_angle, ui8_magnitude])
                     bluetoothManager.sendInput(data)

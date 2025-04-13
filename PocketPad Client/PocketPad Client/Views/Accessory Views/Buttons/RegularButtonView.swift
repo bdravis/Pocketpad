@@ -4,6 +4,8 @@
 //
 //  Created by lemin on 2/18/25.
 //
+//  Edited by Benjamin Dravis on 4/13/25
+//
 
 import SwiftUI
 
@@ -14,21 +16,23 @@ struct RegularButtonView: View {
     
     var body: some View {
         Button(action: {
-            // Actions are handled with pressAction modifier
+            handleTap()
         }) {
-            if let icon = config.style.icon {
-                switch config.style.iconType {
-                case .Text:
-                    Text(icon)
-                case .SFSymbol:
-                    ZStack {
-                        Image(systemName: icon)
-                            .resizable()
-                            .scaledToFit() // make sure it does not stretch
+            Group {
+                if let icon = config.style.icon {
+                    switch config.style.iconType {
+                    case .Text:
+                        Text(icon)
+                    case .SFSymbol:
+                        ZStack {
+                            Image(systemName: icon)
+                                .resizable()
+                                .scaledToFit() // make sure it does not stretch
+                        }
                     }
+                } else {
+                    Text("") // empty textbox
                 }
-            } else {
-                Text("") // empty textbox
             }
         }
         .applyButtonStyle(config.style)
@@ -51,35 +55,48 @@ struct RegularButtonView: View {
                 }
             } : nil
         )
-        .pressAction(onPress: {
-            if config.turbo { // if this button is the turbo button itself
-                turboManager.activateTurboMode()
-            } else if turboManager.turboActive { // turbo button is being held and then another button is pressed
-                turboManager.toggleTurboForButton(config.input)
-            } else if turboManager.isTurboEnabled(config.input) { // while turbo is not being held, a turbo-enabled button is held
-                turboManager.startTurboForButton(
-                    config.input,
-                    buttonPressHandler: sendRegularButtonPress,
-                    buttonReleaseHandler: sendRegularButtonRelease
-                )
-            } else { // turbo button is not being held, button is not turbo-enabled
-                // this case is a simple button press/hold
-                sendRegularButtonPress()
-            }
-        }, onRelease: {
-            if config.turbo { // if released button is the turbo button itself
-                turboManager.deactivateTurboMode()
-            } else if !turboManager.turboActive { // if turbo button is not being held
-                // note: for the case of turbo button being held, do nothing to avoid duplicate toggling of turbo for a button
-                
-                // if turbo button is not being held:
-                sendRegularButtonRelease()
-                if (turboManager.isTurboEnabled(config.input)) { // the released button is a turbo-enabled button
-                    turboManager.stopTurboForButton(config.input)
+        .onLongPressGesture(minimumDuration: 0.5, maximumDistance: 50, pressing: { isPressing in
+            if isPressing {
+                if config.turbo { // if this button is the turbo button itself
+                    turboManager.activateTurboMode()
+                } else if turboManager.turboActive { // turbo button is being held and then another button is pressed
+                    turboManager.toggleTurboForButton(config.input)
+                } else if turboManager.isTurboEnabled(config.input) { // while turbo is not being held, a turbo-enabled button is held
+                    turboManager.startTurboForButton(
+                        config.input,
+                        buttonPressHandler: sendRegularButtonPress,
+                        buttonReleaseHandler: sendRegularButtonRelease
+                    )
+                } else { // turbo button is not being held, button is not turbo-enabled
+                    // this case is a simple button press/hold
+                    sendRegularButtonPress()
                 }
             }
-        })
+            else {
+                if config.turbo { // if released button is the turbo button itself
+                    turboManager.deactivateTurboMode()
+                } else if !turboManager.turboActive { // if turbo button is not being held
+                    // note: for the case of turbo button being held, do nothing to avoid duplicate toggling of turbo for a button
+                    
+                    // if turbo button is not being held:
+                    sendRegularButtonRelease()
+                    if (turboManager.isTurboEnabled(config.input)) { // the released button is a turbo-enabled button
+                        turboManager.stopTurboForButton(config.input)
+                    }
+                }
+            }
+        }, perform: {})
     }
+    
+    private func handleTap() {
+#if DEBUG
+        print("Button Tapped")
+#endif
+        sendButtonPress()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            sendButtonRelease()
+        }
     
     // send button press
     private func sendRegularButtonPress() {
