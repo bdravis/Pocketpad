@@ -4,16 +4,19 @@
 //
 //  Created by Krish Shah on 3/6/25.
 //
+//  Edited by Benjamin Dravis on 4/13/25
+//
 
 import SwiftUI
 
 struct BumperButtonView: View {
     @StateObject private var bluetoothManager = BluetoothManager.shared
+    @StateObject private var turboManager = TurboManager.shared
     var config: BumperConfig
     
     var body: some View {
         Button(action: {
-            // 
+            handleTap()
         }) {
             if let icon = config.style.icon {
                 switch config.style.iconType {
@@ -31,33 +34,119 @@ struct BumperButtonView: View {
             }
         }
         .applyButtonStyle(config.style)
-        .pressAction(onPress: {
+        .overlay(
+            turboManager.isTurboEnabled(config.input) ?
+            Group {
+                switch config.style.shape {
+                case .Circle:
+                    Circle()
+                        .stroke(.yellow, lineWidth: 5)
+                        .padding(2)
+                case .Pill:
+                    Capsule()
+                        .stroke(.yellow, lineWidth: 4)
+                        .padding(2)
+                case .SlantedPill:
+                    CurvedCapsule()
+                        .stroke(.yellow, lineWidth: 5) // not manually tested yet
+                        .padding(2)
+                }
+            } : nil
+        )
+        .onLongPressGesture(minimumDuration: 0.5, maximumDistance: 50, pressing: { isPressing in
+            if isPressing {
+                if turboManager.turboActive { // turbo button is being held and then another button is pressed
+                    turboManager.toggleTurboForButton(config.input)
+                } else if turboManager.isTurboEnabled(config.input) { // while turbo is not being held, a turbo-enabled button is held
+                    turboManager.startTurboForButton(
+                        config.input,
+                        buttonPressHandler: sendBumperPress,
+                        buttonReleaseHandler: sendBumperRelease
+                    )
+                } else { // turbo button is not being held, button is not turbo-enabled
+                    // this case is a simple button press/hold
+                    send_bumper_press()
+                }
+            }
+            else {
+                if !turboManager.turboActive { // if turbo button is not being held
+                    // note: for the case of turbo button being held, do nothing to avoid duplicate toggling of turbo for a button
+                    
+                    // if turbo button is not being held:
+                    send_bumper_release()
+                    if (turboManager.isTurboEnabled(config.input)) { // the released button is a turbo-enabled button
+                        turboManager.stopTurboForButton(config.input)
+                    }
+                }
+            }
+        }, perform: {})
+    }
+    
+    private func handleTap() {
+#if DEBUG
+        print("Bumper Tapped")
+#endif
+        send_bumper_press()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            send_bumper_release()
+        }
+    }
+    
+    private func send_bumper_press() {
 #if DEBUG
             print("PRESS BUMPER")
 #endif
-            if let service = bluetoothManager.selectedService {
-                let ui8_playerId: UInt8 = LayoutManager.shared.player_id
-                let ui8_inputId : UInt8 = config.inputId
-                let ui8_buttonType : UInt8 = config.type.rawValue
-                let ui8_event : UInt8 = ButtonEvent.pressed.rawValue
-                
-                let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
-                bluetoothManager.sendInput(data)
-            }
-        }, onRelease: {
+        if let service = bluetoothManager.selectedService {
+            let ui8_playerId: UInt8 = LayoutManager.shared.player_id
+            let ui8_inputId : UInt8 = config.inputId
+            let ui8_buttonType : UInt8 = config.type.rawValue
+            let ui8_event : UInt8 = ButtonEvent.pressed.rawValue
+            
+            let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
+            bluetoothManager.sendInput(data)
+        }
+    }
+    
+    private func send_bumper_release() {
 #if DEBUG
             print("RELEASE BUMPER")
 #endif
-            if let service = bluetoothManager.selectedService {
-                let ui8_playerId: UInt8 = LayoutManager.shared.player_id
-                let ui8_inputId : UInt8 = config.inputId
-                let ui8_buttonType : UInt8 = config.type.rawValue
-                let ui8_event : UInt8 = ButtonEvent.released.rawValue
-                
-                let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
-                bluetoothManager.sendInput(data)
-            }
-        })
+        if let service = bluetoothManager.selectedService {
+            let ui8_playerId: UInt8 = LayoutManager.shared.player_id
+            let ui8_inputId : UInt8 = config.inputId
+            let ui8_buttonType : UInt8 = config.type.rawValue
+            let ui8_event : UInt8 = ButtonEvent.released.rawValue
+            
+            let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
+            bluetoothManager.sendInput(data)
+        }
+    }
+    
+    // send button press
+    private func sendBumperPress() {
+#if DEBUG
+        print("BUMPER PRESS")
+#endif
+        sendBumperInput(buttonEvent: .pressed)
+    }
+    
+    // send button release
+    private func sendBumperRelease() {
+#if DEBUG
+        print("BUMPER RELEASE")
+#endif
+        sendBumperInput(buttonEvent: .released)
+    }
+    
+    func sendBumperInput(buttonEvent: ButtonEvent) {
+        let ui8_playerId: UInt8 = LayoutManager.shared.player_id
+        let ui8_inputId : UInt8 = config.inputId
+        let ui8_buttonType : UInt8 = config.type.rawValue
+        let ui8_event : UInt8 = buttonEvent.rawValue;
+        
+        let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
+        bluetoothManager.sendInput(data);
     }
 }
 

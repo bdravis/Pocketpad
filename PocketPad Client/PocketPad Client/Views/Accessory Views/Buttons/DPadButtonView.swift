@@ -4,6 +4,8 @@
 //
 //  Created by lemin on 2/18/25.
 //
+//  Edited by Benjamin Dravis on 4/13/25
+//
 
 import SwiftUI
 
@@ -64,10 +66,13 @@ struct DirectionalArrow: View {
     
     var body: some View {
         Button(action: {
-            //
+            handleTap()
         }) {
             Triangle()
-                .stroke(style: StrokeStyle(lineWidth: 1.5, lineJoin: .round))
+                .stroke(
+                    turboManager.isTurboEnabled(input) ? Color.yellow : Color.primary,
+                    style: StrokeStyle(lineWidth: 1.5, lineJoin: .round)
+                )
                 .background(
                     Triangle()
                         .opacity(split ? 1.0 : 0.0)
@@ -79,32 +84,46 @@ struct DirectionalArrow: View {
                 .aspectRatio(1.0, contentMode: .fit)
         }
         .buttonStyle(DPadButtonStyle(style: config.style, split: split))
-        .pressAction(onPress: {
-            if turboManager.turboActive { // turbo button is being held and then another button is pressed
-                turboManager.toggleTurboForButton(input)
-            } else if turboManager.isTurboEnabled(input) { // while turbo is not being held, a turbo-enabled button is held
-                turboManager.startTurboForDPad(
-                    input,
-                    playerId: LayoutManager.shared.player_id, // Assuming one player
-                    inputId: config.inputId,
-                    buttonType: config.type.rawValue,
-                    dpadDirection: direction.rawValue
-                )
-            } else {
-                send_dpad_press()
-            }
-        }, onRelease: {
-            if !turboManager.turboActive { // if turbo button is not being held
-                // note: for the case of turbo button being held, do nothing to avoid duplicate toggling of turbo for a button
-                
-                // if turbo button is not being held:
-                send_dpad_release()
-                if (turboManager.isTurboEnabled(input)) { // the released button is a turbo-enabled button
-                    turboManager.stopTurboForButton(input)
+        .onLongPressGesture(minimumDuration: 0.5, maximumDistance: 50, pressing: { isPressing in
+            if isPressing {
+                if turboManager.turboActive { // turbo button is being held and then another button is pressed
+                    turboManager.toggleTurboForButton(input)
+                } else if turboManager.isTurboEnabled(input) { // while turbo is not being held, a turbo-enabled button is held
+                    turboManager.startTurboForButton(
+                        input,
+                        buttonPressHandler: send_dpad_press,
+                        buttonReleaseHandler: send_dpad_release
+                    )
+                } else {
+                    // this case is a simple button press/hold
+                    send_dpad_press()
                 }
             }
-        })
+            else {
+                if !turboManager.turboActive { // if turbo button is not being held
+                    // note: for the case of turbo button being held, do nothing to avoid duplicate toggling of turbo for a button
+                    
+                    // if turbo button is not being held:
+                    send_dpad_release()
+                    if (turboManager.isTurboEnabled(input)) { // the released button is a turbo-enabled button
+                        turboManager.stopTurboForButton(input)
+                    }
+                }
+            }
+        }, perform: {})
     }
+    
+    private func handleTap() {
+#if DEBUG
+        print("DPad Tapped")
+#endif
+        send_dpad_press()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            send_dpad_release()
+        }
+    }
+    
     private func send_dpad_press() {
 #if DEBUG
         print("TURBO-DISABLED DPad PRESS")

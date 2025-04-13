@@ -178,11 +178,11 @@ struct ContentView: View {
                 bluetoothManager.stopScanning()
             }
         }
-        .onAppear {
-            Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
-                bluetoothManager.pingServer()
-            }
-        }
+//        .onAppear {
+//            Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { _ in
+//                bluetoothManager.pingServer()
+//            }
+//        }
     }
 }
 
