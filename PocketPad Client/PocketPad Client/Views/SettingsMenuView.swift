@@ -16,15 +16,36 @@ private let maxHeightFraction: CGFloat = 0.9
 struct SettingsMenuView: View {
     // MARK: - Bound Properties
     @Binding var isShowingSettings: Bool
+    @Binding var exitAllMenusCallback: (() -> Void)?
+    @Binding var isCustomLayout: Bool
+    @AppStorage("hapticsEnabled") var hapticsEnabled: Bool = true
+    @ObservedObject private var layoutManager = LayoutManager.shared
     
     @AppStorage("splitDPad") var splitDPad: Bool = false
-    @AppStorage("selectedController") var selectedController: String = ControllerType.Xbox.stringValue
+    @AppStorage("selectedController") var selectedController: String = ControllerType.getDefaultName()
     @AppStorage("controllerColor") var controllerColor: Color = .blue
     @AppStorage("controllerName") var controllerName: String = "Controller"
-    
+
+    @AppStorage("motionControlEnabled") var motionControlEnabled: Bool = false
+
+    @EnvironmentObject var motionManager: MotionManager
+
+    @State private var playerName: String = LayoutManager.shared.player_id_string
     @State private var showDPadStyle: Bool = false
     @State private var saveAsMalformed: Bool = false
-    @State private var availableControllers: [String] = [] // TODO: Change this to a VM later
+    @State private var makingNewLayout: Bool = false
+    @State private var newLayoutName: String = ""
+    
+    @EnvironmentObject private var alertManager: AlertManager
+    
+    @State private var showingLeftDeadzoneView: Bool = false
+    @State private var showingRightDeadzoneView: Bool = false
+    @State private var leftJoystickDeadzone: Double = LayoutManager.shared.getLeftJoystickDeadzone()
+    @State private var rightJoystickDeadzone: Double = LayoutManager.shared.getRightJoystickDeadzone()
+    
+    @ObservedObject private var turboManager = TurboManager.shared
+    @State private var showingTurboSettings: Bool = false
+
     
     // MARK: - Body
     var body: some View {
@@ -50,23 +71,53 @@ struct SettingsMenuView: View {
                     )
                 
                 // Menu Content
-                VStack(spacing: 0) {
-                    headerView
-                    Divider()
-                        .padding(.bottom, 6)
-                    ScrollView {
-                        settingsContent
-                            .padding(.bottom, 20)
+                if !showingLeftDeadzoneView && !showingRightDeadzoneView && !showingTurboSettings {
+                    VStack(spacing: 0) {
+                        headerView
+                        Divider()
+                            .padding(.bottom, 6)
+                        ScrollView {
+                            settingsContent
+                                .padding(.bottom, 20)
+                        }
+                        .accessibilityIdentifier("SettingsScrollView")
+                        Spacer()
                     }
-                    Spacer()
+                    .frame(width: menuWidth, height: menuHeight)
+                    .onAppear {
+                        if let savedController = UserDefaults.standard.string(forKey: "selectedController") {
+                            selectedController = savedController
+                        }
+                    }
+
                 }
-                .frame(width: menuWidth, height: menuHeight)
+                
+                if showingLeftDeadzoneView {
+                    JoystickDeadzoneView(
+                        isShowingDeadzoneView: $showingLeftDeadzoneView,
+                        deadzoneValue: $leftJoystickDeadzone,
+                        joystickName: .constant("Left Joystick")
+                    )
+                }
+                
+                if showingRightDeadzoneView {
+                    JoystickDeadzoneView(
+                        isShowingDeadzoneView: $showingRightDeadzoneView,
+                        deadzoneValue: $rightJoystickDeadzone,
+                        joystickName: .constant("Right Joystick")
+                    )
+                }
+                
+                if showingTurboSettings {
+                    TurboSettingsView(isShowingTurboSettings: $showingTurboSettings)
+                }
             }
             // Center the menu on the screen
             .position(
                 x: geometry.size.width / 2,
                 y: geometry.size.height / 2
             )
+
         }
     }
     
@@ -96,14 +147,14 @@ struct SettingsMenuView: View {
         VStack(alignment: .leading, spacing: 14) {
             // Controller Type Picker
             HStack {
-                Text("Controller Type")
+                Text("Current Layout")
                     .foregroundColor(.primary)
                 Spacer()
-                Picker("Controller Type", selection: $selectedController) {
+                Picker("Picker\(selectedController)", selection: $selectedController) {
 //                    ForEach(ControllerType.allCases, id: \.self) { type in
 //                        Label(type.stringValue, image: type.stringValue).tag(type.stringValue)
 //                    }
-                    ForEach(availableControllers, id: \.self) { layout in
+                    ForEach(layoutManager.availableLayouts, id: \.self) { layout in
                         Label(layout, image: layout.lowercased()).tag(layout)
                     }
                 }
@@ -114,19 +165,57 @@ struct SettingsMenuView: View {
                     do {
                         try LayoutManager.shared.setCurrentLayout(to: selectedController)
                         showDPadStyle = LayoutManager.shared.hasDPad
+                        leftJoystickDeadzone = LayoutManager.shared.getLeftJoystickDeadzone()
+                        rightJoystickDeadzone = LayoutManager.shared.getRightJoystickDeadzone()
+                        turboManager.stopAllTurbo()
+                        
+                        isCustomLayout = !DefaultLayouts.isDefaultLayout(name: selectedController)
                     } catch {
                         UIApplication.shared.alert(title: "Failed to load layout", body: error.localizedDescription)
-                        selectedController = ControllerType.Xbox.stringValue
+                        selectedController = ControllerType.getDefaultName()
                     }
                 }
                 .onAppear {
+                    exitAllMenusCallback = exitAllMenus
                     showDPadStyle = LayoutManager.shared.hasDPad
-                    availableControllers = LayoutManager.shared.availableLayouts
                 }
             }
-            .padding(.horizontal, 16)
+            Button(action: {
+                newLayoutName = ""
+                makingNewLayout.toggle()
+            }) {
+                Text("Create New Layout")
+            }
+            .accessibilityIdentifier("CreateNewLayoutButton")
+            .alert("New Layout", isPresented: $makingNewLayout) {
+                TextField("Layout Name", text: $newLayoutName)
+                    .accessibilityIdentifier("Name")
+                
+                Button("OK", action: {
+                    if newLayoutName != "" {
+                        do {
+                            guard !layoutManager.layoutExists(for: newLayoutName) else { throw LayoutError.duplicate }
+                            let newLayout: LayoutConfig = .init(name: newLayoutName, buttons: [])
+                            try layoutManager.saveLayout(newLayout)
+                            try layoutManager.loadLayouts(includeControllerTypes: true)
+                            try layoutManager.setCurrentLayout(to: newLayoutName)
+                            selectedController = newLayoutName
+                        } catch {
+                            UIApplication.shared.alert(body: error.localizedDescription)
+                        }
+                    }
+                })
+                .accessibilityIdentifier("LayoutNameOK")
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text("What will the name of the layout be?")
+            }
+            // MARK: Share Layout
+            if isCustomLayout {
+                ShareLink("Share Layout", item: layoutManager.getLayoutURL(name: selectedController))
+            }
             //Picker for D-PAD (Split (True) vs Conjoined (False))
-            if showDPadStyle {
+            if layoutManager.hasDPad {
                 HStack {
                     Text("DPad Style")
                         .foregroundColor(.primary)
@@ -139,7 +228,6 @@ struct SettingsMenuView: View {
                     .accessibilityAddTraits(.isButton)
                     .accessibilityIdentifier("DPadStyle")
                 }
-                .padding(.horizontal, 16)
             }
             
             // Controller Color Section
@@ -155,7 +243,6 @@ struct SettingsMenuView: View {
                     .accessibilityIdentifier("ControllerColorPicker")
 
             }
-            .padding(.horizontal, 16)
             HStack {
                 Text("Controller Name")
                     .foregroundColor(.primary)
@@ -164,7 +251,105 @@ struct SettingsMenuView: View {
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .accessibilityIdentifier("NameField")
             }
-            .padding(.horizontal, 16)
+             HStack {
+                Text("Player Name")
+                    .foregroundColor(.primary)
+                Spacer()
+                TextField("Enter Player Name", text: $playerName, onCommit: {
+                    // Update the shared LayoutManager when editing is complete
+                    LayoutManager.shared.player_id_string = playerName
+                })
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .accessibilityIdentifier("NameField")
+            }
+            
+            .alert(
+                alertManager.alertTitle,
+                isPresented: $alertManager.showAlert
+            ) {
+            } message: {
+                Text(alertManager.alertMessage)
+            }
+            
+            // MARK: - Joystick deadzone
+            Section {
+                // Left joystick
+                HStack {
+                    Text("Left Joystick Deadzone")
+                    Spacer()
+                    Button(action: {
+                        showingLeftDeadzoneView = true
+                    }) {
+                        Text("\(Int(leftJoystickDeadzone * 100))%")
+                            .foregroundColor(.blue)
+                    }
+                    .accessibilityIdentifier("LeftDeadzoneButton")
+                }
+                
+                // Right joystick
+                HStack {
+                    Text("Right Joystick Deadzone")
+                    Spacer()
+                    Button(action: {
+                        showingRightDeadzoneView = true
+                    }) {
+                        Text("\(Int(rightJoystickDeadzone * 100))%")
+                            .foregroundColor(.blue)
+                    }
+                    .accessibilityIdentifier("RightDeadzoneButton")
+                }
+            } header: {
+                Text("Joystick Settings")
+                    .font(.footnote)
+                    .foregroundStyle(Color(uiColor: .secondaryLabel))
+            }
+            
+            // MARK: - Turbo Settings
+            Section {
+                HStack {
+                    Text("Turbo Repeat Rate")
+                    Spacer()
+                    Button(action: {
+                        showingTurboSettings = true
+                    }) {
+                        Text("\(Int(turboManager.turboRate)) presses/sec")
+                            .foregroundColor(.blue)
+                    }
+                    .accessibilityIdentifier("TurboRateButton")
+                }
+            } header: {
+                Text("Turbo Settings")
+                    .font(.footnote)
+                    .foregroundStyle(Color(uiColor: .secondaryLabel))
+            }
+            
+            // MARK: Add toggle for motion control
+            HStack {
+                Text("Enable Motion Control")
+                    .foregroundColor(.primary)
+                Spacer()
+                Toggle("", isOn: $motionControlEnabled)
+                    .labelsHidden()
+                    .accessibilityIdentifier("MotionControlToggle")
+                    // Updated iOS 17 .onChange signature
+                    .onChange(of: motionControlEnabled) {
+                        if motionControlEnabled {
+                            motionManager.startUpdates()
+                        } else {
+                            motionManager.stopUpdates()
+                        }
+                    }
+            }
+            
+            // MARK: - Haptic Feedback Toggle
+            HStack {
+                Text("Enable Haptic Feedback")
+                    .foregroundColor(.primary)
+                Spacer()
+                Toggle("", isOn: $hapticsEnabled)
+                    .labelsHidden()
+                    .accessibilityIdentifier("HapticFeedbackToggle")
+            }
             
             // MARK: Saving layouts (temporary)
             Section {
@@ -187,11 +372,10 @@ struct SettingsMenuView: View {
                 // Remove files for layout
                 Button(action: {
                     do {
-                        try LayoutManager.shared.setCurrentLayout(to: ControllerType.Xbox.stringValue)
+                        try LayoutManager.shared.setCurrentLayout(to: ControllerType.getDefaultName())
                         try LayoutManager.shared.deleteAllLayouts()
                         try LayoutManager.shared.loadLayouts(includeControllerTypes: true)
-                        selectedController = ControllerType.Xbox.stringValue
-                        availableControllers = LayoutManager.shared.availableLayouts
+                        selectedController = ControllerType.getDefaultName()
                     } catch {
                         UIApplication.shared.alert(body: error.localizedDescription)
                     }
@@ -205,8 +389,8 @@ struct SettingsMenuView: View {
                     .font(.footnote)
                     .foregroundStyle(Color(uiColor: .secondaryLabel))
             }
-            .padding(.horizontal, 16)
         }
+        .padding(.horizontal, 16)
     }
     
     func saveLayoutFile(for controller: ControllerType) {
@@ -219,7 +403,6 @@ struct SettingsMenuView: View {
                 try LayoutManager.shared.saveLayout(layout)
             }
             try LayoutManager.shared.loadLayouts(includeControllerTypes: true)
-            availableControllers = LayoutManager.shared.availableLayouts
             UIApplication.shared.alert(title: "Layout Successfully Saved", body: "It can be found in the \"Controller Type\" menu.")
         } catch {
             UIApplication.shared.alert(body: "Failed to save the layout:\n\(error.localizedDescription)")
@@ -243,10 +426,8 @@ struct SettingsMenuView: View {
         alert.addAction(wiiAction)
         let malformedAction = UIAlertAction(title: "Malformed", style: .default) { (action) in
             // make a malformed layout
-            let badLayout = LayoutConfig.init(name: "Malformed", landscapeButtons: [
-                BadButtonTypeConfig(position: CGPointZero, scale: 0, type: .joystick, inputId: 0)
-            ], portraitButtons: [
-                
+            let badLayout = LayoutConfig.init(name: "Malformed", buttons: [
+                BadButtonTypeConfig(position: .init(scaledPos: CGPointZero), scale: 0.0, rotation: 0.0, type: .joystick, inputId: 0)
             ])
             do {
                 try LayoutManager.shared.saveLayout(badLayout)
@@ -271,12 +452,20 @@ struct SettingsMenuView: View {
         // present the alert
         UIApplication.shared.windows.first?.rootViewController?.present(alert, animated: true)
     }
+    
+    func exitAllMenus() {
+        showingLeftDeadzoneView = false
+        showingRightDeadzoneView = false
+        showingTurboSettings = false
+    }
 }
 
 // MARK: - Preview
 #Preview {
     SettingsMenuView(
-        isShowingSettings: .constant(true)
+        isShowingSettings: .constant(true),
+        exitAllMenusCallback: .constant(nil),
+        isCustomLayout: .constant(true)
     )
 }
 

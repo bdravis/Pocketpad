@@ -18,8 +18,8 @@ struct DPadButtonView: View {
             if !split {
                 // Background path
                 Plus(thickness: DPAD_THICKNESS)
-                    .fill(Color(uiColor: .secondarySystemFill))
-                    .stroke(.black, style: StrokeStyle(lineWidth: 3, lineCap: .square, lineJoin: .bevel))
+                    .fill(config.style.color ?? Color(uiColor: .secondarySystemFill))
+                    .stroke(.black, style: StrokeStyle(lineWidth: config.style.borderThickness, lineCap: .square, lineJoin: .bevel))
                 
                 // Center Circle
                 Circle()
@@ -31,9 +31,9 @@ struct DPadButtonView: View {
             
             // Horizontal directional arrows
             HStack {
-                DirectionalArrow(split: split, rotation: -90, input: config.inputs[.left], direction: .left, config: config) // left arrow
+                DirectionalArrow(split: split, rotation: -90, input: .DPadLeft, direction: .left, config: config) // left arrow
                 Spacer()
-                DirectionalArrow(split: split, rotation: 90, input: config.inputs[.right], direction: .right, config: config) // right arrow
+                DirectionalArrow(split: split, rotation: 90, input: .DPadRight, direction: .right, config: config) // right arrow
                     .accessibilityIdentifier("DPadButton")
             }
             .frame(maxHeight: DPAD_THICKNESS)
@@ -41,9 +41,9 @@ struct DPadButtonView: View {
             
             // Vertical directional arrows
             VStack {
-                DirectionalArrow(split: split, rotation: 0, input: config.inputs[.up], direction: .up, config: config) // up arrow
+                DirectionalArrow(split: split, rotation: 0, input: .DPadUp, direction: .up, config: config) // up arrow
                 Spacer()
-                DirectionalArrow(split: split, rotation: 180, input: config.inputs[.down], direction: .down, config: config) // down arrow
+                DirectionalArrow(split: split, rotation: 180, input: .DPadDown, direction: .down, config: config) // down arrow
             }
             .frame(maxWidth: DPAD_THICKNESS)
         }
@@ -53,11 +53,12 @@ struct DPadButtonView: View {
 // Style for the directional arrow on the D-Pad
 struct DirectionalArrow: View {
     @StateObject private var bluetoothManager = BluetoothManager.shared
+    @StateObject private var turboManager = TurboManager.shared
     
     var split: Bool
     
     let rotation: Double
-    let input: String? // input used for the button action
+    let input: ButtonInput // input used for the button action
     let direction: DPadDirection
     let config: DPadConfig // need to know id of config to identify the unique dpad
     
@@ -66,7 +67,10 @@ struct DirectionalArrow: View {
             //
         }) {
             Triangle()
-                .stroke(style: StrokeStyle(lineWidth: 1.5, lineJoin: .round))
+                .stroke(
+                    turboManager.isTurboEnabled(input) ? Color.yellow : Color.primary,
+                    style: StrokeStyle(lineWidth: 1.5, lineJoin: .round)
+                )
                 .background(
                     Triangle()
                         .opacity(split ? 1.0 : 0.0)
@@ -77,33 +81,57 @@ struct DirectionalArrow: View {
                 .rotationEffect(.degrees(rotation))
                 .aspectRatio(1.0, contentMode: .fit)
         }
-        .buttonStyle(DPadButtonStyle(split: split))
+        .buttonStyle(DPadButtonStyle(style: config.style, split: split))
         .pressAction(onPress: {
-            if let service = bluetoothManager.selectedService {
-                let ui8_playerId: UInt8 = 0 // Assuming one player
-                let ui8_inputId : UInt8 = config.inputId
-                let ui8_buttonType : UInt8 = config.type.rawValue
-                let ui8_event : UInt8 = ButtonEvent.pressed.rawValue
-                
-                let ui8_dpadDirection : UInt8 = direction.rawValue
-                
-                let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event, ui8_dpadDirection])
-                print("PRESS")
-                bluetoothManager.sendInput(data)
+            if turboManager.turboActive { // turbo button is being held and then another button is pressed
+                turboManager.toggleTurboForButton(input)
+            } else if turboManager.isTurboEnabled(input) { // while turbo is not being held, a turbo-enabled button is held
+                turboManager.startTurboForButton(
+                    input,
+                    buttonPressHandler: sendDPadPress,
+                    buttonReleaseHandler: sendDPadRelease
+                )
+            } else {
+                // this case is a simple button press/hold
+                sendDPadPress()
             }
         }, onRelease: {
-            if let service = bluetoothManager.selectedService {
-                let ui8_playerId: UInt8 = 0 // Assuming one player
-                let ui8_inputId : UInt8 = config.inputId
-                let ui8_buttonType : UInt8 = config.type.rawValue
-                let ui8_event : UInt8 = ButtonEvent.released.rawValue
+            if !turboManager.turboActive { // if turbo button is not being held
+                // note: for the case of turbo button being held, do nothing to avoid duplicate toggling of turbo for a button
                 
-                let ui8_dpadDirection : UInt8 = direction.rawValue
-                
-                let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event, ui8_dpadDirection])
-                print("RELEASE")
-                bluetoothManager.sendInput(data)
+                // if turbo button is not being held:
+                sendDPadRelease()
+                if (turboManager.isTurboEnabled(input)) { // the released button is a turbo-enabled button
+                    turboManager.stopTurboForButton(input)
+                }
             }
         })
     }
+    
+    private func sendDPadPress() {
+#if DEBUG
+        print("DPAD PRESS")
+#endif
+        sendDPadInput(buttonEvent: .pressed)
+    }
+    private func sendDPadRelease() {
+#if DEBUG
+        print("DPAD RELEASE")
+#endif
+        sendDPadInput(buttonEvent: .released)
+    }
+    
+    func sendDPadInput(buttonEvent: ButtonEvent) {
+        let ui8_playerId: UInt8 = LayoutManager.shared.player_id
+        let ui8_inputId : UInt8 = config.inputId
+        let ui8_buttonType : UInt8 = config.type.rawValue
+        let ui8_event : UInt8 = buttonEvent.rawValue
+        
+        let ui8_dpadDirection : UInt8 = direction.rawValue
+        
+        let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event, ui8_dpadDirection])
+        bluetoothManager.sendInput(data)
+    }
+    
+    
 }

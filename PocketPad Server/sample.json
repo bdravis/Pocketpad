@@ -1,0 +1,238 @@
+{
+    "name": "Switch",
+    "wrappedLandscapeButtons": [
+      {
+        "discriminator": "RegularButtonConfig",
+        "type": 0,
+        "position": { "x": 650, "y": 180 },
+        "scale": 0.75,
+        "inputId": 0,
+        "input": "X",
+        "style": {
+          "shape": "Circle",
+          "iconType": "Text",
+          "icon": "X"
+        },
+        "turbo": false
+      },
+      {
+        "discriminator": "RegularButtonConfig",
+        "type": 0,
+        "position": { "x": 600, "y": 230 },
+        "scale": 0.75,
+        "inputId": 1,
+        "input": "Y",
+        "style": {
+          "shape": "Circle",
+          "iconType": "Text",
+          "icon": "Y"
+        },
+        "turbo": false
+      },
+      {
+        "discriminator": "RegularButtonConfig",
+        "type": 0,
+        "position": { "x": 700, "y": 230 },
+        "scale": 0.75,
+        "inputId": 2,
+        "input": "A",
+        "style": {
+          "shape": "Circle",
+          "iconType": "Text",
+          "icon": "A"
+        },
+        "turbo": false
+      },
+      {
+        "discriminator": "RegularButtonConfig",
+        "type": 0,
+        "position": { "x": 650, "y": 280 },
+        "scale": 0.75,
+        "inputId": 3,
+        "input": "B",
+        "style": {
+          "shape": "Circle",
+          "iconType": "Text",
+          "icon": "B"
+        },
+        "turbo": false
+      },
+      {
+        "discriminator": "JoystickConfig",
+        "type": 1,
+        "position": { "x": 450, "y": 300 },
+        "scale": 1.5,
+        "inputId": 4,
+        "input": "RightJoystick"
+      },
+      {
+        "discriminator": "DPadConfig",
+        "type": 2,
+        "position": { "x": 250, "y": 300 },
+        "scale": 1.5,
+        "inputId": 5,
+        "inputs": {
+          "up": "DPadUp",
+          "right": "DPadRight",
+          "down": "DPadDown",
+          "left": "DPadLeft"
+        }
+      },
+      {
+        "discriminator": "JoystickConfig",
+        "type": 1,
+        "position": { "x": 70, "y": 210 },
+        "scale": 1.5,
+        "inputId": 6,
+        "input": "LeftJoystick"
+      },
+      {
+        "discriminator": "RegularButtonConfig",
+        "type": 0,
+        "position": { "x": 450, "y": 75 },
+        "scale": 0.6,
+        "inputId": 7,
+        "input": "Start",
+        "style": {
+          "shape": "Circle",
+          "iconType": "SFSymbol",
+          "icon": "plus"
+        },
+        "turbo": false
+      },
+      {
+        "discriminator": "RegularButtonConfig",
+        "type": 0,
+        "position": { "x": 250, "y": 75 },
+        "scale": 0.6,
+        "inputId": 8,
+        "input": "Select",
+        "style": {
+          "shape": "Circle",
+          "iconType": "Text",
+          "icon": "-"
+        },
+        "turbo": false
+      },
+      {
+        "discriminator": "RegularButtonConfig",
+        "type": 0,
+        "position": { "x": 400, "y": 140 },
+        "scale": 0.6,
+        "inputId": 9,
+        "input": "Home",
+        "style": {
+          "shape": "Circle",
+          "iconType": "SFSymbol",
+          "icon": "house"
+        },
+        "turbo": false
+      },
+      {
+        "discriminator": "RegularButtonConfig",
+        "type": 0,
+        "position": { "x": 300, "y": 140 },
+        "scale": 0.6,
+        "inputId": 10,
+        "input": "Screenshot",
+        "style": {
+          "shape": "Circle",
+          "iconType": "SFSymbol",
+          "icon": "square"
+        },
+        "turbo": false
+      },
+      {
+        "discriminator": "BumperConfig",
+        "type": 3,
+        "position": { "x": 70, "y": 120 },
+        "scale": 1.5,
+        "inputId": 11,
+        "input": "LB"
+      },
+      {
+        "discriminator": "BumperConfig",
+        "type": 3,
+        "position": { "x": 650, "y": 120 },
+        "scale": 1.5,
+        "inputId": 12,
+        "input": "RB"
+      },
+      {
+        "discriminator": "TriggerConfig",
+        "type": 4,
+        "position": { "x": 70, "y": 50 },
+        "scale": 1.5,
+        "inputId": 13,
+        "input": "LT",
+        "side": "left"
+      },
+      {
+        "discriminator": "TriggerConfig",
+        "type": 4,
+        "position": { "x": 650, "y": 50 },
+        "scale": 1.5,
+        "inputId": 14,
+        "input": "RT",
+        "side": "right"
+      }
+    ],
+    "wrappedPortraitButtons": [
+      {
+        "discriminator": "RegularButtonConfig",
+        "type": 0,
+        "position": { "x": 300, "y": 500 },
+        "scale": 0.75,
+        "inputId": 0,
+        "input": "X",
+        "style": {
+          "shape": "Circle",
+          "iconType": "Text",
+          "icon": "X"
+        },
+        "turbo": false
+      },
+      {
+        "discriminator": "RegularButtonConfig",
+        "type": 0,
+        "position": { "x": 250, "y": 550 },
+        "scale": 0.75,
+        "inputId": 1,
+        "input": "Y",
+        "style": {
+          "shape": "Circle",
+          "iconType": "Text",
+          "icon": "Y"
+        },
+        "turbo": false
+      },
+      {
+        "discriminator": "RegularButtonConfig",
+        "type": 0,
+        "position": { "x": 350, "y": 550 },
+        "scale": 0.75,
+        "inputId": 2,
+        "input": "A",
+        "style": {
+          "shape": "Circle",
+          "iconType": "Text",
+          "icon": "A"
+        },
+        "turbo": false
+      },
+      {
+        "discriminator": "RegularButtonConfig",
+        "type": 0,
+        "position": { "x": 300, "y": 600 },
+        "scale": 0.75,
+        "inputId": 3,
+        "input": "B",
+        "style": {
+          "shape": "Circle",
+          "iconType": "Text",
+          "icon": "B"
+        },
+        "turbo": false
+      }
+    ]
+  }

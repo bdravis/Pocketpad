@@ -16,23 +16,34 @@ enum DPadDirection: UInt8, ConfigType {
 }
 
 struct DPadConfig: ButtonConfig, ConfigType {
+    mutating func updateStyle<T>(to newStyle: T) {
+        if let newStyle = newStyle as? GeneralButtonStyle {
+            self.style = newStyle
+        }
+    }
+    
     // Protocol Properties
-    var position: CGPoint
+    var position: ButtonPosition
     var scale: CGFloat
+    var rotation: Double
+    var style: GeneralButtonStyle
     var type: ButtonType
     var inputId: UInt8
     
-    var inputs: [DPadDirection: String] // what the buttons of the dpad are
+    var inputs: [DPadDirection: ButtonInput] // what the buttons of the dpad are
     
     // Object Initializer
     init(
-        position: CGPoint, scale: CGFloat, inputId: UInt8,
-        inputs: [DPadDirection: String]
+        position: ButtonPosition, scale: CGFloat, rotation: Double = 0.0,
+        style: GeneralButtonStyle = .init(),
+        inputId: UInt8, inputs: [DPadDirection: ButtonInput]
     ) {
         self.type = .dpad
         
         self.position = position
         self.scale = scale
+        self.rotation = rotation
+        self.style = style
         
         self.inputId = inputId
         

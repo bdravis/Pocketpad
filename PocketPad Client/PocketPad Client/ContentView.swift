@@ -10,7 +10,9 @@ import SwiftUI
 struct ContentView: View {
     // MARK: - State Variables for Settings
     @State private var isShowingSettings = false
-    
+    @State private var exitAllMenusCallback: (() -> Void)? = nil
+    @State private var showModifyBtn = false
+
     @StateObject private var bluetoothManager = BluetoothManager.shared
     
     var body: some View {
@@ -103,14 +105,25 @@ struct ContentView: View {
                     
                     // NavigationLink to ControllerView for Debugging
                     HStack {
-                        NavigationLink(destination: ControllerView(layout: LayoutManager.shared.currentController)) {
+                        NavigationLink(destination: ControllerView(isEditor: false)) {
                             Text("Open Debug ControllerView")
                         }
                         .accessibilityIdentifier("OpenControllerView")
                     }
                     .padding(.horizontal)
                     
+                    // TODO: Move to settings page (was greyed out so had to add here)
+                    if showModifyBtn {
+                        NavigationLink(destination: ControllerView(isEditor: true), label: {
+                            Text("Modify Layout")
+                        })
+                        .accessibilityIdentifier("ModifyLayoutView")
+                    }
+                    
                     Spacer()
+                }
+                .onAppear {
+                    showModifyBtn = !DefaultLayouts.isDefaultLayout(name: LayoutManager.shared.currentController.name)
                 }
                 
                 // Gear Icon for Settings (top-right)
@@ -144,10 +157,15 @@ struct ContentView: View {
                         .animation(.easeOut, value: isShowingSettings)
                         .ignoresSafeArea()
                         .onTapGesture {
+                            exitAllMenusCallback?()
                             isShowingSettings = false
                         }
                     
-                    SettingsMenuView(isShowingSettings: $isShowingSettings)
+                    SettingsMenuView(
+                        isShowingSettings: $isShowingSettings,
+                        exitAllMenusCallback: $exitAllMenusCallback,
+                        isCustomLayout: $showModifyBtn
+                    )
                         .offset(y: isShowingSettings ? 0 : -geometry.size.height)
                         .transition(.move(edge: .top))
                         .animation(.bouncy, value: isShowingSettings)

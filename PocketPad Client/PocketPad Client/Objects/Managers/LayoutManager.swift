@@ -5,18 +5,25 @@
 //  Created by lemin on 3/4/25.
 //
 
-import Foundation
+import SwiftUI
 
-class LayoutManager {
+class LayoutManager: ObservableObject {
     static let shared = LayoutManager() // create a data singleton
     
     var player_id: UInt8 = 0
     
-    var availableLayouts: [String] = []
+    // If this is "Player", then a number will be added at the end to avoid duplicates
+    // This is to avoid duplicates whenever no custom name is chosen
+    var player_id_string: String = "Player"
+    
+    // This is used when requesting a new string to get around scope stuff
+    var requested_player_id_string: String = "Player"
+    
+    @Published var availableLayouts: [String] = []
     
     // Current Layout Information
-    var currentController: LayoutConfig = .init(name: "DEBUG", landscapeButtons: [], portraitButtons: [])
-    var hasDPad: Bool = false
+    @Published var currentController: LayoutConfig = .init(name: "DEBUG", buttons: [])
+    @Published var hasDPad: Bool = false
     
     func getLayoutsFolder() -> URL {
         // get a url for the layouts directory in the app's save files
@@ -34,18 +41,38 @@ class LayoutManager {
     func saveLayout(_ layout: LayoutConfig) throws {
         let encoder = PropertyListEncoder()
         let data = try encoder.encode(layout)
-        let url = getLayoutsFolder().appendingPathComponent("\(layout.name).plist", conformingTo: .propertyList)
+        let url = getLayoutURL(for: layout)
         try data.write(to: url)
         print("written to \(url.absoluteString)")
+        // update the current layout if needed
+        if currentController.name == layout.name {
+            currentController = layout
+            if currentController.buttons.enumerated().filter({ $0.element.type == ButtonType.dpad }).count > 0 {
+                self.hasDPad = true
+            } else {
+                self.hasDPad = false
+            }
+        }
+    }
+    
+    func saveCurrentLayout() throws {
+        try saveLayout(self.currentController)
     }
     
     func saveMalformedLayout(_ layout: LayoutConfig) throws {
         // for testing, malform the file by encoding as a json instead
         let encoder = JSONEncoder()
         let data = try encoder.encode(layout)
-        let url = getLayoutsFolder().appendingPathComponent("\(layout.name).plist", conformingTo: .propertyList)
+        let url = getLayoutURL(for: layout)
         try data.write(to: url)
         print("written to \(url.absoluteString)")
+    }
+    
+    func getLayoutURL(name: String) -> URL {
+        return getLayoutsFolder().appendingPathComponent("\(name).pp")
+    }
+    func getLayoutURL(for layout: LayoutConfig) -> URL {
+        return getLayoutURL(name: layout.name)
     }
     
     func deleteAllLayouts() throws {
@@ -62,6 +89,19 @@ class LayoutManager {
         }
     }
     
+    func deleteLayout(_ name: String) throws {
+        // delete the layout from both folder and file contents
+        if let idx = availableLayouts.firstIndex(where: { $0 == name }) {
+            availableLayouts.remove(at: idx)
+            let url = getLayoutsFolder()
+            try FileManager.default.removeItem(at: url.appendingPathComponent("\(name).pp", conformingTo: .propertyList))
+            if currentController.name == name {
+                UserDefaults.standard.set(self.availableLayouts.first!, forKey: "selectedController")
+                try self.setCurrentLayout(to: self.availableLayouts.first!)
+            }
+        }
+    }
+    
     func loadLayouts(includeControllerTypes: Bool = false) throws {
         // load the list of file names from layouts
         availableLayouts.removeAll(keepingCapacity: true)
@@ -74,16 +114,68 @@ class LayoutManager {
         
         let url = getLayoutsFolder()
         for name in try FileManager.default.contentsOfDirectory(atPath: url.path()) {
-            availableLayouts.append(name.replacingOccurrences(of: ".plist", with: ""))
+            availableLayouts.append(name.replacingOccurrences(of: ".pp", with: ""))
         }
     }
     
     func loadLayout(for name: String) throws -> LayoutConfig {
-        let url = getLayoutsFolder().appendingPathComponent(name, conformingTo: .propertyList)
+        if let controller = getControllerType(for: name) {
+            return DefaultLayouts.getLayout(for: controller)
+        } else {
+            let url = getLayoutURL(name: name)
+            let decoder = PropertyListDecoder()
+            let data = try Data(contentsOf: url)
+            let layout = try decoder.decode(LayoutConfig.self, from: data)
+            return layout
+        }
+    }
+    
+    func layoutExists(for name: String) -> Bool {
+        return availableLayouts.filter({ $0 == name }).count > 0
+    }
+    func getNewName(for name: String) -> String {
+        if !layoutExists(for: name) {
+            return name
+        }
+        var count = 2
+        // O(n^2) but ¯\_(ツ)_/¯
+        while layoutExists(for: "\(name) \(count)") {
+            count += 1
+        }
+        return "\(name) \(count)"
+    }
+    
+    func renameLayout(from initial: String, to newName: String) throws {
+        if self.layoutExists(for: newName) {
+            throw LayoutError.duplicate
+        }
+        var layout = currentController.name == initial ? currentController : try self.loadLayout(for: initial)
+        layout.name = newName
+        try self.saveLayout(layout)
+        let url = getLayoutURL(name: initial)
+        do {
+            try FileManager.default.removeItem(at: url)
+            print("removed \(initial)")
+        } catch {
+            print("failed to remove \(initial): \(error.localizedDescription)")
+        }
+        if self.currentController.name == initial {
+            // update the current controller
+            currentController.name = newName
+            UserDefaults.standard.set(newName, forKey: "selectedController")
+        }
+        try self.loadLayouts(includeControllerTypes: true)
+    }
+    
+    func importLayoutFile(url: URL) throws -> String {
         let decoder = PropertyListDecoder()
         let data = try Data(contentsOf: url)
-        let layout = try decoder.decode(LayoutConfig.self, from: data)
-        return layout
+        var layout = try decoder.decode(LayoutConfig.self, from: data)
+        // update the name to make sure they don't overlap
+        let validName = self.getNewName(for: layout.name)
+        layout.name = validName
+        try self.saveLayout(layout)
+        return validName
     }
     
     private func getControllerType(for name: String) -> ControllerType? {
@@ -96,19 +188,71 @@ class LayoutManager {
     }
     
     func setCurrentLayout(to name: String) throws {
-        if let controller = getControllerType(for: name) {
-            // load the default config from code rather than file
-            self.currentController = DefaultLayouts.getLayout(for: controller)
-        } else {
-            self.currentController = try loadLayout(for: "\(name).plist")
-        }
+        self.currentController = try loadLayout(for: name)
         // check if it has a d-pad
-        if currentController.landscapeButtons.enumerated().filter({ $0.element.type == ButtonType.dpad }).count > 0 {
-            self.hasDPad = true
-        } else if currentController.portraitButtons.enumerated().filter({ $0.element.type == ButtonType.dpad }).count > 0 {
+        if currentController.buttons.enumerated().filter({ $0.element.type == ButtonType.dpad }).count > 0 {
             self.hasDPad = true
         } else {
             self.hasDPad = false
+        }
+    }
+    
+    // Helper functions for accessing and updating left and right joystick deadzone values
+    func getLeftJoystickDeadzone() -> Double {
+        return (currentController.buttons.first(where: {
+            ($0 as? JoystickConfig)?.input == .LeftJoystick
+        }) as? JoystickConfig)?.deadzone ?? 0.0
+    }
+    
+    func getRightJoystickDeadzone() -> Double {
+        return (currentController.buttons.first(where: {
+            ($0 as? JoystickConfig)?.input == .RightJoystick
+        }) as? JoystickConfig)?.deadzone ?? 0.0
+    }
+    
+    func updateLeftJoystickDeadzone(_ newDeadzone: Double) {
+        for i in 0..<currentController.buttons.count {
+            // find joystick
+            if var joystickButton = currentController.buttons[i] as? JoystickConfig {
+                if (joystickButton.input == .LeftJoystick) {
+                    // update deadzone
+                    joystickButton.deadzone = newDeadzone
+                    currentController.buttons[i] = joystickButton
+                }
+            }
+        }
+    }
+    
+    func updateRightJoystickDeadzone(_ newDeadzone: Double) {
+        for i in 0..<currentController.buttons.count {
+            // find joystick
+            if var joystickButton = currentController.buttons[i] as? JoystickConfig {
+                if (joystickButton.input == .RightJoystick) {
+                    // update deadzone
+                    joystickButton.deadzone = newDeadzone
+                    currentController.buttons[i] = joystickButton
+                }
+            }
+        }
+    }
+
+    func deleteButton(inputId: UInt8) {
+        // delete the button with the corresponding input id and fix all the input ids to be in chronological order
+        currentController.buttons.removeAll { $0.inputId == inputId }
+        // fix ids
+        var currentId: UInt8 = 0
+        currentController.buttons.enumerated().forEach { idx, _ in
+            currentController.buttons[idx].inputId = currentId
+            currentId += 1
+        }
+    }
+    
+    
+    // MARK: Updating layout files for new format
+    func updateLayoutFilesForNewFormat() throws {
+        for file in try FileManager.default.contentsOfDirectory(at: getLayoutsFolder(), includingPropertiesForKeys: nil, options: .skipsHiddenFiles).filter({ $0.pathExtension == "plist" }) {
+            // rename file
+            try FileManager.default.moveItem(at: file, to: file.deletingPathExtension().appendingPathExtension("pp"))
         }
     }
 }

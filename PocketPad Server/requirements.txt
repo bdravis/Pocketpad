@@ -5,3 +5,4 @@ git+https://github.com/12944qwerty/bless.git@descriptors
 imageio
 nuitka
 zstandard
+qasync

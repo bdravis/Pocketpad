@@ -9,6 +9,22 @@ import CoreBluetooth
 import SwiftUI
 import Combine
 
+final class AlertManager: ObservableObject {
+    static let shared = AlertManager() // Singleton
+    
+    @Published var showAlert = false
+    @Published var alertTitle = ""
+    @Published var alertMessage = ""
+    
+    func show(title: String, message: String) {
+        DispatchQueue.main.async { // Must run on main thread
+            self.alertTitle = title
+            self.alertMessage = message
+            self.showAlert = true
+        }
+    }
+}
+
 // MARK: - Bluetooth Manager
 class BluetoothManager: NSObject, ObservableObject {
     static let shared = BluetoothManager()
@@ -29,6 +45,10 @@ class BluetoothManager: NSObject, ObservableObject {
     
     @Published var connectionError: String?
     
+    @State private var showingIDTakenAlert = false
+    @State private var idTakenMessage = ""
+    
+
     private override init() {
         super.init()
         centralManager = CBCentralManager(delegate: self, queue: nil)
@@ -74,19 +94,19 @@ class BluetoothManager: NSObject, ObservableObject {
     
     func pingServer() {
         guard let service = selectedService else { return }
-        if let char = discoveredCharacteristics.first(where: { $0.uuid == LATENCY_CHARACTERISTIC }) {
-            let now = UInt32(min((Date().timeIntervalSinceReferenceDate * 1000).truncatingRemainder(dividingBy: 100000), Double(UInt32.max)))
-            //service.peripheral?.writeValue(String(now).data(using: .utf8)!, for: char, type: .withResponse)
-            
-            let playerIDBytes = withUnsafeBytes(of: LayoutManager.shared.player_id.littleEndian) { Data($0) }
-
-            let timestampBytes = withUnsafeBytes(of: now.littleEndian) { Data($0) }
-
-            // Concatenates, not bitwise add
-            let dataToSend = Data(playerIDBytes + timestampBytes)
-            
-            service.peripheral?.writeValue(dataToSend, for: char, type: .withResponse)
-        }
+//        if let char = discoveredCharacteristics.first(where: { $0.uuid == LATENCY_CHARACTERISTIC }) {
+//            let now = UInt32(min((Date().timeIntervalSinceReferenceDate * 1000).truncatingRemainder(dividingBy: 100000), Double(UInt32.max)))
+//            //service.peripheral?.writeValue(String(now).data(using: .utf8)!, for: char, type: .withResponse)
+//            
+//            let playerIDBytes = withUnsafeBytes(of: LayoutManager.shared.player_id.littleEndian) { Data($0) }
+//
+//            let timestampBytes = withUnsafeBytes(of: now.littleEndian) { Data($0) }
+//
+//            // Concatenates, not bitwise add
+//            let dataToSend = Data(playerIDBytes + timestampBytes)
+//            
+//            service.peripheral?.writeValue(dataToSend, for: char, type: .withResponse)
+//        }
     }
      
     func disconnect() {
@@ -224,17 +244,36 @@ extension BluetoothManager: CBPeripheralDelegate {
             if characteristic.uuid == CONNECTION_CHARACTERISTIC {
                 // Send the message upon discovering the characteristic
                 
-                let selectedController = UserDefaults.standard.string(forKey: "selectedController") ?? "Xbox"
+                send_string_id_and_request_string_number()
                 
-                let selectedControllerValue = ControllerType(stringValue: selectedController)?.rawValue ?? 0
-                
-                let response_data = [LayoutManager.shared.player_id, ConnectionMessage.connecting.rawValue, UInt8(selectedControllerValue)]
-                
-                peripheral.writeValue(Data(response_data), for: characteristic, type: .withResponse)
-                peripheral.readValue(for: characteristic)
-
             }
         }
+    }
+
+    func send_string_id_and_request_string_number() {
+        
+        guard let service = selectedService else { return }
+        guard let characteristics = service.characteristics else { return }
+        let requested_player_id = LayoutManager.shared.player_id_string.utf8
+        let requested_player_id_len: UInt8 = UInt8(LayoutManager.shared.player_id_string.count)
+        
+        let packet = Data([LayoutManager.shared.player_id, ConnectionMessage.requesting_id.rawValue, requested_player_id_len] + requested_player_id)
+       
+        for characteristic in characteristics {
+            if characteristic.uuid == CONNECTION_CHARACTERISTIC {
+                
+                service.peripheral?.writeValue(packet, for: characteristic, type: .withResponse)
+                service.peripheral?.readValue(for: characteristic)
+
+                
+                // Rest of functionality on this path is in didUpdateValueFor with ConnectionMessage.requesting_id
+            }
+        }
+        
+    }
+    
+    func requestID() {
+        
     }
     
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
@@ -253,7 +292,7 @@ extension BluetoothManager: CBPeripheralDelegate {
         if characteristic.uuid == CONNECTION_CHARACTERISTIC {
             // Process the server's response
             if let value = characteristic.value {
-                let newId = value[0] // Assuming the response is a single byte
+                //let newId = value[0] // Assuming the response is a single byte
                 let signal = value[1] // Assuming the response is a single byte
                 print("Server response: \(signal)")
                 
@@ -271,13 +310,74 @@ extension BluetoothManager: CBPeripheralDelegate {
                 }
                 
                 // Check if the response is RECIEVED_CONNECTION_INFORMATION
-                if signal == ConnectionMessage.connecting.rawValue {
+                if signal == ConnectionMessage.requesting_id.rawValue {
                     print("Server acknowledged connection")
                     print("player_id: \(value)")
                     
-                    LayoutManager.shared.player_id = newId
+                    let int_player_id = value.withUnsafeBytes { $0.load(as: UInt8.self) }
+                    
+                    if int_player_id != 255 {
+                        // If requested Id is available,continue with connection
+                        
+                        LayoutManager.shared.player_id = int_player_id
+                        
+                        let selectedController = UserDefaults.standard.string(forKey: "selectedController") ?? ControllerType.getDefaultName()
+                        
+                        sendLayout(layout: LayoutManager.shared.currentController)
+                        
+                        let selectedControllerValue = ControllerType(stringValue: selectedController)?.rawValue ?? 0
+                        
+                        let response_data = [LayoutManager.shared.player_id, ConnectionMessage.connecting.rawValue, UInt8(selectedControllerValue)]
+                        
+                        peripheral.writeValue(Data(response_data), for: characteristic, type: .withResponse)
+                        peripheral.readValue(for: characteristic)
+                        
+                        
+                    } else {
+                        
+                        //Display to user that ID is taken
+                        print("invalid id")
+                        AlertManager.shared.show(
+                            title: "ID Taken",
+                            message: "The ID is already in use."
+                        )
+                        
+                        LayoutManager.shared.requested_player_id_string = "Player"
+                        BluetoothManager.shared.connectedDevice = nil
+                        
+
+                    }
+                    
 
                 }
+                
+                if signal == ConnectionMessage.requesting_id_change.rawValue {
+                    print("Server acknowledged connection")
+                    print("player_id: \(value)")
+                    
+                    let int_player_id = value.withUnsafeBytes { $0.load(as: UInt8.self) }
+                    
+                    if int_player_id != 255 {
+                        // If requested Id is available,continue with connection
+                        
+                        LayoutManager.shared.player_id_string = LayoutManager.shared.requested_player_id_string
+                        
+                    } else {
+                        
+                        //Display to user that ID is taken
+                        print("invalid id")
+                        AlertManager.shared.show(
+                            title: "ID Taken",
+                            message: "The ID is already in use."
+                        )
+                        LayoutManager.shared.requested_player_id_string = "Player"
+                        disconnect()
+
+                    }
+                    
+
+                }
+                
             }
             
         }
@@ -298,5 +398,124 @@ extension BluetoothManager: CBPeripheralDelegate {
             print("Error changing notification state: \(error.localizedDescription)")
             return
         }
+    }
+    
+    func sendLayout(layout: LayoutConfig) {
+        
+        guard let service = selectedService else { return }
+        
+        let encoder = JSONEncoder()
+        
+        var data = Data()
+        
+        do {
+            data = try encoder.encode(layout)
+        } catch {
+            print("encoding error when sending layout")
+            return
+        }
+        
+        let packet_size = 20
+        let code_size = 1
+        let id_size = 1
+        let size_size = 1
+        let subdata_size = 182
+        var position = 0
+        
+        guard let characteristics = service.characteristics else { return }
+        
+        for characteristic in characteristics {
+            if characteristic.uuid == CONNECTION_CHARACTERISTIC {
+                
+                let init_transmission_packet = Data([UInt8(LayoutManager.shared.player_id),
+                                                     UInt8(ConnectionMessage.transmitting_layout.rawValue),
+                                                     UInt8(255)
+                                                     ])
+                
+                service.peripheral?.writeValue(init_transmission_packet, for: characteristic, type: .withResponse)
+                service.peripheral?.readValue(for: characteristic)
+                
+                while position < data.count {
+                    
+                    let chunk_size: UInt8 = UInt8(min(position + subdata_size, data.count) - position)
+                    
+                    let chunk = data.subdata(in: position..<position + Int(chunk_size))
+                    
+                    let packet = Data([UInt8(LayoutManager.shared.player_id),
+                                       UInt8(ConnectionMessage.transmitting_layout.rawValue),
+                                       UInt8(chunk_size)
+                                       ]) + chunk
+                    
+                    service.peripheral?.writeValue(packet, for: characteristic, type: .withResponse)
+                    service.peripheral?.readValue(for: characteristic)
+                    position += subdata_size
+                }
+                
+                let end_transmission_packet = Data([UInt8(LayoutManager.shared.player_id),
+                                   UInt8(ConnectionMessage.transmitting_layout.rawValue),
+                                   UInt8(0)
+                                   ])
+                
+                service.peripheral?.writeValue(end_transmission_packet, for: characteristic, type: .withResponse)
+                service.peripheral?.readValue(for: characteristic)
+
+            }
+        }
+        
+    }
+    
+    func RequestPlayerIdStringChange(newPlayerIdString: String) {
+        
+        guard let service = selectedService else { return }
+        guard let characteristics = service.characteristics else { return }
+        
+        let requested_player_id = newPlayerIdString.utf8
+        let requested_player_id_len: UInt8 = UInt8(newPlayerIdString.count)
+        
+        LayoutManager.shared.requested_player_id_string = newPlayerIdString
+        
+        let packet = Data([LayoutManager.shared.player_id, ConnectionMessage.requesting_id_change.rawValue, requested_player_id_len] + requested_player_id)
+       
+        for characteristic in characteristics {
+            if characteristic.uuid == CONNECTION_CHARACTERISTIC {
+                
+                service.peripheral?.writeValue(packet, for: characteristic, type: .withResponse)
+                service.peripheral?.readValue(for: characteristic)
+
+                // Rest of functionality on this path is in didUpdateValueFor with ConnectionMessage.requesting_id
+            }
+        }
+        
+    }
+    
+}
+
+extension BluetoothManager {
+    //- Parameters:
+    //  - playerId: The player's ID as a UInt8.
+    //  - pitch: The pitch value (Float).
+    //   - roll: The roll value (Float).
+    //  - yaw: The yaw value (Float).
+    func sendMotionData(playerId: UInt8, pitch: Float, roll: Float, yaw: Float) {
+        guard let _ = selectedService else { return }
+        
+        // Convert the Float values to raw bytes (4 bytes each, little endian)
+        // We use the bitPattern property (UInt32) for consistent endianness
+        let pitchBytes = withUnsafeBytes(of: pitch.bitPattern.littleEndian) { Data($0) }
+        let rollBytes  = withUnsafeBytes(of: roll.bitPattern.littleEndian)  { Data($0) }
+        let yawBytes   = withUnsafeBytes(of: yaw.bitPattern.littleEndian)   { Data($0) }
+        
+        // Define a unique event code for motion data (e.g., 99)
+        let motionEvent: UInt8 = 99
+        
+        // Build the data packet:
+        // [playerId (1 byte), motionEvent (1 byte), pitch(4 bytes), roll(4 bytes), yaw(4 bytes)]
+        var packet = Data([playerId, motionEvent])
+        packet.append(pitchBytes)
+        packet.append(rollBytes)
+        packet.append(yawBytes)
+        
+        // Send the packet using the existing sendInput method
+        sendInput(packet)
     }
 }

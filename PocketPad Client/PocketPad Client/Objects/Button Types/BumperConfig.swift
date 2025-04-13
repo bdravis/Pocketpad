@@ -8,25 +8,31 @@
 import UIKit
 
 struct BumperConfig: ButtonConfig, ConfigType {
+    mutating func updateStyle<T>(to newStyle: T) {
+        return
+    }
+    
     // Protocol Properties
-    var position: CGPoint
+    var position: ButtonPosition
     var scale: CGFloat
+    var rotation: Double
     var type: ButtonType
     var inputId: UInt8
     
-    var input: String // the button it is bound to
+    var input: ButtonInput // the button it is bound to
     var style: RegularButtonStyle // style configuration of the button
     var turbo: Bool // whether or not it is a turbo tap
     
     // Object Initializer
     init(
-        position: CGPoint, scale: CGFloat, inputId: UInt8,
-        input: String, style: RegularButtonStyle? = nil, turbo: Bool = false
+        position: ButtonPosition, scale: CGFloat, rotation: Double = 0.0, inputId: UInt8,
+        input: ButtonInput, style: RegularButtonStyle? = nil, turbo: Bool = false
     ) {
         self.type = .bumper
         
         self.position = position
         self.scale = scale
+        self.rotation = rotation
         
         self.inputId = inputId
         
@@ -37,7 +43,7 @@ struct BumperConfig: ButtonConfig, ConfigType {
             self.style = style
         } else {
             // create a default style configuration
-            self.style = .init(shape: .Pill, iconType: .Text, icon: input)
+            self.style = .init(shape: .Pill, iconType: .Text, icon: input.rawValue)
         }
     }
 }
