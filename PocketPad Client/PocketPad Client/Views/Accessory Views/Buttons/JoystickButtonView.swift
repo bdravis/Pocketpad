@@ -123,8 +123,6 @@ struct JoystickButtonView: View {
                 }
             }
             .onEnded { _ in
-                let now = UInt32(min((Date().timeIntervalSinceReferenceDate * 1000).truncatingRemainder(dividingBy: 100000), Double(UInt32.max)))
-                let timestampBytes = withUnsafeBytes(of: now.littleEndian) { Data($0) }
                 
                 sendJoystickRelease()
                 
