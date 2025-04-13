@@ -271,6 +271,7 @@ class DSU_Server:
                 packet_number = self.packet_counter
                 self.packet_counter += 1
                 
+                # use for testing bad crc
                 randmac = random.randint(0,255)
 
                 input_packet_no_crc = struct.pack(
