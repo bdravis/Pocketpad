@@ -54,4 +54,11 @@ enum ControllerType: UInt8, CaseIterable {
             return nil
         }
     }
+    
+    static func getDefault() -> Self {
+        return Self.allCases.first!
+    }
+    static func getDefaultName() -> String {
+        return Self.allCases.first!.stringValue
+    }
 }

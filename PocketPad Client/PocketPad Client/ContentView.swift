@@ -164,7 +164,7 @@ struct ContentView: View {
                     SettingsMenuView(
                         isShowingSettings: $isShowingSettings,
                         exitAllMenusCallback: $exitAllMenusCallback,
-                        showModifyBtn: $showModifyBtn
+                        isCustomLayout: $showModifyBtn
                     )
                         .offset(y: isShowingSettings ? 0 : -geometry.size.height)
                         .transition(.move(edge: .top))
