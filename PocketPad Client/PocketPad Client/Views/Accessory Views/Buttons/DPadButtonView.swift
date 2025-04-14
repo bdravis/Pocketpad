@@ -25,7 +25,7 @@ struct DPadButtonView: View {
                 
                 // Center Circle
                 Circle()
-                    .stroke(.black, style: StrokeStyle(lineWidth: 1.5))
+                    .stroke(getStrokeColor(), style: StrokeStyle(lineWidth: 1.5))
                     .frame(width: DPAD_THICKNESS - 8, height: DPAD_THICKNESS - 8)
                     .accessibilityAddTraits(.isButton)
                     .accessibilityIdentifier("DPadConjoined")
