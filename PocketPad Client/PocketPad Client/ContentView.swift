@@ -14,7 +14,7 @@ struct ContentView: View {
     @State private var showModifyBtn = false
 
     @StateObject private var bluetoothManager = BluetoothManager.shared
-    
+        
     var body: some View {
         NavigationStack {
             ZStack {
@@ -178,11 +178,11 @@ struct ContentView: View {
                 bluetoothManager.stopScanning()
             }
         }
-        .onAppear {
-            Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
-                bluetoothManager.pingServer()
-            }
-        }
+//        .onAppear {
+//            Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { _ in
+//                bluetoothManager.pingServer()
+//            }
+//        }
     }
 }
 
