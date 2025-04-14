@@ -66,7 +66,7 @@ gatt: Dict = {
         LATENCY_CHARACTERISTIC: {
             "Properties": (
                 GATTCharacteristicProperties.read
-                | GATTCharacteristicProperties.write
+                | GATTCharacteristicProperties.write_without_response
                 | GATTCharacteristicProperties.indicate
             ),
             "Permissions": (
@@ -151,7 +151,7 @@ def reconstruct_timestamp(sent_ms):
     
     latency = cur_ms - closest_time
     
-    return closest_time, abs(latency)
+    return abs(latency)
 
 def map_inputID_to_inputs(json):
     for item in json['wrappedButtons']:
@@ -204,9 +204,8 @@ def process_latency_characteristic(characteristic):
     player_id = connection_information[0]
     recieved_time = connection_information[1]
 
-    sent_time, latency = reconstruct_timestamp(int(recieved_time))
+    latency = reconstruct_timestamp(int(recieved_time))
 
-    logger.debug(f"Client Sent Time (Reconstructed): {sent_time} ms")
     logger.debug(f"Estimated Latency for player {player_id}: {latency} ms")
         
     characteristic.value = str(latency).encode()
@@ -222,8 +221,6 @@ def process_input_characteristic(characteristic):
         logger.error("ERROR: Invalid Input")
     else:
         player_id, input_id, event = input_result
-
-        logger.debug(f"PLAYER ID: {player_id} -- INPUT ID: {input_id} -- EVENT: {event}")
         input_function(player_id_str_arr[player_id], input_id, event)
 
 def process_connection_characteristic(characteristic):
@@ -257,10 +254,6 @@ def process_connection_characteristic(characteristic):
 
         if signal == ConnectionMessage.requesting_id.value:
 
-            #connection_information = unpack("BBB", characteristic.value[:3])
-            #id_fstring = f'{connection_information[2]}B'
-            #requested_id = str(unpack(id_fstring, characteristic.value[3:3+connection_information[2]]))
-
             string_bytes = characteristic.value[3:3+connection_information[2]]
             requested_id = ''.join([chr(byte) for byte in string_bytes])
 
@@ -283,17 +276,12 @@ def process_connection_characteristic(characteristic):
             response_data = pack("<BB", next_id, ConnectionMessage.requesting_id.value)
             characteristic.value = bytearray(response_data)
 
-                #next_id += 1
-                #num_players += 1
-
         if signal == ConnectionMessage.connecting.value:
 
             print(player_id, ControllerUpdateTypes.CONNECTION.value, [ConnectionMessage.connecting.value])
             input_server.update_controller_state(player_id, ControllerUpdateTypes.CONNECTION.value, [ConnectionMessage.connecting.value])
 
             print("I am in here\n")
-                # Perhaps send playerid back here or at least generate it
-                #print(f"player {next_id} connected")
 
             next_id = len(player_id_str_arr)
 
@@ -310,7 +298,6 @@ def process_connection_characteristic(characteristic):
             if controller_type == 3:
                 controller_type = enums.ControllerType.Switch
 
-            print("connection callback")
             connection_function("connect", player_id_str_arr[player_id], controller_type, layout_jsons[player_id])
 
         if signal == ConnectionMessage.disconnecting.value:
@@ -346,46 +333,88 @@ def process_connection_characteristic(characteristic):
             # Start transmission, remove old layout from buffer
             if size == 255:
                 layout_jsons_temp.append("")
-                print("append temp: ", len(layout_jsons_temp))
                 layout_jsons_status.append(1)
-
-                # Pretty sure I need to send something back to the server
+                
                 response_data = [0, ConnectionMessage.transmitting_layout.value]
                 response = bytearray(response_data)
                 characteristic.value = response
-
                 return
 
             # json is done sending
             if size == 0:
 
                 layout_jsons.append(layout_jsons_temp[player_id])
-                    #layout_jsons[player_id] = layout_jsons_temp[player_id]
                 layout_jsons_temp[player_id] = ""
                 layout_jsons_status[player_id] = 0
 
-                print(layout_jsons[player_id])
                 json_for_input_id_workaround = json.loads(layout_jsons[player_id])
 
                 map_inputID_to_inputs(json_for_input_id_workaround)
-                # Pretty sure I need to send something back to the server
+
                 response_data = [0, ConnectionMessage.transmitting_layout.value]
                 response = bytearray(response_data)
                 characteristic.value = response
-
                 return
 
-            data_length_in_bytes = len(characteristic.value)
             format_str = "3B" + f"{size}s"
             connection_information = unpack(format_str, characteristic.value)
 
-            print(player_id, len(layout_jsons_temp))
-            json_string = str(connection_information[3])
-            layout_jsons_temp[player_id] += json_string[2:-1:]
+            json_chunk = connection_information[3].decode('utf-8')
+            layout_jsons_temp[player_id] += json_chunk
 
             response_data = [0, ConnectionMessage.transmitting_layout.value]
             response = bytearray(response_data)
             characteristic.value = response
+
+def process_controller_characteristic(characteristic):
+    data_length_in_bytes = len(characteristic.value)
+    format_str = "B" * data_length_in_bytes
+    connection_information = unpack(format_str, characteristic.value)
+
+    player_id = connection_information[0]
+    controller_type = connection_information[1]
+    size_sent = connection_information[2]
+
+    if size_sent == 255:
+        layout_jsons_status[player_id] = 1
+
+        response_data = [0, ConnectionMessage.transmitting_layout.value]
+        response = bytearray(response_data)
+        characteristic.value = response
+    elif size_sent == 0:
+        layout_jsons[player_id] = layout_jsons_temp[player_id]
+        layout_jsons_temp[player_id] = ""
+        layout_jsons_status[player_id] = 0
+
+        json_for_input_id_workaround = json.loads(layout_jsons[player_id])
+
+        map_inputID_to_inputs(json_for_input_id_workaround)
+
+        if controller_type == 0:
+            controller_type = enums.ControllerType.Xbox
+        if controller_type == 1:
+            controller_type = enums.ControllerType.Playstation
+        if controller_type == 2:
+            controller_type = enums.ControllerType.Wii
+        if controller_type == 3:
+            controller_type = enums.ControllerType.Switch
+
+        controller_function(player_id_str_arr[player_id], controller_type, layout_jsons[player_id])
+
+        response_data = [0, ConnectionMessage.transmitting_layout.value]
+        response = bytearray(response_data)
+        characteristic.value = response
+        return
+    
+    format_str = "3B" + f"{size_sent}s"
+    connection_information = unpack(format_str, characteristic.value)
+
+    json_chunk = connection_information[3].decode('utf-8')
+    layout_jsons_temp[player_id] += json_chunk
+
+    response_data = [0, ConnectionMessage.transmitting_layout.value]
+    response = bytearray(response_data)
+    characteristic.value = response
 
 def process_write_request(characteristic: BlessGATTCharacteristic, value):
     upper_uuid = characteristic.uuid.upper()
@@ -395,6 +424,8 @@ def process_write_request(characteristic: BlessGATTCharacteristic, value):
         process_input_characteristic(characteristic)
     elif (upper_uuid == CONNECTION_CHARACTERISTIC):
         process_connection_characteristic(characteristic)
+    elif (upper_uuid == CONTROLLER_TYPE_CHARACTERISTIC):
+        process_controller_characteristic(characteristic)
     else:
         logger.error("ERROR: Unrecognized Write Request")
 
@@ -418,12 +449,11 @@ class QBlessServer(QObject):
         self.loop = None 
         server.read_request_func = read_request
         server.write_request_func = self.write_request
-        
+    
         return server
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Create a persistent background event loop in its own thread.
         self._bg_loop = asyncio.new_event_loop()
         self._bg_thread = threading.Thread(target=self._start_bg_loop, daemon=True)
         self._bg_thread.start()
@@ -434,9 +464,7 @@ class QBlessServer(QObject):
 
     def write_request(self, characteristic: BlessGATTCharacteristic, value):
         """Schedule async processing on the persistent background loop."""
-        # Set/update characteristic value before processing.
         characteristic.value = value
-        # Use the persistent event loop for scheduling.
         asyncio.run_coroutine_threadsafe(
             async_write_request(characteristic, value),
             self._bg_loop
@@ -457,7 +485,6 @@ class QBlessServer(QObject):
         self.server.update_value(POCKETPAD_SERVICE, CONNECTION_CHARACTERISTIC)
         
         await asyncio.sleep(0.5) # small buffer
-
         await self.server.stop()
 
 def read_request(characteristic: BlessGATTCharacteristic, **kwargs) -> bytearray:
