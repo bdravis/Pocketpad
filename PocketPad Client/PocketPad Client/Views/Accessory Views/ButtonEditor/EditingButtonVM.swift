@@ -158,9 +158,13 @@ class EditingButtonVM: ObservableObject {
         if button.type == .regular || button.type == .bumper {
             // set the regular button style
             button.updateStyle(to: RegularButtonStyle(shape: self.shape, iconType: self.iconType, icon: self.hasIcon ? self.icon : nil, properties: getGeneralStyle()))
-        } else if button.type == .joystick || button.type == .dpad || button.type == .trigger {
+        } else if button.type == .joystick || button.type == .dpad {
             // set the general button style
             button.updateStyle(to: getGeneralStyle())
+        } else if button.type == .trigger {
+            // set the general button style and the trigger side
+            button.updateStyle(to: getGeneralStyle())
+            button.updateValue(name: "side", to: self.triggerSide)
         }
     }
     

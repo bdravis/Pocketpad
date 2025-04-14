@@ -31,6 +31,13 @@ struct TriggerConfig: ButtonConfig, ConfigType {
         }
     }
     
+    mutating func updateValue<T>(name: String, to newValue: T) {
+        if name == "side", let newSide = newValue as? TriggerSide {
+            // update the trigger side
+            self.side = newSide
+        }
+    }
+    
     // Protocol Properties
     var position: ButtonPosition
     var scale: CGFloat

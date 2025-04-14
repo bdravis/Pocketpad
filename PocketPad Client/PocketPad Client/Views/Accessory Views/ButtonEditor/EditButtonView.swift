@@ -51,53 +51,69 @@ struct EditButtonView: View {
                 Text("Scale and Rotation")
             }
             
-            if button.type == .regular || button.type == .bumper {
+            if button.type == .regular || button.type == .bumper || button.type == .trigger {
                 Section(isExpanded: $iconExpanded) {
-                    // MARK: Shape
-                    HStack {
-                        Picker("Button Shape", selection: $button.shape) {
-                            ForEach(RegularButtonShape.allCases, id: \.self) { shape in
-                                Text(shape.rawValue).tag(shape)
+                    if button.type == .trigger {
+                        // MARK: Trigger Side
+                        VStack {
+                            HStack {
+                                Text("Side")
+                                Spacer()
                             }
+                            Picker("Trigger Side", selection: $button.triggerSide) {
+                                ForEach(TriggerSide.allCases, id: \.self) { side in
+                                    Text(side.getName()).tag(side.getName())
+                                }
+                            }
+                            .pickerStyle(.segmented)
                         }
-                        .pickerStyle(.menu)
-                        .accessibilityIdentifier("ButtonShapePicker")
-                    }
-                    
-                    // MARK: Icon Configuration
-                    Toggle("Has Icon", isOn: $button.hasIcon)
-                    if button.hasIcon {
+                    } else {
+                        // MARK: Shape
                         HStack {
-                            Picker("Icon Type", selection: $button.iconType) {
-                                ForEach(RegularButtonIconType.allCases, id: \.self) { iconType in
-                                    Text(iconType.rawValue).tag(iconType)
+                            Picker("Button Shape", selection: $button.shape) {
+                                ForEach(RegularButtonShape.allCases, id: \.self) { shape in
+                                    Text(shape.rawValue).tag(shape)
                                 }
                             }
                             .pickerStyle(.menu)
-                            .accessibilityIdentifier("IconTypePicker")
+                            .accessibilityIdentifier("ButtonShapePicker")
                         }
-                        HStack {
-                            Text("Icon")
-                            Spacer()
-                            switch button.iconType {
-                            case .Text:
-                                TextField("Icon", text: $button.icon)
-                                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                                    .multilineTextAlignment(.trailing)
-                                    .autocorrectionDisabled(true)
-                                    .accessibilityIdentifier("Icon")
-                            case .SFSymbol:
-                                Button(action: {
-                                    showSymbolPicker.toggle()
-                                }) {
-                                    Label(button.icon, systemImage: button.icon)
+                        
+                        // MARK: Icon Configuration
+                        Toggle("Has Icon", isOn: $button.hasIcon)
+                        if button.hasIcon {
+                            HStack {
+                                Picker("Icon Type", selection: $button.iconType) {
+                                    ForEach(RegularButtonIconType.allCases, id: \.self) { iconType in
+                                        Text(iconType.rawValue).tag(iconType)
+                                    }
                                 }
-                                .accessibilityIdentifier("PickSymbolBtn")
+                                .pickerStyle(.menu)
+                                .accessibilityIdentifier("IconTypePicker")
+                            }
+                            HStack {
+                                Text("Icon")
+                                Spacer()
+                                switch button.iconType {
+                                case .Text:
+                                    TextField("Icon", text: $button.icon)
+                                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                                        .multilineTextAlignment(.trailing)
+                                        .autocorrectionDisabled(true)
+                                        .accessibilityIdentifier("Icon")
+                                case .SFSymbol:
+                                    Button(action: {
+                                        showSymbolPicker.toggle()
+                                    }) {
+                                        Label(button.icon, systemImage: button.icon)
+                                    }
+                                    .accessibilityIdentifier("PickSymbolBtn")
+                                }
                             }
                         }
                     }
                 } header: {
-                    Text("Icon")
+                    Text("\(button.type == .trigger ? "" : "Icon and ")Shape")
                 }
             }
 //            else if button.type == .trigger {
