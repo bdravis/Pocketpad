@@ -368,7 +368,6 @@ class MainWindow(QMainWindow):
                 #
                 # Update number of connected users
             else:
-                bluetooth_server.remove_duplicate_id(player_id)
                 already_initiated = QMessageBox()
                 already_initiated.setText(f"A player with player_id, {player_id}, already is connected")
                 already_initiated.exec()
@@ -521,15 +520,19 @@ class MainWindow(QMainWindow):
 
         self.player_svg_paths_for_icons[player_id] = icon_type        
 
+        player_icon = None
         latency = self.player_latency[player_id]
-        if (latency <= 50):
-            player_icon = self.get_icon_from_svg(icon_type, "#3BB20A")
-        elif ((latency > 50) and (latency <= 100)):
-            player_icon = self.get_icon_from_svg(icon_type, "#e6cc00")
-        elif ((latency > 100) and (latency <= 150)):
-            player_icon = self.get_icon_from_svg(icon_type, "#Ff0000")
+        if self.ui.latency_setting_box.isChecked():
+            if (latency <= 50):
+                player_icon = self.get_icon_from_svg(icon_type, "#3BB20A")
+            elif ((latency > 50) and (latency <= 100)):
+                player_icon = self.get_icon_from_svg(icon_type, "#e6cc00")
+            elif ((latency > 100) and (latency <= 150)):
+                player_icon = self.get_icon_from_svg(icon_type, "#Ff0000")
+            else:
+                player_icon = self.hazard_icon
         else:
-            player_icon = self.hazard_icon
+            player_icon = self.get_icon_from_svg(icon_type, self.application_font_color)
 
         for player_index in range(self.ui.connection_list.count()):
             player_connection = self.ui.connection_list.item(player_index)
@@ -1245,26 +1248,6 @@ class ColorPickerPopup(QDialog):
         self.accept()
 
 class ControllerWidget(QWidget):
-    # def __init__(self, widget_color) :
-    #     super().__init__()
-
-    #     self.design_width = 600
-    #     self.design_height = 600
-
-    #     self.layout_config = None
-    #     self.controller_widgets = None
-
-    #     self.color_scheme = widget_color
-    #     self.glow_color = QColor(255, 255, 0)
-
-    #     self.setMinimumSize(75, 50)
-    #     self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-    #     self.bbox = self.compute_bbox()
-
-    #     self.input_held = {}
-
-    #     self.cached_pixmap = None
-    
     def __init__(self, controller_config_file, widget_color):
         super().__init__()
 
@@ -1326,11 +1309,6 @@ class ControllerWidget(QWidget):
             self.draw_button(painter, payload, x, y)
 
         painter.end()
-
-    # def set_json_data(self, json_str):
-    #     self.layout_config = json.loads(json_str)
-    #     self.controller_widgets = self.layout_config.get("wrappedButtons", [])
-    #     self.update_cache()
 
     def update_widget_color(self, color):
         self.color_scheme = color

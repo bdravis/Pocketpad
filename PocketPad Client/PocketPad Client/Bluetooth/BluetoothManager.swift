@@ -4,6 +4,8 @@
 //
 //  Created by Krish Shah on 2/19/25.
 //
+//  Edited by Benjamin Dravis 4/13/25
+//
 
 import CoreBluetooth
 import SwiftUI
@@ -48,10 +50,26 @@ class BluetoothManager: NSObject, ObservableObject {
     @State private var showingIDTakenAlert = false
     @State private var idTakenMessage = ""
     
-
+    private var latency_timer: DispatchSourceTimer?
+    
     private override init() {
         super.init()
         centralManager = CBCentralManager(delegate: self, queue: nil)
+        start_latency_sending()
+    }
+    
+    deinit {
+        latency_timer?.cancel()
+        latency_timer = nil
+    }
+    
+    private func start_latency_sending() {
+        latency_timer = DispatchSource.makeTimerSource(queue: DispatchQueue.main)
+        latency_timer?.schedule(deadline: .now(), repeating: 3.0)
+        latency_timer?.setEventHandler { [weak self] in
+            self?.pingServer()
+        }
+        latency_timer?.resume()
     }
     
     // MARK: - Public Methods
@@ -94,19 +112,17 @@ class BluetoothManager: NSObject, ObservableObject {
     
     func pingServer() {
         guard let service = selectedService else { return }
-//        if let char = discoveredCharacteristics.first(where: { $0.uuid == LATENCY_CHARACTERISTIC }) {
-//            let now = UInt32(min((Date().timeIntervalSinceReferenceDate * 1000).truncatingRemainder(dividingBy: 100000), Double(UInt32.max)))
-//            //service.peripheral?.writeValue(String(now).data(using: .utf8)!, for: char, type: .withResponse)
-//            
-//            let playerIDBytes = withUnsafeBytes(of: LayoutManager.shared.player_id.littleEndian) { Data($0) }
-//
-//            let timestampBytes = withUnsafeBytes(of: now.littleEndian) { Data($0) }
-//
-//            // Concatenates, not bitwise add
-//            let dataToSend = Data(playerIDBytes + timestampBytes)
-//            
-//            service.peripheral?.writeValue(dataToSend, for: char, type: .withResponse)
-//        }
+        if let char = discoveredCharacteristics.first(where: { $0.uuid == LATENCY_CHARACTERISTIC }) {
+            let now = UInt32(min((Date().timeIntervalSinceReferenceDate * 1000).truncatingRemainder(dividingBy: 100000), Double(UInt32.max)))
+            
+            let playerIDBytes = withUnsafeBytes(of: LayoutManager.shared.player_id.littleEndian) { Data($0) }
+            let timestampBytes = withUnsafeBytes(of: now.littleEndian) { Data($0) }
+
+            // Concatenates, not bitwise add
+            let dataToSend = Data(playerIDBytes + timestampBytes)
+            
+            service.peripheral?.writeValue(dataToSend, for: char, type: .withoutResponse)
+        }
     }
      
     func disconnect() {
@@ -134,6 +150,64 @@ class BluetoothManager: NSObject, ObservableObject {
     
     func stopNotifications(for characteristic: CBCharacteristic) {
         peripheral?.setNotifyValue(false, for: characteristic)
+    }
+    
+    func updateControllerConfiguration() {
+        print("Hello World")
+        let selectedController = UserDefaults.standard.string(forKey: "selectedController") ?? "Xbox"
+        let selectedControllerValue = ControllerType(stringValue: selectedController)?.rawValue ?? 0
+        
+        guard let service = selectedService else { return }
+        
+        let encoder = JSONEncoder()
+        
+        var data = Data()
+        
+        do {
+            data = try encoder.encode(LayoutManager.shared.currentController)
+        } catch {
+            print("encoding error when sending layout")
+            return
+        }
+        
+        let subdata_size = 182
+        var position = 0
+        
+        guard let service = selectedService else { return }
+        if let char = discoveredCharacteristics.first(where: { $0.uuid == CONTROLLER_TYPE_CHARACTERISTIC }) {
+    
+            let init_transmission_packet = Data([UInt8(LayoutManager.shared.player_id),
+                                                     UInt8(selectedControllerValue),
+                                                     UInt8(255)
+                                                    ])
+                
+            service.peripheral?.writeValue(init_transmission_packet, for: char, type: .withoutResponse)
+            service.peripheral?.readValue(for: char)
+                
+            while position < data.count {
+                    
+                let chunk_size: UInt8 = UInt8(min(position + subdata_size, data.count) - position)
+                
+                let chunk = data.subdata(in: position..<position + Int(chunk_size))
+                    
+                let packet = Data([UInt8(LayoutManager.shared.player_id),
+                                    UInt8(selectedControllerValue),
+                                    UInt8(chunk_size)
+                                  ]) + chunk
+                    
+                service.peripheral?.writeValue(packet, for: char, type: .withoutResponse)
+                service.peripheral?.readValue(for: char)
+                position += subdata_size
+            }
+                
+            let end_transmission_packet = Data([UInt8(LayoutManager.shared.player_id),
+                                                    UInt8(selectedControllerValue),
+                                                    UInt8(0)
+                                                   ])
+                
+            service.peripheral?.writeValue(end_transmission_packet, for: char, type: .withoutResponse)
+            service.peripheral?.readValue(for: char)
+        }
     }
 }
 
@@ -372,14 +446,9 @@ extension BluetoothManager: CBPeripheralDelegate {
                         )
                         LayoutManager.shared.requested_player_id_string = "Player"
                         disconnect()
-
                     }
-                    
-
                 }
-                
             }
-            
         }
     }
     
@@ -414,11 +483,7 @@ extension BluetoothManager: CBPeripheralDelegate {
             print("encoding error when sending layout")
             return
         }
-        
-        let packet_size = 20
-        let code_size = 1
-        let id_size = 1
-        let size_size = 1
+  
         let subdata_size = 182
         var position = 0
         
@@ -458,7 +523,6 @@ extension BluetoothManager: CBPeripheralDelegate {
                 
                 service.peripheral?.writeValue(end_transmission_packet, for: characteristic, type: .withResponse)
                 service.peripheral?.readValue(for: characteristic)
-
             }
         }
         
