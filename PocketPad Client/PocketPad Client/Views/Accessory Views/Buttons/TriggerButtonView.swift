@@ -92,6 +92,34 @@ struct TriggerButtonView: View {
             bluetoothManager.sendInput(data)
         }
     }
+    
+    // send button press
+    private func sendTriggerPress() {
+#if DEBUG
+        print("TRIGGER PRESS")
+#endif
+        let ui8_playerId: UInt8 = LayoutManager.shared.player_id
+        let ui8_inputId : UInt8 = config.inputId
+        let ui8_buttonType : UInt8 = config.type.rawValue
+        let ui8_event : UInt8 = buttonEvent.pressed.rawValue;
+        
+        let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
+        bluetoothManager.sendInput(data);
+    }
+    
+    // send button release
+    private func sendTriggerRelease() {
+#if DEBUG
+        print("TRIGGER RELEASE")
+#endif
+        let ui8_playerId: UInt8 = LayoutManager.shared.player_id
+        let ui8_inputId : UInt8 = config.inputId
+        let ui8_buttonType : UInt8 = config.type.rawValue
+        let ui8_event : UInt8 = buttonEvent.released.rawValue;
+        
+        let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
+        bluetoothManager.sendInput(data);
+    }
 }
 
 //

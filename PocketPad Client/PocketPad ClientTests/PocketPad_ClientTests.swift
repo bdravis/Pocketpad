@@ -27,15 +27,16 @@ struct PocketPad_ClientTests {
         for controller in ControllerType.allCases {
             let initialLayout = DefaultLayouts.getLayout(for: controller)
             try LayoutManager.shared.saveLayout(DefaultLayouts.getLayout(for: controller))
-            let loadedLayout = try LayoutManager.shared.loadLayout(for: "\(controller.stringValue).plist")
+            let loadedLayout = try LayoutManager.shared.loadLayout(for: controller.stringValue)
             #expect(loadedLayout == initialLayout)
         }
         
         try LayoutManager.shared.loadLayouts() // load the controllers to make sure the files exist
-        #expect(LayoutManager.shared.availableLayouts.count >= 4)
+        #expect(LayoutManager.shared.availableLayouts.count >= 7)
         for controller in ControllerType.allCases {
-            #expect(LayoutManager.shared.availableLayouts.contains("\(controller.stringValue).plist"))
+            #expect(LayoutManager.shared.availableLayouts.contains(controller.stringValue))
         }
+        try LayoutManager.shared.deleteAllLayouts()
     }
 
 }

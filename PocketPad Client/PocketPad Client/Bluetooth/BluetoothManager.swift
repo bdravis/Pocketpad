@@ -395,7 +395,7 @@ extension BluetoothManager: CBPeripheralDelegate {
                         
                         LayoutManager.shared.player_id = int_player_id
                         
-                        let selectedController = UserDefaults.standard.string(forKey: "selectedController") ?? "Xbox"
+                        let selectedController = UserDefaults.standard.string(forKey: "selectedController") ?? ControllerType.getDefaultName()
                         
                         sendLayout(layout: LayoutManager.shared.currentController)
                         
