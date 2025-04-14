@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct EditButtonView: View {
+    @Environment(\.colorScheme) var colorScheme
+    
     @ObservedObject var button: EditingButtonVM
     
     @Binding var showSymbolPicker: Bool
@@ -112,16 +114,36 @@ struct EditButtonView: View {
 //            }
             if button.type == .regular || button.type == .joystick || button.type == .dpad {
                 Section(isExpanded: $styleExpanded) {
-                    // MARK: Icon Colors
-                    ColorPicker("\(button.type == .regular ? "Icon" : button.type == .joystick ? "Thumbstick" : "Arrow") Color", selection: $button.fgColorL)
-                    if button.type != .joystick {
-                        ColorPicker("Pressed \(button.type == .regular ? "Icon" : "Arrow") Color", selection: $button.fgPressedColorL)
-                    }
-                    
-                    // MARK: Background Colors
-                    ColorPicker("Background Color", selection: $button.bgColorL)
-                    if button.type != .joystick {
-                        ColorPicker("Pressed BG Color", selection: $button.bgPressedColorL)
+                    if colorScheme == .dark {
+                        Group {
+                            // MARK: Icon Colors
+                            ColorPicker("\(button.type == .regular ? "Icon" : button.type == .joystick ? "Thumbstick" : "Arrow") Color", selection: $button.fgColorD)
+                            if button.type != .joystick {
+                                ColorPicker("Pressed \(button.type == .regular ? "Icon" : "Arrow") Color", selection: $button.fgPressedColorD)
+                            }
+                            
+                            // MARK: Background Colors
+                            ColorPicker("Background Color", selection: $button.bgColorD)
+                            if button.type != .joystick {
+                                ColorPicker("Pressed BG Color", selection: $button.bgPressedColorD)
+                            }
+                        }
+                        .transition(.opacity)
+                    } else {
+                        Group {
+                            // MARK: Icon Colors
+                            ColorPicker("\(button.type == .regular ? "Icon" : button.type == .joystick ? "Thumbstick" : "Arrow") Color", selection: $button.fgColorL)
+                            if button.type != .joystick {
+                                ColorPicker("Pressed \(button.type == .regular ? "Icon" : "Arrow") Color", selection: $button.fgPressedColorL)
+                            }
+                            
+                            // MARK: Background Colors
+                            ColorPicker("Background Color", selection: $button.bgColorL)
+                            if button.type != .joystick {
+                                ColorPicker("Pressed BG Color", selection: $button.bgPressedColorL)
+                            }
+                        }
+                        .transition(.opacity)
                     }
                     
                     // MARK: Stroke
