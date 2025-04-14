@@ -11,10 +11,155 @@ from enums import ControllerUpdateTypes, AllButtons, Sticks, ButtonEvent
 from server_constants import ConnectionMessage
 import math
 import random
+from dataclasses import dataclass
 
-# If this doesn't work first try I am going to drive my car into a telephone pole
+
 
 class DSU_Server:
+
+    """
+    @dataclass
+    class ControllerMessage:
+        magic: int = 0x53555344
+        protocol_version: int = 1001
+        length: int = 84
+        crc: int = 0
+        server_id: int = 0
+        event_type: int = 0x100002
+        slot: int = 0
+        slot_state: int = 0
+        device_model: int = 2
+        connection_type: int = 2
+        mac: int = 0
+        battery: int = 0x04
+        connected: int = 0
+        packet_number: int = 0
+        dpad_mask: int = 0
+        button_mask: int = 0
+        home: int = 0
+        touch_button: int = 0
+        left_stick_x: int = 0
+        left_stick_y: int = 0
+        right_stick_x: int = 0
+        right_stick_y: int = 0
+        unused: int = 0
+        motion_timestamp: int = 0
+        pitch: int = 0
+        yaw: int = 0
+        roll: int = 0
+
+
+        def pack(self):
+            # Temporarily set CRC to 0 for calculation
+            self.crc = 0
+            data = struct.pack(
+                "IHHIIIBBBBHHHBBIBBBBBBBBBBBBBBBBBBBBHHHHHHQIIIIII",
+                self.magic,
+                self.protocol_version,
+                self.length,
+                self.crc,
+                self.server_id,
+                self.event_type,
+                self.slot,
+                self.slot_state,
+                self.device_model,
+                self.connection_type,
+                self.mac,
+                self.mac,
+                self.mac,
+                self.battery,
+                self.connected,
+                self.packet_number,
+                self.dpad_mask,
+                self.button_mask,
+                self.home,
+                self.touch_button
+                self.left_stick_x,
+                self.left_stick_y,
+                self.right_stick_x,
+                self.right_stick_y,
+                self.unused,
+                self.unused,
+                self.unused,
+                self.unused,
+                self.unused,
+                self.unused,
+                self.unused,
+                self.unused,
+                self.unused,
+                self.unused,
+                self.unused,
+                self.unused,
+                self.unused,
+                self.unused,
+                self.unused,
+                self.unused,
+                self.unused,
+                self.unused,
+                self.motion_timestamp,
+                self.unused,
+                self.unused,
+                self.unused,
+                self.pitch,
+                self.yaw,
+                self.roll
+            )
+            # Calculate and set CRC
+            self.crc = zlib.crc32(data)
+            # Repack with correct CRC
+            return struct.pack(
+                "IHHIIIBBBBHHHBBIBBBBBBBBBBBBBBBBBBBBHHHHHHQIIIIII",
+                self.magic,
+                self.protocol_version,
+                self.length,
+                self.crc,
+                self.server_id,
+                self.event_type,
+                self.slot,
+                self.slot_state,
+                self.device_model,
+                self.connection_type,
+                self.mac,
+                self.mac,
+                self.mac,
+                self.battery,
+                self.connected,
+                self.packet_number,
+                self.dpad_mask,
+                self.button_mask,
+                self.home,
+                self.touch_button
+                self.left_stick_x,
+                self.left_stick_y,
+                self.right_stick_x,
+                self.right_stick_y,
+                self.unused,
+                self.unused,
+                self.unused,
+                self.unused,
+                self.unused,
+                self.unused,
+                self.unused,
+                self.unused,
+                self.unused,
+                self.unused,
+                self.unused,
+                self.unused,
+                self.unused,
+                self.unused,
+                self.unused,
+                self.unused,
+                self.unused,
+                self.unused,
+                self.motion_timestamp,
+                self.unused,
+                self.unused,
+                self.unused,
+                self.pitch,
+                self.yaw,
+                self.roll
+            )
+    """
 
     class Controller_State:
         def __init__(self, is_null: bool):
@@ -83,22 +228,21 @@ class DSU_Server:
 
         # packet_length does not include header
         event_type = struct.unpack("<I", data[16:20])[0]
-        print("event type:", event_type)
-        print(addr)
-        print(data)
+        #print("event type:", event_type)
+        #print(addr)
+        #print(data)
 
         if event_type == 0x100001:
             self._handle_info_request(data, addr)
 
         if event_type == 0x100002:
-            print("data HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH")
             self._handle_controller_data(data, addr)
 
 
     # --- Message Type Handlers ---
     def _handle_info_request(self, data, addr):
 
-        print(struct.unpack("<IHHIIII", data[:24]))
+        #print(struct.unpack("<IHHIIII", data[:24]))
 
         # for debugging
 
@@ -185,9 +329,9 @@ class DSU_Server:
                     padding) # Null byte
 
 
-            print(struct.unpack("<IHHIIIBBBB6BBB", slot_packet))
-            print("Raw bytes:", slot_packet.hex(' '))
-            print(response_addr)
+            #print(struct.unpack("<IHHIIIBBBB6BBB", slot_packet))
+            #print("Raw bytes:", slot_packet.hex(' '))
+            #print(response_addr)
             self.sock.sendto(slot_packet, response_addr)
 
     def crc32custom(self, s: bytes) -> int:
@@ -217,6 +361,7 @@ class DSU_Server:
 
         if actions_requested == 1:
             slot_requested = int.from_bytes(struct.unpack("<B", data[21:22]))
+            print(f"data requested from slot {slot_requested}")
             state_requested = self.controller_states[slot_requested]
 
             if (state_requested.is_null):
@@ -233,6 +378,7 @@ class DSU_Server:
 
         if actions_requested == 0:
 
+            print("data requested from all slots")
             for state in self.controller_states:
                 if state.connected:
                     state.sending = True
@@ -245,8 +391,6 @@ class DSU_Server:
             time.sleep(0.5)
             for index, state in enumerate(self.controller_states):
 
-                # print(state.connected, state.sending, state.last_request_time)
-
                 if state.connected == False:
                     state.sending = False
                     continue
@@ -258,7 +402,7 @@ class DSU_Server:
                     state.sending = False
                     continue
 
-                print("=========================================================")
+                print(f"sending inputs for {index}")
 
                 slot_state_int = 0
                 if state.connected:
@@ -274,8 +418,8 @@ class DSU_Server:
                 # use for testing bad crc
                 randmac = random.randint(0,255)
 
-                input_packet_no_crc = struct.pack(
-                        "IHHIIIBBBBHHHBBIBBBBBBBBBBBBBBBBBBBBHHHHHHQIIIIII",
+                input_packet_no_crc_packed = struct.pack(
+                        "<IHHIIIBBBBHHHBBIBBBBBBBBBBBBBBBBBBBBHHHHHHQIIIIII",
                         0x53555344,
                         1001, # Protocol version
                         84, # Len without header
@@ -327,10 +471,12 @@ class DSU_Server:
                         state.roll
                         )
 
-                crc = zlib.crc32(input_packet_no_crc)
+                crc = zlib.crc32(input_packet_no_crc_packed)
 
+
+                input_packet_no_crc = struct.unpack("<IHHIIIBBBBHHHBBIBBBBBBBBBBBBBBBBBBBBHHHHHHQIIIIII", input_packet_no_crc_packed)
                 input_packet = struct.pack(
-                        "IHHIIIBBBBHHHBBIBBBBBBBBBBBBBBBBBBBBHHHHHHQIIIIII",
+                        "<IHHIIIBBBBHHHBBIBBBBBBBBBBBBBBBBBBBBHHHHHHQIIIIII",
                         input_packet_no_crc[0],
                         input_packet_no_crc[1],
                         input_packet_no_crc[2],
@@ -382,6 +528,7 @@ class DSU_Server:
                         input_packet_no_crc[48],
                         )
 
+                print(f"buttons: {state.button_mask}")
 
                 self.sock.sendto(input_packet, self.addr)
 
@@ -396,6 +543,8 @@ class DSU_Server:
         # If event type is JOYSTICK, value is [Sticks int, angle, magnitude]
         # if event type is MOTION, value is [pitch, yaw, roll]
 
+        print(f"updating state: {player_num}, {event_type}, {value}")
+
         state = self.controller_states[player_num]
 
         if event_type == ControllerUpdateTypes.CONNECTION.value:
@@ -409,81 +558,81 @@ class DSU_Server:
         if event_type == ControllerUpdateTypes.BUTTON.value:
             if value[0] == AllButtons.top_diamond:
                 if value[1] == ButtonEvent.PRESSED.value:
-                    state.button_mask &= 1 << 4
+                    state.button_mask |= 1 << 4
                 if value[1] == ButtonEvent.RELEASED.value:
-                    state.button_mask &= 0 << 4
+                    state.button_mask |= 0 << 4
 
             elif value[0] == AllButtons.bottom_diamond:
                 if value[1] == ButtonEvent.PRESSED.value:
-                    state.button_mask &= 1 << 6
+                    state.button_mask |= 1 << 6
                 if value[1] == ButtonEvent.RELEASED.value:
-                    state.button_mask &= 0 << 6
+                    state.button_mask |= 0 << 6
 
             elif value[0] == AllButtons.left_diamond:
                 if value[1] == ButtonEvent.PRESSED.value:
-                    state.button_mask &= 1 << 7
+                    state.button_mask |= 1 << 7
                 if value[1] == ButtonEvent.RELEASED.value:
-                    state.button_mask &= 0 << 7
+                    state.button_mask |= 0 << 7
 
             elif value[0] == AllButtons.right_diamond:
                 if value[1] == ButtonEvent.PRESSED.value:
-                    state.button_mask &= 1 << 5
+                    state.button_mask |= 1 << 5
                 if value[1] == ButtonEvent.RELEASED.value:
-                    state.button_mask &= 0 << 5
+                    state.button_mask |= 0 << 5
 
             elif value[0] == AllButtons.up_dpad:
                 if value[1] == ButtonEvent.PRESSED.value:
-                    state.dpad_mask &= 1 << 4
+                    state.dpad_mask |= 1 << 4
                 if value[1] == ButtonEvent.RELEASED.value:
-                    state.dpad_mask &= 0 << 4
+                    state.dpad_mask |= 0 << 4
 
             elif value[0] == AllButtons.down_dpad:
                 if value[1] == ButtonEvent.PRESSED.value:
-                    state.dpad_mask &= 1 << 6
+                    state.dpad_mask |= 1 << 6
                 if value[1] == ButtonEvent.RELEASED.value:
-                    state.dpad_mask &= 0 << 6
+                    state.dpad_mask |= 0 << 6
 
             elif value[0] == AllButtons.left_dpad:
                 if value[1] == ButtonEvent.PRESSED.value:
-                    state.dpad_mask &= 1 << 7
+                    state.dpad_mask |= 1 << 7
                 if value[1] == ButtonEvent.RELEASED.value:
-                    state.dpad_mask &= 0 << 7
+                    state.dpad_mask |= 0 << 7
 
             elif value[0] == AllButtons.right_dpad:
                 if value[1] == ButtonEvent.PRESSED.value:
-                    state.dpad_mask &= 1 << 5
+                    state.dpad_mask |= 1 << 5
                 if value[1] == ButtonEvent.RELEASED.value:
-                    state.dpad_mask &= 0 << 5
+                    state.dpad_mask |= 0 << 5
 
             elif value[0] == AllButtons.left_bumper:
                 if value[1] == ButtonEvent.PRESSED.value:
-                    state.button_mask &= 1 << 2
+                    state.button_mask |= 1 << 2
                 if value[1] == ButtonEvent.RELEASED.value:
-                    state.button_mask &= 0 << 2
+                    state.button_mask |= 0 << 2
 
             elif value[0] == AllButtons.right_bumper:
                 if value[1] == ButtonEvent.PRESSED.value:
-                    state.button_mask &= 1 << 3
+                    state.button_mask |= 1 << 3
                 if value[1] == ButtonEvent.RELEASED.value:
-                    state.button_mask &= 0 << 3
+                    state.button_mask |= 0 << 3
 
             elif value[0] == AllButtons.left_trigger:
                 if value[1] == ButtonEvent.PRESSED.value:
-                    state.button_mask &= 1 << 0
+                    state.button_mask |= 1 << 0
                 if value[1] == ButtonEvent.RELEASED.value:
-                    state.button_mask &= 0 << 0
+                    state.button_mask |= 0 << 0
 
             elif value[0] == AllButtons.right_trigger:
                 if value[1] == ButtonEvent.PRESSED.value:
-                    state.button_mask &= 1 << 1
+                    state.button_mask |= 1 << 1
                 if value[1] == ButtonEvent.RELEASED.value:
-                    state.button_mask &= 0 << 1
+                    state.button_mask |= 0 << 1
 
             elif value[0] == AllButtons.options:
                 if value[1] == ButtonEvent.PRESSED.value:
-                    state.dpad_mask &= 1 << 3
+                    state.dpad_mask |= 1 << 3
                 if value[1] == ButtonEvent.RELEASED.value:
-                    state.dpad_mask &= 0 << 3
+                    state.dpad_mask |= 0 << 3
 
 
         if event_type == ControllerUpdateTypes.JOYSTICK.value:
