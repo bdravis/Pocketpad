@@ -24,7 +24,6 @@ struct SettingsMenuView: View {
     @AppStorage("splitDPad") var splitDPad: Bool = false
     @AppStorage("selectedController") var selectedController: String = ControllerType.getDefaultName()
     @AppStorage("controllerColor") var controllerColor: Color = .blue
-    @AppStorage("controllerName") var controllerName: String = "Controller"
 
     @AppStorage("motionControlEnabled") var motionControlEnabled: Bool = false
 
@@ -45,6 +44,8 @@ struct SettingsMenuView: View {
     
     @ObservedObject private var turboManager = TurboManager.shared
     @State private var showingTurboSettings: Bool = false
+    
+    @StateObject private var bluetoothManager = BluetoothManager.shared
 
     
     // MARK: - Body
@@ -170,6 +171,7 @@ struct SettingsMenuView: View {
                         turboManager.stopAllTurbo()
                         
                         isCustomLayout = !DefaultLayouts.isDefaultLayout(name: selectedController)
+                        bluetoothManager.updateControllerConfiguration()
                     } catch {
                         UIApplication.shared.alert(title: "Failed to load layout", body: error.localizedDescription)
                         selectedController = ControllerType.getDefaultName()
@@ -244,14 +246,6 @@ struct SettingsMenuView: View {
 
             }
             HStack {
-                Text("Controller Name")
-                    .foregroundColor(.primary)
-                Spacer()
-                TextField("Enter controller name", text: $controllerName)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .accessibilityIdentifier("NameField")
-            }
-             HStack {
                 Text("Player Name")
                     .foregroundColor(.primary)
                 Spacer()

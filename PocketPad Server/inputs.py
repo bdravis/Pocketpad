@@ -4,24 +4,18 @@
 # Created by Jack
 
 import logging
-from configs import (
-    ButtonConfig, RegularButtonConfig, DPadConfig, JoystickConfig, LayoutConfig
-)
 from enums import (ButtonType, DPadDirection, ButtonEvent, ControllerUpdateTypes)
-from struct import unpack
+from struct import unpack, unpack_from
 from shared_definitions import inputId_to_inputs, input_server
 
 # Same logging setup as bluetooth.py
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(name=__name__)
-input_error_tuple = (-1, -1, None)
 
 # Parses raw input data bytes
 # Returns player_id, input_id, event
 # Or input_error_tuple on error
-def parse_input(raw_data) -> tuple[int, int, ButtonEvent]:
-
-    print("parsing input!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+def parse_input(raw_data):
 
     # Find number of bytes in input data
     data_length_in_bytes = len(raw_data)
@@ -29,68 +23,57 @@ def parse_input(raw_data) -> tuple[int, int, ButtonEvent]:
 
     # Unpack the raw data into a tuple
     unpacked_data = unpack(format_str, raw_data)
-    # logger.debug(f"Unpacked data: {unpacked_data}")
 
-    # Check that common fields exist
-    try:
-        # Fields that are common to all sets of input data
-        NUM_COMMON_FIELDS = 4
-        player_id = unpacked_data[0] # 
-        input_id = unpacked_data[1]
-        raw_type = unpacked_data[2]
-        raw_event = unpacked_data[3]
-        # return player_id, input_id, raw_event
-    except:
-        logger.error("Input format missing common fields")
-        return input_error_tuple
+    NUM_COMMON_FIELDS = 0
+    player_id = unpacked_data[0]
+    input_id = unpacked_data[1]
+    raw_type = None
+    raw_event = None
 
-    # # Identify the current player layout
-    # layout = layouts_by_player_id.get(player_id)
-    # if layout is None:
-    #     logger.error("Player layout not found")
-    #     return input_error_tuple
-
-    # # Identify the list of buttons, based on either portrait or layout mode 
-    # in_portrait_mode = True # Hardcoded for now
-    # if in_portrait_mode:
-    #     buttons_by_input_id = layout.portrait_buttons_by_input_id
-    # else:
-    #     buttons_by_input_id = layout.landscape_buttons_by_input_id
-    
-    # # Identify the button associated with the specified input id
-    # button = buttons_by_input_id.get(input_id)
-    # if button is None:
-    #     logger.error("Invalid button input id")
-    #     return input_error_tuple
+    if (input_id == 99):
+        pitch = unpack_from('<f', raw_data, offset=2)[0]
+        roll  = unpack_from('<f', raw_data, offset=6)[0]
+        yaw   = unpack_from('<f', raw_data, offset=10)[0]
+        
+        logger.debug(f"Motion Data Received from player {player_id}: pitch = {pitch:.2f}, roll = {roll:.2f}, yaw = {yaw:.2f}")
+        input_server.update_controller_state(player_id, ControllerUpdateTypes.MOTION.value, [pitch, yaw, roll])
+        return
+    else:
+        # Check that common fields exist
+        try:
+            # Fields that are common to all sets of input data
+            NUM_COMMON_FIELDS = 4
+            raw_type = unpacked_data[2]
+            raw_event = unpacked_data[3]
+        except:
+            logger.error("Input format missing common fields")
+            return (-1, -1, None)
 
     # Check if button type is valid
     try:
         button_type = ButtonType(raw_type)
     except:
         logger.error("Invalid button type")
-        return input_error_tuple
+        return (-1, -1, None)
     
     # Check if button event is valid
     try:
         button_event = ButtonEvent(raw_event)
     except:
         logger.error("Invalid button event")
-        return input_error_tuple
+        return (-1, -1, None)
     
     # Find the input string based on the button type
     if button_type == ButtonType.REGULAR:
         logger.debug(f"Received input from button {input_id} from player {player_id}")
-
         input_server.update_controller_state(player_id, ControllerUpdateTypes.BUTTON.value, [inputId_to_inputs[input_id].value, raw_event])
 
     elif button_type == ButtonType.BUMPER:
         logger.debug(f"Received input from bumper {input_id} from player {player_id}")
-
         input_server.update_controller_state(player_id, ControllerUpdateTypes.BUTTON.value, [inputId_to_inputs[input_id].value, raw_event])
 
     elif button_type == ButtonType.TRIGGER:
         logger.debug(f"Received input from trigger {input_id} from player {player_id}")
-
         input_server.update_controller_state(player_id, ControllerUpdateTypes.BUTTON.value, [inputId_to_inputs[input_id].value, raw_event])
 
     elif button_type == ButtonType.JOYSTICK:
@@ -102,7 +85,7 @@ def parse_input(raw_data) -> tuple[int, int, ButtonEvent]:
             #input_server.update_controller_state(player_id, ControllerUpdateTypes.JOYSTICK.value, [raw_angle, raw_magnitude])
         except:
             logger.error("Joystick input format missing fields")
-            return input_error_tuple
+            return (-1, -1, None)
         
         logger.debug(f"Received input from joystick {input_id} from player"
         f" {player_id} with angle {raw_angle} and magnitude {raw_magnitude}")
@@ -113,14 +96,14 @@ def parse_input(raw_data) -> tuple[int, int, ButtonEvent]:
             raw_direction = unpacked_data[NUM_COMMON_FIELDS]
         except:
             logger.error("D-Pad input format missing fields")
-            return input_error_tuple
+            return (-1, -1, None)
 
         # Check if the value is a valid DPad direction
         try:
             direction = DPadDirection(raw_direction)
         except:
             logger.error("Invalid DPad direction")
-            return input_error_tuple
+            return (-1, -1, None)
         
         # # Find the input corresponding to the specified DPad direction
         # dpad_inputs: dict[DPadDirection, str] = button.inputs
@@ -142,7 +125,7 @@ def parse_input(raw_data) -> tuple[int, int, ButtonEvent]:
         logger.debug(f"Received DPad input {dpad_input} from DPad {input_id} from player {player_id}")
     else:
         logger.error("Button type not handled")
-        return input_input_error_tuple
+        return (-1, -1, None)
 
 
     return player_id, input_id, button_event

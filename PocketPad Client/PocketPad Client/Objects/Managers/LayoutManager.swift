@@ -81,7 +81,7 @@ class LayoutManager: ObservableObject {
         let url = getLayoutsFolder()
         for name in try FileManager.default.contentsOfDirectory(atPath: url.path()) {
             do {
-                try FileManager.default.removeItem(at: url.appendingPathComponent(name, conformingTo: .propertyList))
+                try FileManager.default.removeItem(at: url.appendingPathComponent(name))
                 print("removed \(name)")
             } catch {
                 print("failed to remove \(name): \(error.localizedDescription)")
@@ -94,7 +94,7 @@ class LayoutManager: ObservableObject {
         if let idx = availableLayouts.firstIndex(where: { $0 == name }) {
             availableLayouts.remove(at: idx)
             let url = getLayoutsFolder()
-            try FileManager.default.removeItem(at: url.appendingPathComponent("\(name).pp", conformingTo: .propertyList))
+            try FileManager.default.removeItem(at: url.appendingPathComponent("\(name).pp"))
             if currentController.name == name {
                 UserDefaults.standard.set(self.availableLayouts.first!, forKey: "selectedController")
                 try self.setCurrentLayout(to: self.availableLayouts.first!)
