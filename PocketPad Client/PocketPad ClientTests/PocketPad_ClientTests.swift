@@ -36,6 +36,7 @@ struct PocketPad_ClientTests {
         for controller in ControllerType.allCases {
             #expect(LayoutManager.shared.availableLayouts.contains(controller.stringValue))
         }
+        try LayoutManager.shared.deleteAllLayouts()
     }
 
 }
