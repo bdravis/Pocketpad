@@ -49,7 +49,10 @@ struct TriggerShape: Shape {
 }
 
 struct TriggerButtonStyle: ButtonStyle {
+    @Environment(\.colorScheme) var colorScheme
+    
     var side: TriggerSide
+    var style: GeneralButtonStyle
     var isTurboEnabled: Bool
     
     func makeBody(configuration: Configuration) -> some View {
@@ -59,10 +62,10 @@ struct TriggerButtonStyle: ButtonStyle {
             .fontWeight(.regular)
             .font(.system(size: 10))
             .background(
-                Color(uiColor: configuration.isPressed ? .secondaryLabel : .secondarySystemFill)
+                (configuration.isPressed ? getBGPressedColor() : getBGColor())
                     .scaledToFill()
             )
-            .foregroundStyle(Color(uiColor: configuration.isPressed ? .systemBackground : .label))
+            .foregroundStyle(configuration.isPressed ? getFGPressedColor() : getFGColor())
             .font(.system(size: 200)) // scale the text to the size of the button
             .minimumScaleFactor(0.01)
             .scaledToFit()
@@ -72,11 +75,43 @@ struct TriggerButtonStyle: ButtonStyle {
             .overlay(
                 TriggerShape(side: side)
                     .stroke(
-                        isTurboEnabled ? Color.yellow : Color(uiColor: .label),
-                        style: StrokeStyle(lineWidth: 3, lineJoin: .round)
+                        isTurboEnabled ? Color.yellow : getStrokeColor(),
+                        style: StrokeStyle(lineWidth: style.borderThickness, lineJoin: .round)
                     )
                     .opacity(configuration.isPressed ? 0.0 : 1.0)
             )
+    }
+    
+    /* Color Getter Functions */
+    func getBGColor() -> Color {
+        return (
+            colorScheme == .dark ? style.darkModeColors.color
+            : style.lightModeColors.color
+        ) ?? DefaultColors.trigger.color
+    }
+    func getBGPressedColor() -> Color {
+        return (
+            colorScheme == .dark ? style.darkModeColors.pressedColor
+            : style.lightModeColors.pressedColor
+        ) ?? DefaultColors.trigger.pressedColor
+    }
+    func getFGColor() -> Color {
+        return (
+            colorScheme == .dark ? style.darkModeColors.foregroundColor
+            : style.lightModeColors.foregroundColor
+        ) ?? DefaultColors.trigger.foregroundColor
+    }
+    func getFGPressedColor() -> Color {
+        return (
+            colorScheme == .dark ? style.darkModeColors.foregroundPressedColor
+            : style.lightModeColors.foregroundPressedColor
+        ) ?? DefaultColors.trigger.foregroundPressedColor
+    }
+    func getStrokeColor() -> Color {
+        return (
+            colorScheme == .dark ? style.darkModeColors.strokeColor
+            : style.lightModeColors.strokeColor
+        ) ?? DefaultColors.trigger.strokeColor
     }
 }
 
@@ -87,21 +122,21 @@ struct TriggerButtonStyle: ButtonStyle {
         }
         .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE)
         .scaleEffect(1.5)
-        .buttonStyle(TriggerButtonStyle(side: .left, isTurboEnabled: false))
+        .buttonStyle(TriggerButtonStyle(side: .left, style: .init(), isTurboEnabled: false))
         .padding()
         Button(action: {}) {
             Text("MT")
         }
         .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE)
         .scaleEffect(1.5)
-        .buttonStyle(TriggerButtonStyle(side: .middle, isTurboEnabled: false))
+        .buttonStyle(TriggerButtonStyle(side: .middle, style: .init(), isTurboEnabled: false))
         .padding()
         Button(action: {}) {
             Text("RT")
         }
         .frame(width: DEFAULT_BUTTON_SIZE, height: DEFAULT_BUTTON_SIZE)
         .scaleEffect(1.5)
-        .buttonStyle(TriggerButtonStyle(side: .right, isTurboEnabled: false))
+        .buttonStyle(TriggerButtonStyle(side: .right, style: .init(), isTurboEnabled: false))
         .padding()
     }
 }

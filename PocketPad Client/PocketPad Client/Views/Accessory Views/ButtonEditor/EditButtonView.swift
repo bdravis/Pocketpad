@@ -51,7 +51,7 @@ struct EditButtonView: View {
                 Text("Scale and Rotation")
             }
             
-            if button.type == .regular {
+            if button.type == .regular || button.type == .bumper {
                 Section(isExpanded: $iconExpanded) {
                     // MARK: Shape
                     HStack {
@@ -112,51 +112,49 @@ struct EditButtonView: View {
 //                    Text("Trigger Properties")
 //                }
 //            }
-            if button.type == .regular || button.type == .bumper || button.type == .joystick || button.type == .dpad {
-                Section(isExpanded: $styleExpanded) {
-                    if colorScheme == .dark {
-                        Group {
-                            // MARK: Icon Colors
-                            ColorPicker("\(button.type == .regular || button.type == .bumper ? "Icon" : button.type == .joystick ? "Thumbstick" : "Arrow") Color", selection: $button.fgColorD)
-                            if button.type != .joystick {
-                                ColorPicker("Pressed \(button.type == .regular || button.type == .bumper ? "Icon" : "Arrow") Color", selection: $button.fgPressedColorD)
-                            }
-                            
-                            // MARK: Background Colors
-                            ColorPicker("Background Color", selection: $button.bgColorD)
-                            if button.type != .joystick {
-                                ColorPicker("Pressed BG Color", selection: $button.bgPressedColorD)
-                            }
-                            
-                            // MARK: Stroke Color
-                            ColorPicker("Stroke Color", selection: $button.strokeColorD)
+            Section(isExpanded: $styleExpanded) {
+                if colorScheme == .dark {
+                    Group {
+                        // MARK: Icon Colors
+                        ColorPicker("\(button.type == .dpad ? "Arrow" : button.type == .joystick ? "Thumbstick" : "Icon") Color", selection: $button.fgColorD)
+                        if button.type != .joystick {
+                            ColorPicker("Pressed \(button.type == .dpad ? "Arrow" : "Icon") Color", selection: $button.fgPressedColorD)
                         }
-                        .transition(.opacity)
-                    } else {
-                        Group {
-                            // MARK: Icon Colors
-                            ColorPicker("\(button.type == .regular || button.type == .bumper ? "Icon" : button.type == .joystick ? "Thumbstick" : "Arrow") Color", selection: $button.fgColorL)
-                            if button.type != .joystick {
-                                ColorPicker("Pressed \(button.type == .regular || button.type == .bumper ? "Icon" : "Arrow") Color", selection: $button.fgPressedColorL)
-                            }
-                            
-                            // MARK: Background Colors
-                            ColorPicker("Background Color", selection: $button.bgColorL)
-                            if button.type != .joystick {
-                                ColorPicker("Pressed BG Color", selection: $button.bgPressedColorL)
-                            }
-                            
-                            // MARK: Stroke Color
-                            ColorPicker("Stroke Color", selection: $button.strokeColorL)
+                        
+                        // MARK: Background Colors
+                        ColorPicker("Background Color", selection: $button.bgColorD)
+                        if button.type != .joystick {
+                            ColorPicker("Pressed BG Color", selection: $button.bgPressedColorD)
                         }
-                        .transition(.opacity)
+                        
+                        // MARK: Stroke Color
+                        ColorPicker("Stroke Color", selection: $button.strokeColorD)
                     }
-                    
-                    // MARK: Stroke
-                    EditorSlider(title: "Stroke Thickness", value: $button.stroke, min: 0, max: 15, step: 1, inputWidth: 40, keyboardType: .numberPad, formatter: NumberFormatter())
-                } header: {
-                    Text("Style")
+                    .transition(.opacity)
+                } else {
+                    Group {
+                        // MARK: Icon Colors
+                        ColorPicker("\(button.type == .dpad ? "Arrow" : button.type == .joystick ? "Thumbstick" : "Icon") Color", selection: $button.fgColorL)
+                        if button.type != .joystick {
+                            ColorPicker("Pressed \(button.type == .dpad ? "Arrow" : "Icon") Color", selection: $button.fgPressedColorL)
+                        }
+                        
+                        // MARK: Background Colors
+                        ColorPicker("Background Color", selection: $button.bgColorL)
+                        if button.type != .joystick {
+                            ColorPicker("Pressed BG Color", selection: $button.bgPressedColorL)
+                        }
+                        
+                        // MARK: Stroke Color
+                        ColorPicker("Stroke Color", selection: $button.strokeColorL)
+                    }
+                    .transition(.opacity)
                 }
+                
+                // MARK: Stroke
+                EditorSlider(title: "Stroke Thickness", value: $button.stroke, min: 0, max: 15, step: 1, inputWidth: 40, keyboardType: .numberPad, formatter: NumberFormatter())
+            } header: {
+                Text("Style")
             }
             
             Section {

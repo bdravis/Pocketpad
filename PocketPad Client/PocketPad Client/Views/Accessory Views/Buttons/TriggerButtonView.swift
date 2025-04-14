@@ -18,7 +18,7 @@ struct TriggerButtonView: View {
         }) {
             Text(config.input.rawValue)
         }
-        .buttonStyle(TriggerButtonStyle(side: config.side, isTurboEnabled: turboManager.isTurboEnabled(config.input)))
+        .buttonStyle(TriggerButtonStyle(side: config.side, style: config.style, isTurboEnabled: turboManager.isTurboEnabled(config.input)))
         .pressAction(onPress: {
             if turboManager.turboActive { // turbo button is being held and then another button is pressed
                 turboManager.toggleTurboForButton(config.input)

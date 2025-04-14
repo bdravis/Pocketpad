@@ -20,14 +20,8 @@ struct DPadButtonView: View {
             if !split {
                 // Background path
                 Plus(thickness: DPAD_THICKNESS)
-                    .fill((
-                        colorScheme == .dark ? config.style.darkModeColors.color
-                        : config.style.lightModeColors.color
-                    ) ?? DefaultColors.dpad.color)
-                    .stroke((
-                        colorScheme == .dark ? config.style.darkModeColors.strokeColor
-                        : config.style.lightModeColors.strokeColor
-                    ) ?? DefaultColors.dpad.strokeColor, style: StrokeStyle(lineWidth: config.style.borderThickness, lineCap: .square, lineJoin: .bevel))
+                    .fill(getBGColor())
+                    .stroke(getStrokeColor(), style: StrokeStyle(lineWidth: config.style.borderThickness, lineCap: .square, lineJoin: .bevel))
                 
                 // Center Circle
                 Circle()
@@ -55,6 +49,20 @@ struct DPadButtonView: View {
             }
             .frame(maxWidth: DPAD_THICKNESS)
         }
+    }
+    
+    /* Color Getter Functions */
+    func getBGColor() -> Color {
+        return (
+            colorScheme == .dark ? config.style.darkModeColors.color
+            : config.style.lightModeColors.color
+        ) ?? DefaultColors.dpad.color
+    }
+    func getStrokeColor() -> Color {
+        return (
+            colorScheme == .dark ? config.style.darkModeColors.strokeColor
+            : config.style.lightModeColors.strokeColor
+        ) ?? DefaultColors.dpad.strokeColor
     }
 }
 

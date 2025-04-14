@@ -10,6 +10,8 @@ import SwiftUI
 let STICK_SIZE: CGFloat = DEFAULT_BUTTON_SIZE / 3
 
 struct JoystickButtonView: View {
+    @Environment(\.colorScheme) var colorScheme
+    
     @StateObject private var bluetoothManager = BluetoothManager.shared
     var config: JoystickConfig
 
@@ -129,18 +131,10 @@ struct JoystickButtonView: View {
     
 
     var body: some View {
-        @Environment(\.colorScheme) var colorScheme
-        
         ZStack {
             Circle()
-                .fill((
-                    colorScheme == .dark ? config.style.darkModeColors.color
-                    : config.style.lightModeColors.color
-                ) ?? DefaultColors.joystick.color)
-                .strokeBorder((
-                    colorScheme == .dark ? config.style.darkModeColors.strokeColor
-                    : config.style.lightModeColors.strokeColor
-                ) ?? DefaultColors.joystick.strokeColor, lineWidth: config.style.borderThickness)
+                .fill(getBGColor())
+                .strokeBorder(getStrokeColor(), lineWidth: config.style.borderThickness)
                 .contentShape(Rectangle())
             
             // Circle indicating deadzone
@@ -149,14 +143,32 @@ struct JoystickButtonView: View {
                 .frame(width: 2 * deadzoneRadius, height: 2 * deadzoneRadius)
 
             Circle()
-                .foregroundStyle((
-                    colorScheme == .dark ? config.style.darkModeColors.foregroundColor : config.style.lightModeColors.foregroundColor
-                ) ?? DefaultColors.joystick.foregroundColor)
+                .foregroundStyle(getFGColor())
                 .frame(width: STICK_SIZE, height: STICK_SIZE)
                 .offset(offset)
                 .highPriorityGesture(joyDrag)
             
         }
+    }
+    
+    /* Color Getter Functions */
+    func getBGColor() -> Color {
+        return (
+            colorScheme == .dark ? config.style.darkModeColors.color
+            : config.style.lightModeColors.color
+        ) ?? DefaultColors.joystick.color
+    }
+    func getFGColor() -> Color {
+        return (
+            colorScheme == .dark ? config.style.darkModeColors.foregroundColor
+            : config.style.lightModeColors.foregroundColor
+        ) ?? DefaultColors.joystick.foregroundColor
+    }
+    func getStrokeColor() -> Color {
+        return (
+            colorScheme == .dark ? config.style.darkModeColors.strokeColor
+            : config.style.lightModeColors.strokeColor
+        ) ?? DefaultColors.joystick.strokeColor
     }
 }
 //

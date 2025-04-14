@@ -116,6 +116,24 @@ class EditingButtonVM: ObservableObject {
         } else if let btn = config as? TriggerConfig {
             self.input = btn.input
             self.triggerSide = btn.side
+            
+            let defCols = DefaultColors.trigger
+            
+            // set light mode
+            self.bgColorL = btn.style.lightModeColors.color ?? defCols.color
+            self.bgPressedColorL = btn.style.lightModeColors.pressedColor ?? defCols.pressedColor
+            self.fgColorL = btn.style.lightModeColors.foregroundColor ?? defCols.foregroundColor
+            self.fgPressedColorL = btn.style.lightModeColors.foregroundPressedColor ?? defCols.foregroundPressedColor
+            self.strokeColorL = btn.style.lightModeColors.strokeColor ?? defCols.strokeColor
+            
+            // set dark mode
+            self.bgColorD = btn.style.darkModeColors.color ?? defCols.color
+            self.bgPressedColorD = btn.style.darkModeColors.pressedColor ?? defCols.pressedColor
+            self.fgColorD = btn.style.darkModeColors.foregroundColor ?? defCols.foregroundColor
+            self.fgPressedColorD = btn.style.darkModeColors.foregroundPressedColor ?? defCols.foregroundPressedColor
+            self.strokeColorD = btn.style.darkModeColors.strokeColor ?? defCols.strokeColor
+            
+            self.stroke = btn.style.borderThickness
         }
     }
     
@@ -140,7 +158,7 @@ class EditingButtonVM: ObservableObject {
         if button.type == .regular || button.type == .bumper {
             // set the regular button style
             button.updateStyle(to: RegularButtonStyle(shape: self.shape, iconType: self.iconType, icon: self.hasIcon ? self.icon : nil, properties: getGeneralStyle()))
-        } else if button.type == .joystick || button.type == .dpad {
+        } else if button.type == .joystick || button.type == .dpad || button.type == .trigger {
             // set the general button style
             button.updateStyle(to: getGeneralStyle())
         }
@@ -160,7 +178,7 @@ class EditingButtonVM: ObservableObject {
         case .dpad:
             return DPadConfig(position: .init(scaledPos: self.scaledPos, offset: self.offset), scale: self.scale, rotation: rotation, style: getGeneralStyle(), inputId: self.inputId, inputs: [:])
         case .trigger:
-            return TriggerConfig(position: .init(scaledPos: self.scaledPos, offset: self.offset), scale: self.scale, rotation: rotation, inputId: self.inputId, input: self.input, side: self.triggerSide)
+            return TriggerConfig(position: .init(scaledPos: self.scaledPos, offset: self.offset), scale: self.scale, rotation: rotation, style: getGeneralStyle(), inputId: self.inputId, input: self.input, side: self.triggerSide)
         }
     }
 }

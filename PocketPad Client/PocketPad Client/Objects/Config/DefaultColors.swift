@@ -41,4 +41,10 @@ class DefaultColors {
         foregroundColor: Color(uiColor: .label), foregroundPressedColor: Color(uiColor: .systemBackground),
         strokeColor: Color(uiColor: .label)
     )
+    
+    static let trigger = DefaultColorConfig(
+        color: Color(uiColor: .secondarySystemFill), pressedColor: Color(uiColor: .secondaryLabel),
+        foregroundColor: Color(uiColor: .label), foregroundPressedColor: Color(uiColor: .systemBackground),
+        strokeColor: Color(uiColor: .label)
+    )
 }
