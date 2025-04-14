@@ -41,20 +41,6 @@ struct RegularButtonView: View {
             }
         }
         .applyButtonStyle(config.style, isTurboEnabled: turboManager.isTurboEnabled(config.input))
-        .pressAction(onPress: {
-            if config.turbo { // if this button is the turbo button itself
-                turboManager.activateTurboMode()
-            } else if turboManager.turboActive { // turbo button is being held and then another button is pressed
-                turboManager.toggleTurboForButton(config.input)
-            } else if turboManager.isTurboEnabled(config.input) { // while turbo is not being held, a turbo-enabled button is held
-                turboManager.startTurboForButton(
-                    config.input,
-                    buttonPressHandler: sendRegularButtonPress,
-                    buttonReleaseHandler: sendRegularButtonRelease
-                )
-            } else { // turbo button is not being held, button is not turbo-enabled
-                // this case is a simple button press/hold
-                sendRegularButtonPress()
         .onLongPressGesture(minimumDuration: 0.5, maximumDistance: 50, pressing: { isPressing in
             if isPressing {
                 longPressed = true
