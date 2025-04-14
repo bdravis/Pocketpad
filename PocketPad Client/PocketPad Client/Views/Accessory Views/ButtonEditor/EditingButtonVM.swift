@@ -113,8 +113,6 @@ class EditingButtonVM: ObservableObject {
             self.strokeColorD = btn.style.darkModeColors.strokeColor ?? defCols.strokeColor
             
             self.stroke = btn.style.borderThickness
-        } else if let btn = config as? BumperConfig {
-            self.input = btn.input
         } else if let btn = config as? TriggerConfig {
             self.input = btn.input
             self.triggerSide = btn.side
@@ -139,7 +137,7 @@ class EditingButtonVM: ObservableObject {
         button.scale = self.scale
         button.rotation = self.rotation
         
-        if button.type == .regular {
+        if button.type == .regular || button.type == .bumper {
             // set the regular button style
             button.updateStyle(to: RegularButtonStyle(shape: self.shape, iconType: self.iconType, icon: self.hasIcon ? self.icon : nil, properties: getGeneralStyle()))
         } else if button.type == .joystick || button.type == .dpad {
@@ -150,8 +148,8 @@ class EditingButtonVM: ObservableObject {
     
     func asButtonConfig() -> ButtonConfig {
         switch self.type {
-        case .regular:
-            return RegularButtonConfig(
+        case .regular, .bumper:
+            return RegularButtonConfig(type: self.type,
                 position: .init(scaledPos: self.scaledPos, offset: self.offset),
                 scale: self.scale, rotation: rotation,
                 inputId: self.inputId, input: self.input,
@@ -161,8 +159,6 @@ class EditingButtonVM: ObservableObject {
             return JoystickConfig(position: .init(scaledPos: self.scaledPos, offset: self.offset), scale: self.scale, rotation: rotation, style: getGeneralStyle(), inputId: self.inputId, input: .RightJoystick)
         case .dpad:
             return DPadConfig(position: .init(scaledPos: self.scaledPos, offset: self.offset), scale: self.scale, rotation: rotation, style: getGeneralStyle(), inputId: self.inputId, inputs: [:])
-        case .bumper:
-            return BumperConfig(position: .init(scaledPos: self.scaledPos, offset: self.offset), scale: self.scale, rotation: rotation, inputId: self.inputId, input: self.input)
         case .trigger:
             return TriggerConfig(position: .init(scaledPos: self.scaledPos, offset: self.offset), scale: self.scale, rotation: rotation, inputId: self.inputId, input: self.input, side: self.triggerSide)
         }

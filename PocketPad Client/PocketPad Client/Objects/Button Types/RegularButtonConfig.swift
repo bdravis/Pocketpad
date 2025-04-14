@@ -27,10 +27,11 @@ struct RegularButtonConfig: ButtonConfig, ConfigType {
     
     // Object Initializer
     init(
+        type: ButtonType = .regular,
         position: ButtonPosition, scale: CGFloat, rotation: Double = 0.0, inputId: UInt8,
         input: ButtonInput, style: RegularButtonStyle? = nil, turbo: Bool = false
     ) {
-        self.type = .regular
+        self.type = type
         
         self.position = position
         self.scale = scale
@@ -45,7 +46,7 @@ struct RegularButtonConfig: ButtonConfig, ConfigType {
             self.style = style
         } else {
             // create a default style configuration
-            self.style = .init(shape: .Circle, iconType: .Text, icon: input.rawValue)
+            self.style = .init(shape: (type == .bumper ? .Pill : .Circle), iconType: .Text, icon: input.rawValue)
         }
     }
 }

@@ -112,14 +112,14 @@ struct EditButtonView: View {
 //                    Text("Trigger Properties")
 //                }
 //            }
-            if button.type == .regular || button.type == .joystick || button.type == .dpad {
+            if button.type == .regular || button.type == .bumper || button.type == .joystick || button.type == .dpad {
                 Section(isExpanded: $styleExpanded) {
                     if colorScheme == .dark {
                         Group {
                             // MARK: Icon Colors
-                            ColorPicker("\(button.type == .regular ? "Icon" : button.type == .joystick ? "Thumbstick" : "Arrow") Color", selection: $button.fgColorD)
+                            ColorPicker("\(button.type == .regular || button.type == .bumper ? "Icon" : button.type == .joystick ? "Thumbstick" : "Arrow") Color", selection: $button.fgColorD)
                             if button.type != .joystick {
-                                ColorPicker("Pressed \(button.type == .regular ? "Icon" : "Arrow") Color", selection: $button.fgPressedColorD)
+                                ColorPicker("Pressed \(button.type == .regular || button.type == .bumper ? "Icon" : "Arrow") Color", selection: $button.fgPressedColorD)
                             }
                             
                             // MARK: Background Colors
@@ -135,9 +135,9 @@ struct EditButtonView: View {
                     } else {
                         Group {
                             // MARK: Icon Colors
-                            ColorPicker("\(button.type == .regular ? "Icon" : button.type == .joystick ? "Thumbstick" : "Arrow") Color", selection: $button.fgColorL)
+                            ColorPicker("\(button.type == .regular || button.type == .bumper ? "Icon" : button.type == .joystick ? "Thumbstick" : "Arrow") Color", selection: $button.fgColorL)
                             if button.type != .joystick {
-                                ColorPicker("Pressed \(button.type == .regular ? "Icon" : "Arrow") Color", selection: $button.fgPressedColorL)
+                                ColorPicker("Pressed \(button.type == .regular || button.type == .bumper ? "Icon" : "Arrow") Color", selection: $button.fgPressedColorL)
                             }
                             
                             // MARK: Background Colors
