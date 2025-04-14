@@ -12,11 +12,16 @@ import SwiftUI
 struct RegularButtonView: View {
     @StateObject private var bluetoothManager = BluetoothManager.shared
     @StateObject private var turboManager = TurboManager.shared
+    @State private var longPressed = false
+
     var config: RegularButtonConfig
     
     var body: some View {
         Button(action: {
-            handleTap()
+            if !longPressed {
+                handleTap()
+            }
+            longPressed = false
         }) {
             Group {
                 if let icon = config.style.icon {
@@ -57,6 +62,7 @@ struct RegularButtonView: View {
         )
         .onLongPressGesture(minimumDuration: 0.5, maximumDistance: 50, pressing: { isPressing in
             if isPressing {
+                longPressed = true
                 if config.turbo { // if this button is the turbo button itself
                     turboManager.activateTurboMode()
                 } else if turboManager.turboActive { // turbo button is being held and then another button is pressed
@@ -104,7 +110,13 @@ struct RegularButtonView: View {
 #if DEBUG
         print("REGULAR BUTTON PRESS")
 #endif
-        sendRegularButtonInput(buttonEvent: .pressed)
+        let ui8_playerId: UInt8 = LayoutManager.shared.player_id
+        let ui8_inputId : UInt8 = config.inputId
+        let ui8_buttonType : UInt8 = config.type.rawValue
+        let ui8_event : UInt8 = ButtonEvent.pressed.rawValue;
+        
+        let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
+        bluetoothManager.sendInput(data);
     }
     
     // send button release
@@ -112,14 +124,10 @@ struct RegularButtonView: View {
 #if DEBUG
         print("REGULAR BUTTON RELEASE")
 #endif
-        sendRegularButtonInput(buttonEvent: .released)
-    }
-    
-    func sendRegularButtonInput(buttonEvent: ButtonEvent) {
         let ui8_playerId: UInt8 = LayoutManager.shared.player_id
         let ui8_inputId : UInt8 = config.inputId
         let ui8_buttonType : UInt8 = config.type.rawValue
-        let ui8_event : UInt8 = buttonEvent.rawValue;
+        let ui8_event : UInt8 = ButtonEvent.released.rawValue;
         
         let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
         bluetoothManager.sendInput(data);
