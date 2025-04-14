@@ -152,7 +152,6 @@ struct JoystickButtonView: View {
         let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event, ui8_angle, ui8_magnitude])
         bluetoothManager.sendInput(data)
     }
-    
 
     var body: some View {
         ZStack {

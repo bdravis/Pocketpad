@@ -399,6 +399,7 @@
 				DEVELOPMENT_TEAM = 25UZ29CLDL;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "PocketPad-Client-Info.plist";
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Bluetooth is used to connect with your computer to play";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -430,6 +431,7 @@
 				DEVELOPMENT_TEAM = 25UZ29CLDL;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "PocketPad-Client-Info.plist";
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Bluetooth is used to connect with your computer to play";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

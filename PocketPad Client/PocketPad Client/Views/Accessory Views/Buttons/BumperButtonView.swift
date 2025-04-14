@@ -128,7 +128,6 @@ struct BumperButtonView: View {
             bluetoothManager.sendInput(data)
         }
     }
-
 }
 
 //

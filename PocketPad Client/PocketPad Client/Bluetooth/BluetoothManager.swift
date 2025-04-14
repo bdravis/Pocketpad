@@ -153,6 +153,7 @@ class BluetoothManager: NSObject, ObservableObject {
     }
     
     func updateControllerConfiguration() {
+        print("Hello World")
         let selectedController = UserDefaults.standard.string(forKey: "selectedController") ?? "Xbox"
         let selectedControllerValue = ControllerType(stringValue: selectedController)?.rawValue ?? 0
         
@@ -175,34 +176,37 @@ class BluetoothManager: NSObject, ObservableObject {
         guard let service = selectedService else { return }
         if let char = discoveredCharacteristics.first(where: { $0.uuid == CONTROLLER_TYPE_CHARACTERISTIC }) {
     
-                let init_transmission_packet = Data([UInt8(LayoutManager.shared.player_id),
+            let init_transmission_packet = Data([UInt8(LayoutManager.shared.player_id),
                                                      UInt8(selectedControllerValue),
                                                      UInt8(255)
                                                     ])
                 
-                service.peripheral?.writeValue(init_transmission_packet, for: char, type: .withoutResponse)
+            service.peripheral?.writeValue(init_transmission_packet, for: char, type: .withoutResponse)
+            service.peripheral?.readValue(for: char)
                 
-                while position < data.count {
+            while position < data.count {
                     
-                    let chunk_size: UInt8 = UInt8(min(position + subdata_size, data.count) - position)
-                    
-                    let chunk = data.subdata(in: position..<position + Int(chunk_size))
-                    
-                    let packet = Data([UInt8(LayoutManager.shared.player_id),
-                                       UInt8(selectedControllerValue),
-                                       UInt8(chunk_size)
-                                       ]) + chunk
-                    
-                    service.peripheral?.writeValue(packet, for: char, type: .withResponse)
-                    position += subdata_size
-                }
+                let chunk_size: UInt8 = UInt8(min(position + subdata_size, data.count) - position)
                 
-                let end_transmission_packet = Data([UInt8(LayoutManager.shared.player_id),
+                let chunk = data.subdata(in: position..<position + Int(chunk_size))
+                    
+                let packet = Data([UInt8(LayoutManager.shared.player_id),
+                                    UInt8(selectedControllerValue),
+                                    UInt8(chunk_size)
+                                  ]) + chunk
+                    
+                service.peripheral?.writeValue(packet, for: char, type: .withoutResponse)
+                service.peripheral?.readValue(for: char)
+                position += subdata_size
+            }
+                
+            let end_transmission_packet = Data([UInt8(LayoutManager.shared.player_id),
                                                     UInt8(selectedControllerValue),
                                                     UInt8(0)
                                                    ])
                 
-                service.peripheral?.writeValue(end_transmission_packet, for: char, type: .withResponse)
+            service.peripheral?.writeValue(end_transmission_packet, for: char, type: .withoutResponse)
+            service.peripheral?.readValue(for: char)
         }
     }
 }
@@ -391,7 +395,7 @@ extension BluetoothManager: CBPeripheralDelegate {
                         
                         LayoutManager.shared.player_id = int_player_id
                         
-                        let selectedController = UserDefaults.standard.string(forKey: "selectedController") ?? "Xbox"
+                        let selectedController = UserDefaults.standard.string(forKey: "selectedController") ?? ControllerType.getDefaultName()
                         
                         sendLayout(layout: LayoutManager.shared.currentController)
                         
@@ -494,6 +498,7 @@ extension BluetoothManager: CBPeripheralDelegate {
                                                      ])
                 
                 service.peripheral?.writeValue(init_transmission_packet, for: characteristic, type: .withResponse)
+                service.peripheral?.readValue(for: characteristic)
                 
                 while position < data.count {
                     
@@ -507,6 +512,7 @@ extension BluetoothManager: CBPeripheralDelegate {
                                        ]) + chunk
                     
                     service.peripheral?.writeValue(packet, for: characteristic, type: .withResponse)
+                    service.peripheral?.readValue(for: characteristic)
                     position += subdata_size
                 }
                 
@@ -516,6 +522,7 @@ extension BluetoothManager: CBPeripheralDelegate {
                                    ])
                 
                 service.peripheral?.writeValue(end_transmission_packet, for: characteristic, type: .withResponse)
+                service.peripheral?.readValue(for: characteristic)
             }
         }
         

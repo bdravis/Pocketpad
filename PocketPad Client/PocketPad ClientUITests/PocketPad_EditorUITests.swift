@@ -241,9 +241,9 @@ final class PocketPad_EditorUITests: XCTestCase {
                     // set border
                     let thicknessSlider = app.sliders["SliderStroke Thickness"]
                     editList.scrollToElement(thicknessSlider, upward: false)
-                    thicknessSlider.adjust(toNormalizedSliderPosition: 0.6)
+                    thicknessSlider.adjust(toNormalizedSliderPosition: 1.0)
                     let thicknessBtn = app.buttons["EditorStroke ThicknessBtn"]
-                    XCTAssertEqual(thicknessBtn.label, "9.00", "Thickness label was not properly updated.")
+                    XCTAssertEqual(thicknessBtn.label, "15.00", "Thickness label was not properly updated.")
                 } else if inp == "Middle" {
                     // delete the middle trigger
                     let deleteBtn = app.buttons["DeleteButtonBtn"]
