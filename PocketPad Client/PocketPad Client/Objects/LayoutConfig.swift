@@ -69,10 +69,6 @@ struct LayoutConfig: ConfigType {
                 if lhsBtn != rhsBtn {
                     return false
                 }
-            } else if let lhsBtn = lhs.buttons[i] as? BumperConfig, let rhsBtn = rhs.buttons[i] as? BumperConfig {
-                if lhsBtn != rhsBtn {
-                    return false
-                }
             } else if let lhsBtn = lhs.buttons[i] as? TriggerConfig, let rhsBtn = rhs.buttons[i] as? TriggerConfig {
                 if lhsBtn != rhsBtn {
                     return false

@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct EditButtonView: View {
+    @Environment(\.colorScheme) var colorScheme
+    
     @ObservedObject var button: EditingButtonVM
     
     @Binding var showSymbolPicker: Bool
@@ -49,53 +51,69 @@ struct EditButtonView: View {
                 Text("Scale and Rotation")
             }
             
-            if button.type == .regular {
+            if button.type == .regular || button.type == .bumper || button.type == .trigger {
                 Section(isExpanded: $iconExpanded) {
-                    // MARK: Shape
-                    HStack {
-                        Picker("Button Shape", selection: $button.shape) {
-                            ForEach(RegularButtonShape.allCases, id: \.self) { shape in
-                                Text(shape.rawValue).tag(shape)
+                    if button.type == .trigger {
+                        // MARK: Trigger Side
+                        VStack {
+                            HStack {
+                                Text("Side")
+                                Spacer()
                             }
+                            Picker("Trigger Side", selection: $button.triggerSide) {
+                                ForEach(TriggerSide.allCases, id: \.self) { side in
+                                    Text(side.getName()).tag(side.getName())
+                                }
+                            }
+                            .pickerStyle(.segmented)
                         }
-                        .pickerStyle(.menu)
-                        .accessibilityIdentifier("ButtonShapePicker")
-                    }
-                    
-                    // MARK: Icon Configuration
-                    Toggle("Has Icon", isOn: $button.hasIcon)
-                    if button.hasIcon {
+                    } else {
+                        // MARK: Shape
                         HStack {
-                            Picker("Icon Type", selection: $button.iconType) {
-                                ForEach(RegularButtonIconType.allCases, id: \.self) { iconType in
-                                    Text(iconType.rawValue).tag(iconType)
+                            Picker("Button Shape", selection: $button.shape) {
+                                ForEach(RegularButtonShape.allCases, id: \.self) { shape in
+                                    Text(shape.rawValue).tag(shape)
                                 }
                             }
                             .pickerStyle(.menu)
-                            .accessibilityIdentifier("IconTypePicker")
+                            .accessibilityIdentifier("ButtonShapePicker")
                         }
-                        HStack {
-                            Text("Icon")
-                            Spacer()
-                            switch button.iconType {
-                            case .Text:
-                                TextField("Icon", text: $button.icon)
-                                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                                    .multilineTextAlignment(.trailing)
-                                    .autocorrectionDisabled(true)
-                                    .accessibilityIdentifier("Icon")
-                            case .SFSymbol:
-                                Button(action: {
-                                    showSymbolPicker.toggle()
-                                }) {
-                                    Label(button.icon, systemImage: button.icon)
+                        
+                        // MARK: Icon Configuration
+                        Toggle("Has Icon", isOn: $button.hasIcon)
+                        if button.hasIcon {
+                            HStack {
+                                Picker("Icon Type", selection: $button.iconType) {
+                                    ForEach(RegularButtonIconType.allCases, id: \.self) { iconType in
+                                        Text(iconType.rawValue).tag(iconType)
+                                    }
                                 }
-                                .accessibilityIdentifier("PickSymbolBtn")
+                                .pickerStyle(.menu)
+                                .accessibilityIdentifier("IconTypePicker")
+                            }
+                            HStack {
+                                Text("Icon")
+                                Spacer()
+                                switch button.iconType {
+                                case .Text:
+                                    TextField("Icon", text: $button.icon)
+                                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                                        .multilineTextAlignment(.trailing)
+                                        .autocorrectionDisabled(true)
+                                        .accessibilityIdentifier("Icon")
+                                case .SFSymbol:
+                                    Button(action: {
+                                        showSymbolPicker.toggle()
+                                    }) {
+                                        Label(button.icon, systemImage: button.icon)
+                                    }
+                                    .accessibilityIdentifier("PickSymbolBtn")
+                                }
                             }
                         }
                     }
                 } header: {
-                    Text("Icon")
+                    Text("\(button.type == .trigger ? "" : "Icon and ")Shape")
                 }
             }
 //            else if button.type == .trigger {
@@ -110,25 +128,49 @@ struct EditButtonView: View {
 //                    Text("Trigger Properties")
 //                }
 //            }
-            if button.type == .regular || button.type == .joystick || button.type == .dpad {
-                Section(isExpanded: $styleExpanded) {
-                    // MARK: Icon Colors
-                    ColorPicker("\(button.type == .regular ? "Icon" : button.type == .joystick ? "Thumbstick" : "Arrow") Color", selection: $button.fgColor)
-                    if button.type != .joystick {
-                        ColorPicker("Pressed \(button.type == .regular ? "Icon" : "Arrow") Color", selection: $button.fgPressedColor)
+            Section(isExpanded: $styleExpanded) {
+                if colorScheme == .dark {
+                    Group {
+                        // MARK: Icon Colors
+                        ColorPicker("\(button.type == .dpad ? "Arrow" : button.type == .joystick ? "Thumbstick" : "Icon") Color", selection: $button.fgColorD)
+                        if button.type != .joystick {
+                            ColorPicker("Pressed \(button.type == .dpad ? "Arrow" : "Icon") Color", selection: $button.fgPressedColorD)
+                        }
+                        
+                        // MARK: Background Colors
+                        ColorPicker("Background Color", selection: $button.bgColorD)
+                        if button.type != .joystick {
+                            ColorPicker("Pressed BG Color", selection: $button.bgPressedColorD)
+                        }
+                        
+                        // MARK: Stroke Color
+                        ColorPicker("Stroke Color", selection: $button.strokeColorD)
                     }
-                    
-                    // MARK: Background Colors
-                    ColorPicker("Background Color", selection: $button.bgColor)
-                    if button.type != .joystick {
-                        ColorPicker("Pressed BG Color", selection: $button.bgPressedColor)
+                    .transition(.opacity)
+                } else {
+                    Group {
+                        // MARK: Icon Colors
+                        ColorPicker("\(button.type == .dpad ? "Arrow" : button.type == .joystick ? "Thumbstick" : "Icon") Color", selection: $button.fgColorL)
+                        if button.type != .joystick {
+                            ColorPicker("Pressed \(button.type == .dpad ? "Arrow" : "Icon") Color", selection: $button.fgPressedColorL)
+                        }
+                        
+                        // MARK: Background Colors
+                        ColorPicker("Background Color", selection: $button.bgColorL)
+                        if button.type != .joystick {
+                            ColorPicker("Pressed BG Color", selection: $button.bgPressedColorL)
+                        }
+                        
+                        // MARK: Stroke Color
+                        ColorPicker("Stroke Color", selection: $button.strokeColorL)
                     }
-                    
-                    // MARK: Stroke
-                    EditorSlider(title: "Stroke Thickness", value: $button.stroke, min: 0, max: 15, step: 1, inputWidth: 40, keyboardType: .numberPad, formatter: NumberFormatter())
-                } header: {
-                    Text("Style")
+                    .transition(.opacity)
                 }
+                
+                // MARK: Stroke
+                EditorSlider(title: "Stroke Thickness", value: $button.stroke, min: 0, max: 15, step: 1, inputWidth: 40, keyboardType: .numberPad, formatter: NumberFormatter())
+            } header: {
+                Text("Style")
             }
             
             Section {

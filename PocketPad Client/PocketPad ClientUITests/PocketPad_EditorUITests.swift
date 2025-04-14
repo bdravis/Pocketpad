@@ -39,12 +39,12 @@ final class PocketPad_EditorUITests: XCTestCase {
         
         // clear all layouts
         let removeFiles = app.buttons["RemoveLayoutFiles"]
-        app.scrollViews["SettingsScrollView"].scrollToElement(removeFiles, upward: false)
+//        app.scrollViews["SettingsScrollView"].scrollToElement(removeFiles, upward: false)
         removeFiles.tap()
         
         // create new layout
         let createLayout = app.buttons["CreateNewLayoutButton"]
-        app.scrollViews["SettingsScrollView"].scrollToElement(createLayout, upward: true)
+//        app.scrollViews["SettingsScrollView"].scrollToElement(createLayout, upward: true)
         createLayout.tap()
         let nameField = app.textFields["Layout Name"]
         guard nameField.waitForExistence(timeout: 3) else {
@@ -60,7 +60,7 @@ final class PocketPad_EditorUITests: XCTestCase {
         
         // verify the name in the controller input
         let controllerPicker = app.buttons["ControllerPicker"]
-        app.scrollViews["SettingsScrollView"].scrollToElement(controllerPicker, upward: true)
+//        app.scrollViews["SettingsScrollView"].scrollToElement(controllerPicker, upward: true)
         XCTAssertEqual(controllerPicker.label, "Picker\(layoutName)", "Layout name did not update the controller picker.")
         controllerPicker.tap()
         let nameInList = app.buttons[layoutName]
@@ -150,10 +150,12 @@ final class PocketPad_EditorUITests: XCTestCase {
                 XCTAssertTrue(button.waitForExistence(timeout: 4), "The selected button was not found on screen.")
                 
                 // drag the button to the position
-                if inp != "Middle" {
-                    let startCoord = button.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
-                    let endCoord = mainEditorView.coordinate(withNormalizedOffset: CGVector(dx: pos.x, dy: pos.y))
-                    startCoord.press(forDuration: 0.01, thenDragTo: endCoord)
+                let startCoord = button.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+                let endCoord = mainEditorView.coordinate(withNormalizedOffset: CGVector(dx: pos.x, dy: pos.y))
+                startCoord.press(forDuration: 0.01, thenDragTo: endCoord)
+                if !button.exists {
+                    let deselCoord = mainEditorView.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+                    deselCoord.tap()
                 }
                 // make sure the button is on screen
                 XCTAssertTrue(button.exists, "The button no longer exists!")

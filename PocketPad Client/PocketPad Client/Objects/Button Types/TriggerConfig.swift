@@ -26,13 +26,23 @@ enum TriggerSide: UInt8, ConfigType, CaseIterable {
 
 struct TriggerConfig: ButtonConfig, ConfigType {
     mutating func updateStyle<T>(to newStyle: T) {
-        return
+        if let newStyle = newStyle as? GeneralButtonStyle {
+            self.style = newStyle
+        }
+    }
+    
+    mutating func updateValue<T>(name: String, to newValue: T) {
+        if name == "side", let newSide = newValue as? TriggerSide {
+            // update the trigger side
+            self.side = newSide
+        }
     }
     
     // Protocol Properties
     var position: ButtonPosition
     var scale: CGFloat
     var rotation: Double
+    var style: GeneralButtonStyle
     var type: ButtonType
     var inputId: UInt8
     
@@ -43,8 +53,9 @@ struct TriggerConfig: ButtonConfig, ConfigType {
     
     // Object Initializer
     init(
-        position: ButtonPosition, scale: CGFloat, rotation: Double = 0.0, inputId: UInt8,
-        input: ButtonInput, turbo: Bool = false,
+        position: ButtonPosition, scale: CGFloat, rotation: Double = 0.0,
+        style: GeneralButtonStyle = .init(),
+        inputId: UInt8, input: ButtonInput, turbo: Bool = false,
         side: TriggerSide
     ) {
         self.type = .trigger
@@ -52,6 +63,7 @@ struct TriggerConfig: ButtonConfig, ConfigType {
         self.position = position
         self.scale = scale
         self.rotation = rotation
+        self.style = style
         
         self.inputId = inputId
         
