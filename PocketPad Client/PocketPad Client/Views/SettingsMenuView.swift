@@ -45,6 +45,8 @@ struct SettingsMenuView: View {
     
     @ObservedObject private var turboManager = TurboManager.shared
     @State private var showingTurboSettings: Bool = false
+    
+    @StateObject private var bluetoothManager = BluetoothManager.shared
 
     
     // MARK: - Body
@@ -170,6 +172,8 @@ struct SettingsMenuView: View {
                         turboManager.stopAllTurbo()
                         
                         showModifyBtn = !DefaultLayouts.isDefaultLayout(name: selectedController)
+                        
+                        bluetoothManager.updateControllerConfiguration()
                     } catch {
                         UIApplication.shared.alert(title: "Failed to load layout", body: error.localizedDescription)
                         selectedController = ControllerType.Xbox.stringValue
