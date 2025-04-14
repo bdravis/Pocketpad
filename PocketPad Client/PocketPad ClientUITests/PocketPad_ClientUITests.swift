@@ -266,6 +266,8 @@ final class PocketPad_ClientUITests: XCTestCase {
         XCTAssertTrue(alertDismiss.waitForExistence(timeout: TIMEOUT))
         XCTAssertTrue(app.alerts.element.staticTexts["Failed to load layout"].exists)
         alertDismiss.tap()
+        XCTAssertTrue(removeFiles.waitForExistence(timeout: TIMEOUT))
+        removeFiles.tap()
     }
     
     @MainActor
