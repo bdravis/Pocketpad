@@ -459,7 +459,6 @@ def write_request(characteristic: BlessGATTCharacteristic, value: Any):
                     response_data = [0, ConnectionMessage.transmitting_layout.value]
                     response = bytearray(response_data)
                     characteristic.value = response
-
                     return
 
                 # json is done sending

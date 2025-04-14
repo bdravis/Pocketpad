@@ -698,7 +698,6 @@ def test_apply_background(main_window, qtbot):
 
     assert f"QPushButton:pressed {{" in main_window.ui.customizer_button.styleSheet()
     assert f"background-color: {darker_widget_color};" in main_window.ui.customizer_button.styleSheet()
-
     assert "QPushButton { background-color: transparent; border: none; }" in main_window.ui.view_code_button.styleSheet() 
 
 def test_controller_widget_creation():
@@ -1317,4 +1316,3 @@ class TestGridLayoutRefresh(unittest.TestCase):
         self.assertIsNotNone(self.controller_grid_layout.itemAtPosition(0, 0))
         self.assertIsNotNone(self.controller_grid_layout.itemAtPosition(0, 1))
         self.assertIsNone(self.controller_grid_layout.itemAtPosition(1, 0))
-
