@@ -127,6 +127,9 @@ struct EditButtonView: View {
                             if button.type != .joystick {
                                 ColorPicker("Pressed BG Color", selection: $button.bgPressedColorD)
                             }
+                            
+                            // MARK: Stroke Color
+                            ColorPicker("Stroke Color", selection: $button.strokeColorD)
                         }
                         .transition(.opacity)
                     } else {
@@ -142,6 +145,9 @@ struct EditButtonView: View {
                             if button.type != .joystick {
                                 ColorPicker("Pressed BG Color", selection: $button.bgPressedColorL)
                             }
+                            
+                            // MARK: Stroke Color
+                            ColorPicker("Stroke Color", selection: $button.strokeColorL)
                         }
                         .transition(.opacity)
                     }

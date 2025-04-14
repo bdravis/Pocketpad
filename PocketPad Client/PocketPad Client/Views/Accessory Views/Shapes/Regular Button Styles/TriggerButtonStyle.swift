@@ -77,7 +77,6 @@ struct TriggerButtonStyle: ButtonStyle {
                     )
                     .opacity(configuration.isPressed ? 0.0 : 1.0)
             )
-        //            .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
     }
 }
 

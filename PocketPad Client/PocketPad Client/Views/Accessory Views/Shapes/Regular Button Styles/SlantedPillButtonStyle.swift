@@ -22,21 +22,25 @@ struct SlantedPillButtonStyle: ButtonStyle {
                 CurvedCapsule()
                     .foregroundStyle(
                         configuration.isPressed ? (
-                            colorScheme == .dark ? style.properties.darkModeColors.pressedColor : style.properties.lightModeColors.pressedColor
-                        ) ?? Color(uiColor: .secondaryLabel)
+                            colorScheme == .dark ? style.properties.darkModeColors.pressedColor
+                            : style.properties.lightModeColors.pressedColor
+                        ) ?? DefaultColors.regular.pressedColor
                         : (
-                            colorScheme == .dark ? style.properties.darkModeColors.color : style.properties.lightModeColors.color
-                        ) ?? Color(uiColor: .secondarySystemFill)
+                            colorScheme == .dark ? style.properties.darkModeColors.color
+                            : style.properties.lightModeColors.color
+                        ) ?? DefaultColors.regular.color
                     )
                     .offset(y: DEFAULT_BUTTON_SIZE * 0.04)
             )
             .foregroundStyle(
                 configuration.isPressed ? (
-                    colorScheme == .dark ? style.properties.darkModeColors.foregroundPressedColor : style.properties.lightModeColors.foregroundPressedColor
-                ) ?? Color(uiColor: .systemBackground)
+                    colorScheme == .dark ? style.properties.darkModeColors.foregroundPressedColor
+                    : style.properties.lightModeColors.foregroundPressedColor
+                ) ?? DefaultColors.regular.foregroundPressedColor
                 : (
-                    colorScheme == .dark ? style.properties.darkModeColors.foregroundColor : style.properties.lightModeColors.foregroundColor
-                ) ?? Color(uiColor: .label)
+                    colorScheme == .dark ? style.properties.darkModeColors.foregroundColor
+                    : style.properties.lightModeColors.foregroundColor
+                ) ?? DefaultColors.regular.foregroundColor
             )
             .font(.system(size: 200)) // scale the text to the size of the button
             .minimumScaleFactor(0.01)
@@ -44,7 +48,10 @@ struct SlantedPillButtonStyle: ButtonStyle {
             .lineLimit(1)
             .overlay(
                 CurvedCapsule()
-                    .stroke(Color(uiColor: .label), lineWidth: style.properties.borderThickness)
+                    .stroke((
+                        colorScheme == .dark ? style.properties.darkModeColors.strokeColor
+                        : style.properties.lightModeColors.strokeColor
+                    ) ?? DefaultColors.regular.strokeColor, lineWidth: style.properties.borderThickness)
                     .opacity(configuration.isPressed ? 0.0 : 1.0)
                     .offset(y: DEFAULT_BUTTON_SIZE * 0.04)
             )

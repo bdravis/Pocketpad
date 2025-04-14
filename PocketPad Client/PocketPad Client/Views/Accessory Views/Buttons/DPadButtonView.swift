@@ -23,8 +23,11 @@ struct DPadButtonView: View {
                     .fill((
                         colorScheme == .dark ? config.style.darkModeColors.color
                         : config.style.lightModeColors.color
-                    ) ?? Color(uiColor: .secondarySystemFill))
-                    .stroke(.black, style: StrokeStyle(lineWidth: config.style.borderThickness, lineCap: .square, lineJoin: .bevel))
+                    ) ?? DefaultColors.dpad.color)
+                    .stroke((
+                        colorScheme == .dark ? config.style.darkModeColors.strokeColor
+                        : config.style.lightModeColors.strokeColor
+                    ) ?? DefaultColors.dpad.strokeColor, style: StrokeStyle(lineWidth: config.style.borderThickness, lineCap: .square, lineJoin: .bevel))
                 
                 // Center Circle
                 Circle()

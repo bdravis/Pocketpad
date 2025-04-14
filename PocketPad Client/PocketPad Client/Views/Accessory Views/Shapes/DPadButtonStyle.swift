@@ -20,14 +20,15 @@ struct DPadButtonStyle: ButtonStyle {
             ) ?? Color(uiColor: .secondaryLabel)).opacity(configuration.isPressed && !split ? 1.0 : 0.0))
             .foregroundStyle(
                 configuration.isPressed ? (
-                    colorScheme == .dark ? style.darkModeColors.foregroundPressedColor : style.lightModeColors.foregroundPressedColor
-                ) ?? Color(uiColor: .systemBackground)
+                    colorScheme == .dark ? style.darkModeColors.foregroundPressedColor
+                    : style.lightModeColors.foregroundPressedColor
+                ) ?? DefaultColors.dpad.foregroundPressedColor
                 : (
-                    colorScheme == .dark ? style.darkModeColors.foregroundColor : style.lightModeColors.foregroundColor
-                ) ?? Color(uiColor: .label)
+                    colorScheme == .dark ? style.darkModeColors.foregroundColor
+                    : style.lightModeColors.foregroundColor
+                ) ?? DefaultColors.dpad.foregroundColor
             )
             .contentShape(Rectangle())
             .clipShape(Rectangle())
-//            .animation(.linear(duration: 0.1), value: configuration.isPressed)
     }
 }

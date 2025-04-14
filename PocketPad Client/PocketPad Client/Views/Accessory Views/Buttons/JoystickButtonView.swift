@@ -136,8 +136,11 @@ struct JoystickButtonView: View {
                 .fill((
                     colorScheme == .dark ? config.style.darkModeColors.color
                     : config.style.lightModeColors.color
-                ) ?? Color(uiColor: .secondarySystemFill))
-                .strokeBorder(Color(uiColor: .secondaryLabel), lineWidth: config.style.borderThickness)
+                ) ?? DefaultColors.joystick.color)
+                .strokeBorder((
+                    colorScheme == .dark ? config.style.darkModeColors.strokeColor
+                    : config.style.lightModeColors.strokeColor
+                ) ?? DefaultColors.joystick.strokeColor, lineWidth: config.style.borderThickness)
                 .contentShape(Rectangle())
             
             // Circle indicating deadzone
@@ -148,7 +151,7 @@ struct JoystickButtonView: View {
             Circle()
                 .foregroundStyle((
                     colorScheme == .dark ? config.style.darkModeColors.foregroundColor : config.style.lightModeColors.foregroundColor
-                ) ?? Color(uiColor: .darkGray))
+                ) ?? DefaultColors.joystick.foregroundColor)
                 .frame(width: STICK_SIZE, height: STICK_SIZE)
                 .offset(offset)
                 .highPriorityGesture(joyDrag)

@@ -68,39 +68,49 @@ class EditingButtonVM: ObservableObject {
             self.hasIcon = btn.style.icon != nil
             self.icon = btn.style.icon ?? ""
             
+            let defCols = DefaultColors.regular
+            
             // set light mode
-            self.bgColorL = btn.style.properties.lightModeColors.color ?? Color(uiColor: .secondarySystemFill)
-            self.bgPressedColorL = btn.style.properties.lightModeColors.pressedColor ?? Color(uiColor: .secondaryLabel)
-            self.fgColorL = btn.style.properties.lightModeColors.foregroundColor ?? Color(uiColor: .label)
-            self.fgPressedColorL = btn.style.properties.lightModeColors.foregroundPressedColor ?? Color(uiColor: .systemBackground)
+            self.bgColorL = btn.style.properties.lightModeColors.color ?? defCols.color
+            self.bgPressedColorL = btn.style.properties.lightModeColors.pressedColor ?? defCols.pressedColor
+            self.fgColorL = btn.style.properties.lightModeColors.foregroundColor ?? defCols.foregroundColor
+            self.fgPressedColorL = btn.style.properties.lightModeColors.foregroundPressedColor ?? defCols.foregroundPressedColor
+            self.strokeColorL = btn.style.properties.lightModeColors.strokeColor ?? defCols.strokeColor
             
             // set dark mode
-            self.bgColorD = btn.style.properties.darkModeColors.color ?? Color(uiColor: .secondarySystemFill)
-            self.bgPressedColorD = btn.style.properties.darkModeColors.pressedColor ?? Color(uiColor: .secondaryLabel)
-            self.fgColorD = btn.style.properties.darkModeColors.foregroundColor ?? Color(uiColor: .label)
-            self.fgPressedColorD = btn.style.properties.darkModeColors.foregroundPressedColor ?? Color(uiColor: .systemBackground)
+            self.bgColorD = btn.style.properties.darkModeColors.color ?? defCols.color
+            self.bgPressedColorD = btn.style.properties.darkModeColors.pressedColor ?? defCols.pressedColor
+            self.fgColorD = btn.style.properties.darkModeColors.foregroundColor ?? defCols.foregroundColor
+            self.fgPressedColorD = btn.style.properties.darkModeColors.foregroundPressedColor ?? defCols.foregroundPressedColor
+            self.strokeColorD = btn.style.properties.darkModeColors.strokeColor ?? defCols.strokeColor
             
             self.stroke = btn.style.properties.borderThickness
         } else if let btn = config as? JoystickConfig {
+            let defCols = DefaultColors.joystick
             // set light mode
-            self.bgColorL = btn.style.lightModeColors.color ?? Color(uiColor: .secondarySystemFill)
-            self.fgColorL = btn.style.lightModeColors.foregroundColor ?? Color(uiColor: .darkGray)
+            self.bgColorL = btn.style.lightModeColors.color ?? defCols.color
+            self.fgColorL = btn.style.lightModeColors.foregroundColor ?? defCols.foregroundColor
+            self.strokeColorL = btn.style.lightModeColors.strokeColor ?? defCols.strokeColor
             
             // set dark mode
-            self.bgColorD = btn.style.darkModeColors.color ?? Color(uiColor: .secondarySystemFill)
-            self.fgColorD = btn.style.darkModeColors.foregroundColor ?? Color(uiColor: .darkGray)
+            self.bgColorD = btn.style.darkModeColors.color ?? defCols.color
+            self.fgColorD = btn.style.darkModeColors.foregroundColor ?? defCols.foregroundColor
+            self.strokeColorD = btn.style.darkModeColors.strokeColor ?? defCols.strokeColor
             
             self.stroke = btn.style.borderThickness
         } else if let btn = config as? DPadConfig {
+            let defCols = DefaultColors.dpad
             // set light mode
-            self.bgColorL = btn.style.lightModeColors.color ?? Color(uiColor: .secondarySystemFill)
-            self.fgColorL = btn.style.lightModeColors.foregroundColor ?? Color(uiColor: .label)
-            self.fgPressedColorL = btn.style.lightModeColors.foregroundPressedColor ?? Color(uiColor: .systemBackground)
+            self.bgColorL = btn.style.lightModeColors.color ?? defCols.color
+            self.fgColorL = btn.style.lightModeColors.foregroundColor ?? defCols.foregroundColor
+            self.fgPressedColorL = btn.style.lightModeColors.foregroundPressedColor ?? defCols.foregroundPressedColor
+            self.strokeColorL = btn.style.lightModeColors.strokeColor ?? defCols.strokeColor
             
             // set dark mode
-            self.bgColorD = btn.style.darkModeColors.color ?? Color(uiColor: .secondarySystemFill)
-            self.fgColorD = btn.style.darkModeColors.foregroundColor ?? Color(uiColor: .label)
-            self.fgPressedColorD = btn.style.darkModeColors.foregroundPressedColor ?? Color(uiColor: .systemBackground)
+            self.bgColorD = btn.style.darkModeColors.color ?? defCols.color
+            self.fgColorD = btn.style.darkModeColors.foregroundColor ?? defCols.foregroundColor
+            self.fgPressedColorD = btn.style.darkModeColors.foregroundPressedColor ?? defCols.foregroundPressedColor
+            self.strokeColorD = btn.style.darkModeColors.strokeColor ?? defCols.strokeColor
             
             self.stroke = btn.style.borderThickness
         } else if let btn = config as? BumperConfig {
