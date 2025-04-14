@@ -32,7 +32,7 @@ struct PocketPad_ClientTests {
         }
         
         try LayoutManager.shared.loadLayouts() // load the controllers to make sure the files exist
-        #expect(LayoutManager.shared.availableLayouts.count >= 4)
+        #expect(LayoutManager.shared.availableLayouts.count >= 7)
         for controller in ControllerType.allCases {
             #expect(LayoutManager.shared.availableLayouts.contains(controller.stringValue))
         }
