@@ -8,15 +8,23 @@
 import SwiftUI
 
 struct DPadButtonStyle: ButtonStyle {
+    @Environment(\.colorScheme) var colorScheme
+    
     var style: GeneralButtonStyle
     var split: Bool
     
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .background((style.color ?? Color(uiColor: .secondaryLabel)).opacity(configuration.isPressed && !split ? 1.0 : 0.0))
+            .background(((
+                colorScheme == .dark ? style.darkModeColors.color : style.lightModeColors.color
+            ) ?? Color(uiColor: .secondaryLabel)).opacity(configuration.isPressed && !split ? 1.0 : 0.0))
             .foregroundStyle(
-                configuration.isPressed ? style.foregroundPressedColor ?? Color(uiColor: .systemBackground)
-                : style.foregroundColor ?? Color(uiColor: .label)
+                configuration.isPressed ? (
+                    colorScheme == .dark ? style.darkModeColors.foregroundPressedColor : style.lightModeColors.foregroundPressedColor
+                ) ?? Color(uiColor: .systemBackground)
+                : (
+                    colorScheme == .dark ? style.darkModeColors.foregroundColor : style.lightModeColors.foregroundColor
+                ) ?? Color(uiColor: .label)
             )
             .contentShape(Rectangle())
             .clipShape(Rectangle())

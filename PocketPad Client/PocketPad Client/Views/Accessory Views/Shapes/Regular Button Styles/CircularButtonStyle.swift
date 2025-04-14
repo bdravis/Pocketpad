@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct CircularButtonStyle: ButtonStyle {
+    @Environment(\.colorScheme) var colorScheme
+    
     var style: RegularButtonStyle
     
     func makeBody(configuration: Configuration) -> some View {
@@ -15,12 +17,20 @@ struct CircularButtonStyle: ButtonStyle {
             .padding()
             .fontWeight(.bold)
             .background(
-                configuration.isPressed ? style.properties.pressedColor ?? Color(uiColor: .secondaryLabel)
-                : style.properties.color ?? Color(uiColor: .secondarySystemFill)
+                configuration.isPressed ? (
+                    colorScheme == .dark ? style.properties.darkModeColors.pressedColor : style.properties.lightModeColors.pressedColor
+                ) ?? Color(uiColor: .secondaryLabel)
+                : (
+                    colorScheme == .dark ? style.properties.darkModeColors.color : style.properties.lightModeColors.color
+                ) ?? Color(uiColor: .secondarySystemFill)
             )
             .foregroundStyle(
-                configuration.isPressed ? style.properties.foregroundPressedColor ?? Color(uiColor: .systemBackground)
-                : style.properties.foregroundColor ?? Color(uiColor: .label)
+                configuration.isPressed ? (
+                    colorScheme == .dark ? style.properties.darkModeColors.foregroundPressedColor : style.properties.lightModeColors.foregroundPressedColor
+                ) ?? Color(uiColor: .systemBackground)
+                : (
+                    colorScheme == .dark ? style.properties.darkModeColors.foregroundColor : style.properties.lightModeColors.foregroundColor
+                ) ?? Color(uiColor: .label)
             )
             .font(.system(size: 200)) // scale the text to the size of the button
             .minimumScaleFactor(0.01)

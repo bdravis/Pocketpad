@@ -129,9 +129,14 @@ struct JoystickButtonView: View {
     
 
     var body: some View {
+        @Environment(\.colorScheme) var colorScheme
+        
         ZStack {
             Circle()
-                .fill(config.style.color ?? Color(uiColor: .secondarySystemFill))
+                .fill((
+                    colorScheme == .dark ? config.style.darkModeColors.color
+                    : config.style.lightModeColors.color
+                ) ?? Color(uiColor: .secondarySystemFill))
                 .strokeBorder(Color(uiColor: .secondaryLabel), lineWidth: config.style.borderThickness)
                 .contentShape(Rectangle())
             
@@ -141,7 +146,9 @@ struct JoystickButtonView: View {
                 .frame(width: 2 * deadzoneRadius, height: 2 * deadzoneRadius)
 
             Circle()
-                .foregroundStyle(config.style.foregroundColor ?? Color(uiColor: .darkGray))
+                .foregroundStyle((
+                    colorScheme == .dark ? config.style.darkModeColors.foregroundColor : config.style.lightModeColors.foregroundColor
+                ) ?? Color(uiColor: .darkGray))
                 .frame(width: STICK_SIZE, height: STICK_SIZE)
                 .offset(offset)
                 .highPriorityGesture(joyDrag)

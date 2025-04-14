@@ -10,6 +10,8 @@ import SwiftUI
 let DPAD_THICKNESS = DEFAULT_BUTTON_SIZE * 0.35 // thickness is 35% of the default button size
 
 struct DPadButtonView: View {
+    @Environment(\.colorScheme) var colorScheme
+    
     var config: DPadConfig
     @AppStorage("splitDPad") var split: Bool = false
     
@@ -18,7 +20,10 @@ struct DPadButtonView: View {
             if !split {
                 // Background path
                 Plus(thickness: DPAD_THICKNESS)
-                    .fill(config.style.color ?? Color(uiColor: .secondarySystemFill))
+                    .fill((
+                        colorScheme == .dark ? config.style.darkModeColors.color
+                        : config.style.lightModeColors.color
+                    ) ?? Color(uiColor: .secondarySystemFill))
                     .stroke(.black, style: StrokeStyle(lineWidth: config.style.borderThickness, lineCap: .square, lineJoin: .bevel))
                 
                 // Center Circle

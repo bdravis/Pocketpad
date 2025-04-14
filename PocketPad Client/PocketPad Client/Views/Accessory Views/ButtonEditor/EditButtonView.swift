@@ -113,15 +113,15 @@ struct EditButtonView: View {
             if button.type == .regular || button.type == .joystick || button.type == .dpad {
                 Section(isExpanded: $styleExpanded) {
                     // MARK: Icon Colors
-                    ColorPicker("\(button.type == .regular ? "Icon" : button.type == .joystick ? "Thumbstick" : "Arrow") Color", selection: $button.fgColor)
+                    ColorPicker("\(button.type == .regular ? "Icon" : button.type == .joystick ? "Thumbstick" : "Arrow") Color", selection: $button.fgColorL)
                     if button.type != .joystick {
-                        ColorPicker("Pressed \(button.type == .regular ? "Icon" : "Arrow") Color", selection: $button.fgPressedColor)
+                        ColorPicker("Pressed \(button.type == .regular ? "Icon" : "Arrow") Color", selection: $button.fgPressedColorL)
                     }
                     
                     // MARK: Background Colors
-                    ColorPicker("Background Color", selection: $button.bgColor)
+                    ColorPicker("Background Color", selection: $button.bgColorL)
                     if button.type != .joystick {
-                        ColorPicker("Pressed BG Color", selection: $button.bgPressedColor)
+                        ColorPicker("Pressed BG Color", selection: $button.bgPressedColorL)
                     }
                     
                     // MARK: Stroke
