@@ -197,7 +197,7 @@ struct SettingsMenuView: View {
                     if newLayoutName != "" {
                         do {
                             guard !layoutManager.layoutExists(for: newLayoutName) else { throw LayoutError.duplicate }
-                            let newLayout: LayoutConfig = .init(name: newLayoutName, buttons: [])
+                            let newLayout: LayoutConfig = .init(name: newLayoutName, lockToOrientation: .all, buttons: [])
                             try layoutManager.saveLayout(newLayout)
                             try layoutManager.loadLayouts(includeControllerTypes: true)
                             try layoutManager.setCurrentLayout(to: newLayoutName)

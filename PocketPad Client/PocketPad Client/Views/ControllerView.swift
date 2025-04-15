@@ -34,6 +34,7 @@ let DEBUG_BUTTONS: [ButtonConfig] = [ // Example buttons
 struct ControllerView: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var isPortait: Bool = false
+    @State private var didLockRotation: Bool = false
     @ObservedObject private var layoutManager = LayoutManager.shared
     
     let isEditor: Bool
@@ -265,8 +266,32 @@ struct ControllerView: View {
             }
             .onChange(of: geometry.size, initial: true) {
                 isPortait = geometry.size.height > geometry.size.width
+                // MARK: Lock Orientation
+                if didLockRotation { return }
+                var newOrientation = layoutManager.currentController.lockToOrientation
+                if layoutManager.currentController.rotationLocked {
+                    // force current orientation
+                    let rot = newOrientation
+                    if isPortait && UIDevice.current.orientation == .portrait && (rot == .all || rot == .allButUpsideDown) {
+                        newOrientation = .portrait
+                    } else if isPortait && UIDevice.current.orientation == .portraitUpsideDown && (rot == .all) {
+                        newOrientation = .portraitUpsideDown
+                    } else if !isPortait && UIDevice.current.orientation == .landscapeLeft && (rot == .all || rot == .landscape || rot == .allButUpsideDown) {
+                        newOrientation = .landscapeRight
+                    } else if !isPortait && UIDevice.current.orientation == .landscapeRight && (rot == .all || rot == .landscape || rot == .allButUpsideDown) {
+                        newOrientation = .landscapeLeft
+                    } else if isPortait && (rot == .landscapeLeft || rot == .landscape) {
+                        newOrientation = .landscapeLeft
+                    } else if isPortait && rot == .landscapeRight {
+                        newOrientation = .landscapeRight
+                    }
+                }
+                AppDelegate.orientationLock = newOrientation
+                didLockRotation = true
             }
             .onDisappear {
+                // MARK: Unlock Orientation
+                AppDelegate.orientationLock = .all
                 guard !deleting else { return }
                 // save controller
                 if isEditor {

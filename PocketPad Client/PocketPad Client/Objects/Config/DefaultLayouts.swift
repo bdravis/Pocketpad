@@ -125,7 +125,7 @@ class DefaultLayouts {
     ])
 
     // MARK: Wii Config
-    static let WiiConfig: LayoutConfig = .init(name: "Wii", buttons: [
+    static let WiiConfig: LayoutConfig = .init(name: "Wii", lockToOrientation: .all, buttons: [
         // Diamond of buttons
         RegularButtonConfig(position: .init(
             scaledPos: CGPoint(x: 0.5, y: 0.8), offset: CGPoint(x: 0, y: -DEFAULT_BUTTON_SIZE * 0.75),
