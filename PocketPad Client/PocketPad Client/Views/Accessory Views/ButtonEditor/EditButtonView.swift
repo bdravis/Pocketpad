@@ -13,6 +13,7 @@ struct EditButtonView: View {
     @ObservedObject var button: EditingButtonVM
     
     @Binding var showSymbolPicker: Bool
+    @Binding var isPortait: Bool
     @State private var showDeleteAlert: Bool = false
     
     // Values for if the sections are expanded
@@ -30,14 +31,34 @@ struct EditButtonView: View {
     var body: some View {
         List {
             Section(isExpanded: $positionExpanded) {
-                // MARK: X Scale
-                EditorSlider(title: "X Scale", hideSlider: true, value: $button.scaledPos.x, min: 0.0, max: 1.0, step: 0.01, inputWidth: 40, keyboardType: .decimalPad, formatter: numberFormatter)
-                // MARK: Y Scale
-                EditorSlider(title: "Y Scale", hideSlider: true, value: $button.scaledPos.y, min: 0.0, max: 1.0, step: 0.01, inputWidth: 40, keyboardType: .decimalPad, formatter: numberFormatter)
-                // MARK: X Offset
-                EditorSlider(title: "X Offset", value: $button.offset.x, min: -300.0, max: 300.0, step: 0.5, inputWidth: 40, keyboardType: .decimalPad, formatter: numberFormatter)
-                // MARK: Y Offset
-                EditorSlider(title: "Y Offset", value: $button.offset.y, min: -300.0, max: 300.0, step: 0.5, inputWidth: 40, keyboardType: .decimalPad, formatter: numberFormatter)
+                // MARK: Override for orientation
+                Toggle("Override for \((button.overriding && !button.defaultIsPortrait) || isPortait ? "Portrait" : "Landscape")", isOn: $button.overriding)
+                    .onChange(of: button.overriding, initial: false) {
+                        if button.overriding {
+                            button.overrideScaledPos = button.scaledPos
+                            button.overrideOffset = button.offset
+                            button.defaultIsPortrait = !isPortait
+                        }
+                    }
+                if button.overriding && ((button.defaultIsPortrait && !isPortait) || (!button.defaultIsPortrait && isPortait)) {
+                    // MARK: X Scale
+                    EditorSlider(title: "X Scale (\(button.defaultIsPortrait ? "Landscape" : "Portrait"))", hideSlider: true, value: $button.overrideScaledPos.x, min: 0.0, max: 1.0, step: 0.01, inputWidth: 40, keyboardType: .decimalPad, formatter: numberFormatter)
+                    // MARK: Y Scale
+                    EditorSlider(title: "Y Scale (\(button.defaultIsPortrait ? "Landscape" : "Portrait"))", hideSlider: true, value: $button.overrideScaledPos.y, min: 0.0, max: 1.0, step: 0.01, inputWidth: 40, keyboardType: .decimalPad, formatter: numberFormatter)
+                    // MARK: X Offset
+                    EditorSlider(title: "X Offset (\(button.defaultIsPortrait ? "Landscape" : "Portrait"))", value: $button.overrideOffset.x, min: -300.0, max: 300.0, step: 0.5, inputWidth: 40, keyboardType: .decimalPad, formatter: numberFormatter)
+                    // MARK: Y Offset
+                    EditorSlider(title: "Y Offset (\(button.defaultIsPortrait ? "Landscape" : "Portrait"))", value: $button.overrideOffset.y, min: -300.0, max: 300.0, step: 0.5, inputWidth: 40, keyboardType: .decimalPad, formatter: numberFormatter)
+                } else {
+                    // MARK: X Scale
+                    EditorSlider(title: "X Scale\(button.overriding ? (button.defaultIsPortrait ? " (Portrait)" : " (Landscape)") : "")", hideSlider: true, value: $button.scaledPos.x, min: 0.0, max: 1.0, step: 0.01, inputWidth: 40, keyboardType: .decimalPad, formatter: numberFormatter)
+                    // MARK: Y Scale
+                    EditorSlider(title: "Y Scale\(button.overriding ? (button.defaultIsPortrait ? " (Portrait)" : " (Landscape)") : "")", hideSlider: true, value: $button.scaledPos.y, min: 0.0, max: 1.0, step: 0.01, inputWidth: 40, keyboardType: .decimalPad, formatter: numberFormatter)
+                    // MARK: X Offset
+                    EditorSlider(title: "X Offset\(button.overriding ? (button.defaultIsPortrait ? " (Portrait)" : " (Landscape)") : "")", value: $button.offset.x, min: -300.0, max: 300.0, step: 0.5, inputWidth: 40, keyboardType: .decimalPad, formatter: numberFormatter)
+                    // MARK: Y Offset
+                    EditorSlider(title: "Y Offset\(button.overriding ? (button.defaultIsPortrait ? " (Portrait)" : " (Landscape)") : "")", value: $button.offset.y, min: -300.0, max: 300.0, step: 0.5, inputWidth: 40, keyboardType: .decimalPad, formatter: numberFormatter)
+                }
             } header: {
                 Text("Position")
             }
