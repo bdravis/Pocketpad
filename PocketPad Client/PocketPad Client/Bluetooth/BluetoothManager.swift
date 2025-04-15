@@ -153,7 +153,6 @@ class BluetoothManager: NSObject, ObservableObject {
     }
     
     func updateControllerConfiguration() {
-        print("Hello World")
         let selectedController = UserDefaults.standard.string(forKey: "selectedController") ?? "Xbox"
         let selectedControllerValue = ControllerType(stringValue: selectedController)?.rawValue ?? 0
         

@@ -267,31 +267,11 @@ struct ControllerView: View {
             .onChange(of: geometry.size, initial: true) {
                 isPortait = geometry.size.height > geometry.size.width
                 // MARK: Lock Orientation
-                if didLockRotation { return }
-                var newOrientation = layoutManager.currentController.lockToOrientation
-                if layoutManager.currentController.rotationLocked {
-                    // force current orientation
-                    let rot = newOrientation
-                    if isPortait && UIDevice.current.orientation == .portrait && (rot == .all || rot == .allButUpsideDown) {
-                        newOrientation = .portrait
-                    } else if isPortait && UIDevice.current.orientation == .portraitUpsideDown && (rot == .all) {
-                        newOrientation = .portraitUpsideDown
-                    } else if !isPortait && UIDevice.current.orientation == .landscapeLeft && (rot == .all || rot == .landscape || rot == .allButUpsideDown) {
-                        newOrientation = .landscapeRight
-                    } else if !isPortait && UIDevice.current.orientation == .landscapeRight && (rot == .all || rot == .landscape || rot == .allButUpsideDown) {
-                        newOrientation = .landscapeLeft
-                    } else if isPortait && (rot == .landscapeLeft || rot == .landscape) {
-                        newOrientation = .landscapeLeft
-                    } else if isPortait && rot == .landscapeRight {
-                        newOrientation = .landscapeRight
-                    }
-                }
-                AppDelegate.orientationLock = newOrientation
-                didLockRotation = true
+                lockRotation()
             }
             .onDisappear {
                 // MARK: Unlock Orientation
-                AppDelegate.orientationLock = .all
+                unlockRotation()
                 guard !deleting else { return }
                 // save controller
                 if isEditor {
@@ -309,6 +289,12 @@ struct ControllerView: View {
                     ToolbarItem(placement: .topBarLeading, content: {
                         HStack {
                             Button(action: {
+                                self.presentationMode.wrappedValue.dismiss()
+                            }) {
+                                Image(systemName: "xmark")
+                            }
+                            .accessibilityIdentifier("ExitControllerView")
+                            Button(action: {
                                 showDeleteAlert.toggle()
                             }) {
                                 Image(systemName: "trash")
@@ -322,6 +308,17 @@ struct ControllerView: View {
                                 Image(systemName: "pencil")
                             }
                             .accessibilityIdentifier("RenameLayoutBtn")
+                            Toggle("Rotation Lock", systemImage: "lock\(didLockRotation ? ".open" : "").rotation", isOn: $didLockRotation)
+                                .buttonStyle(.borderless)
+                                .toggleStyle(.button)
+                                .onChange(of: didLockRotation, initial: false) {
+                                    layoutManager.currentController.rotationLocked = didLockRotation
+                                    if didLockRotation {
+                                        lockRotation()
+                                    } else {
+                                        unlockRotation()
+                                    }
+                                }
                         }
                     })
                     ToolbarItem(placement: .topBarTrailing, content: {
@@ -335,6 +332,15 @@ struct ControllerView: View {
                             Image(systemName: "plus")
                         }
                         .accessibilityIdentifier("NewButtonBtn")
+                    })
+                } else {
+                    ToolbarItem(placement: .topBarLeading, content: {
+                        Button(action: {
+                            self.presentationMode.wrappedValue.dismiss()
+                        }) {
+                            Image(systemName: "xmark")
+                        }
+                        .accessibilityIdentifier("ExitControllerView")
                     })
                 }
             }
@@ -420,6 +426,7 @@ struct ControllerView: View {
         .navigationBarTitleDisplayMode(.inline)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("MainControllerScreen")
+        .navigationBarBackButtonHidden()
     }
     
     func isSafe(geom: CGRect) -> Bool {
@@ -480,6 +487,32 @@ struct ControllerView: View {
             }
         }
         selectedBtn.clear()
+    }
+    
+    func lockRotation() {
+        var newOrientation = layoutManager.currentController.lockToOrientation
+        if layoutManager.currentController.rotationLocked {
+            // force current orientation
+            let rot = newOrientation
+            if isPortait && UIDevice.current.orientation == .portrait && (rot == .all || rot == .allButUpsideDown) {
+                newOrientation = .portrait
+            } else if isPortait && UIDevice.current.orientation == .portraitUpsideDown && (rot == .all) {
+                newOrientation = .portraitUpsideDown
+            } else if !isPortait && UIDevice.current.orientation == .landscapeLeft && (rot == .all || rot == .landscape || rot == .allButUpsideDown) {
+                newOrientation = .landscapeRight
+            } else if !isPortait && UIDevice.current.orientation == .landscapeRight && (rot == .all || rot == .landscape || rot == .allButUpsideDown) {
+                newOrientation = .landscapeLeft
+            } else if isPortait && (rot == .landscapeLeft || rot == .landscape) {
+                newOrientation = .landscapeLeft
+            } else if isPortait && rot == .landscapeRight {
+                newOrientation = .landscapeRight
+            }
+            didLockRotation = true
+        }
+        AppDelegate.orientationLock = newOrientation
+    }
+    func unlockRotation() {
+        AppDelegate.orientationLock = .all
     }
 }
 //
