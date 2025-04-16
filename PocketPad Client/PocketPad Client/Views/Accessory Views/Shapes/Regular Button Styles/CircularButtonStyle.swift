@@ -11,6 +11,7 @@ struct CircularButtonStyle: ButtonStyle {
     @Environment(\.colorScheme) var colorScheme
     
     var style: RegularButtonStyle
+    var isTurboEnabled: Bool
     
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -26,7 +27,7 @@ struct CircularButtonStyle: ButtonStyle {
             .clipShape(Circle())
             .overlay(
                 Circle()
-                    .strokeBorder(getStrokeColor(), lineWidth: style.properties.borderThickness)
+                    .strokeBorder(isTurboEnabled ? Color.yellow : getStrokeColor(), lineWidth: style.properties.borderThickness)
                     .opacity(configuration.isPressed ? 0.0 : 1.0)
             )
     }

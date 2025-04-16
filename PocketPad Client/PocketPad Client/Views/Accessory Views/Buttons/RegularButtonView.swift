@@ -40,26 +40,7 @@ struct RegularButtonView: View {
                 }
             }
         }
-        .applyButtonStyle(config.style)
-        .overlay(
-            turboManager.isTurboEnabled(config.input) ?
-            Group {
-                switch config.style.shape {
-                case .Circle:
-                    Circle()
-                        .stroke(.yellow, lineWidth: 5)
-                        .padding(2)
-                case .Pill:
-                    Capsule()
-                        .stroke(.yellow, lineWidth: 4)
-                        .padding(2)
-                case .SlantedPill:
-                    CurvedCapsule()
-                        .stroke(.yellow, lineWidth: 5) // not manually tested yet
-                        .padding(2)
-                }
-            } : nil
-        )
+        .applyButtonStyle(config.style, isTurboEnabled: turboManager.isTurboEnabled(config.input))
         .onLongPressGesture(minimumDuration: 0.5, maximumDistance: 50, pressing: { isPressing in
             if isPressing {
                 longPressed = true

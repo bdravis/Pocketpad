@@ -35,13 +35,13 @@ enum ButtonInput: String, Codable {
     case DPadRight = "DPadRight"
     case DPadLeft = "DPadLeft"
     
-    case Turbo = "T"
+    case Turbo = "Turbo"
 }
 
 func getButtonInputs(for type: ButtonType) -> [ButtonInput] {
     switch type {
     case .regular:
-        return [.A, .B, .X, .Y, .Z, .One, .Two, .Start, .Select, .Home, .Share]
+        return [.A, .B, .X, .Y, .Z, .One, .Two, .Start, .Select, .Home, .Share, .Turbo]
     case .joystick:
         return [.RightJoystick, .LeftJoystick]
     case .dpad:
