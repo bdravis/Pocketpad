@@ -64,6 +64,60 @@ struct ControllerView: View {
     
     var body: some View {
         GeometryReader { geometry in
+            // MARK: Editor Gestures
+            let magnifyGesture = MagnifyGesture(minimumScaleDelta: 0.0)
+                .onChanged { magnify in
+                    let MinZoom = 0.35
+                    let MaxZoom = 4.0
+                    if lastSafeScale == nil {
+                        lastSafeScale = selectedBtn.scale
+                    }
+                    if zoomStart == nil {
+                        zoomStart = selectedBtn.scale
+                    }
+                    if let zoomStart = zoomStart {
+                        let zoomAmt = zoomStart + (magnify.magnification - 1)
+                        if zoomAmt < MinZoom {
+                            selectedBtn.scale = MinZoom
+                        } else if zoomAmt > MaxZoom {
+                            selectedBtn.scale = MaxZoom
+                        } else {
+                            selectedBtn.scale = zoomStart + (magnify.magnification - 1)
+                        }
+                    }
+                    // check if safe
+                    if isSafe(geometry: geometry) {
+                        isUnsafe = false
+                        lastSafeScale = selectedBtn.scale
+                    } else {
+                        isUnsafe = true
+                    }
+                }
+                .onEnded { _ in
+                    zoomStart = nil
+                    if !isSafe(geometry: geometry), let lastSafeScale = lastSafeScale {
+                        selectedBtn.scale = lastSafeScale
+                    }
+                    lastSafeScale = nil
+                    isUnsafe = false
+                }
+            let rotGesture = RotateGesture(minimumAngleDelta: .degrees(0.0))
+                .onChanged { value in
+                    if rotateStart == nil {
+                        rotateStart = selectedBtn.rotation
+                    }
+                    if let rotateStart = rotateStart {
+                        let rotAmt = rotateStart + value.rotation.degrees
+                        if rotAmt.isFinite && !rotAmt.isNaN {
+                            selectedBtn.rotation = rotAmt
+                        }
+                    }
+                }
+                .onEnded { _ in
+                    rotateStart = nil
+                }
+            
+            // MARK: Main Layout
             ZStack(alignment: .topLeading) {
                 ForEach($layoutManager.currentController.buttons, id: \.wrappedValue.id) { btn in
                     if selectedBtn.isEmpty || selectedBtn.inputId != btn.wrappedValue.inputId {
@@ -162,7 +216,7 @@ struct ControllerView: View {
                                         btnEditViewPos = 1.0
                                     }
                                 }
-                                if isSafe(geom: geometry.frame(in: .global)), let dragPos = dragPos {
+                                if isSafe(geometry: geometry), let dragPos = dragPos {
                                     isUnsafe = false
                                     lastSafePos = dragPos
                                 } else {
@@ -183,7 +237,7 @@ struct ControllerView: View {
                                     )
                                 }
                                 dragPos = nil
-                                if !isSafe(geom: geometry.frame(in: .global)), let lastSafePos = lastSafePos {
+                                if !isSafe(geometry: geometry), let lastSafePos = lastSafePos {
                                     // needs to set position back to the safe pos
                                     if selectedBtn.overriding && ((selectedBtn.defaultIsPortrait && !isPortait) || (!selectedBtn.defaultIsPortrait && isPortait)) {
                                         selectedBtn.overrideScaledPos = CGPoint(
@@ -202,57 +256,6 @@ struct ControllerView: View {
                                 withAnimation {
                                     editViewOpacity = 1.0
                                 }
-                            }
-                    )
-                    .simultaneousGesture(
-                        MagnifyGesture(minimumScaleDelta: 0.0)
-                            .onChanged { magnify in
-                                if lastSafeScale == nil {
-                                    lastSafeScale = selectedBtn.scale
-                                }
-                                if zoomStart == nil {
-                                    zoomStart = selectedBtn.scale
-                                }
-                                if let zoomStart = zoomStart {
-                                    let zoomAmt = zoomStart + (magnify.magnification - 1)
-                                    if zoomAmt < 0.25 {
-                                        selectedBtn.scale = 0.25
-                                    } else if zoomAmt > 4.0 {
-                                        selectedBtn.scale = 4.0
-                                    } else {
-                                        selectedBtn.scale = zoomStart + (magnify.magnification - 1)
-                                    }
-                                }
-                                // check if safe
-                                if isSafe(geom: geometry.frame(in: .global)) {
-                                    isUnsafe = false
-                                    lastSafeScale = selectedBtn.scale
-                                } else {
-                                    isUnsafe = true
-                                }
-                            }
-                            .onEnded { _ in
-                                zoomStart = nil
-                                if !isSafe(geom: geometry.frame(in: .global)), let lastSafeScale = lastSafeScale {
-                                    selectedBtn.scale = lastSafeScale
-                                }
-                                lastSafeScale = nil
-                                isUnsafe = false
-                            }
-                    )
-                    .simultaneousGesture(
-                        RotateGesture(minimumAngleDelta: .degrees(0.0))
-                            .onChanged { value in
-                                if rotateStart == nil {
-                                    rotateStart = selectedBtn.rotation
-                                }
-                                if let rotateStart = rotateStart {
-                                    let rotAmt = rotateStart + value.rotation.degrees
-                                    selectedBtn.rotation = rotAmt
-                                }
-                            }
-                            .onEnded { _ in
-                                rotateStart = nil
                             }
                     )
                     .overlay {
@@ -421,7 +424,10 @@ struct ControllerView: View {
             }, message: {
                 Text("Choose a new name for the current layout.")
             })
+            .simultaneousGesture(magnifyGesture, isEnabled: isEditor && !selectedBtn.isEmpty)
+            .simultaneousGesture(rotGesture, isEnabled: isEditor && !selectedBtn.isEmpty)
         }
+        .coordinateSpace(.named("Controller"))
         .navigationTitle("Controller")
         .navigationBarTitleDisplayMode(.inline)
         .accessibilityElement(children: .contain)
@@ -429,22 +435,29 @@ struct ControllerView: View {
         .navigationBarBackButtonHidden()
     }
     
-    func isSafe(geom: CGRect) -> Bool {
+    func isSafe(geometry: GeometryProxy) -> Bool {
         guard !selectedBtn.isEmpty else { return true }
+        guard let geom = geometry.bounds(of: .named("Controller")) else { return false }
+        let selBtnPos = getPos(pos: selectedBtn.getPos(), geomSize: geom.size, dragPosition: dragPos)
+        let selBtnSize = selectedBtn.scale * DEFAULT_BUTTON_SIZE
         let selBtnRect = CGRect(
-            x: dragPos?.x ?? (selectedBtn.scaledPos.x * geom.size.width) + selectedBtn.offset.x,
-            y: dragPos?.y ?? (selectedBtn.scaledPos.y * geom.size.height) + selectedBtn.offset.y,
-            width: selectedBtn.scale * DEFAULT_BUTTON_SIZE,
-            height: selectedBtn.scale * DEFAULT_BUTTON_SIZE
+            x: selBtnPos.x - selBtnSize / 2,
+            y: selBtnPos.y - selBtnSize / 2,
+            width: selBtnSize,
+            height: selBtnSize
         )
-        if !geom.contains(selBtnRect) { return false }
+        if selBtnRect.minX < geom.minX || selBtnRect.maxX > geom.maxX || selBtnRect.minY < geom.minY || selBtnRect.maxY > geom.maxY {
+            return false
+        }
         for btn in layoutManager.currentController.buttons {
             if btn.inputId == selectedBtn.inputId { continue }
+            let curBtnPos = getPos(pos: btn.position, geomSize: geom.size)
+            let curBtnSize = btn.scale * DEFAULT_BUTTON_SIZE
             let currBtnRect = CGRect(
-                x: (btn.position.scaledPos.x * geom.size.width) + btn.position.offset.x,
-                y: (btn.position.scaledPos.y * geom.size.height) + btn.position.offset.y,
-                width: btn.scale * DEFAULT_BUTTON_SIZE,
-                height: btn.scale * DEFAULT_BUTTON_SIZE
+                x: curBtnPos.x - curBtnSize/2,
+                y: curBtnPos.y - curBtnSize/2,
+                width: curBtnSize,
+                height: curBtnSize
             )
             if selBtnRect.intersects(currBtnRect) {
                 return false
