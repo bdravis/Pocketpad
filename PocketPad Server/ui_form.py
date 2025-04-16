@@ -190,12 +190,49 @@ class Ui_MainWindow(object):
         self.controller_checkboxes.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 231, 139))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 98, 28))
         self.controller_checkboxes.setWidget(self.scrollAreaWidgetContents)
 
         self.verticalLayout_5.addWidget(self.controller_checkboxes)
 
         self.settings_selection.addTab(self.controller_tab, "")
+        self.games_tab = QWidget()
+        self.games_tab.setObjectName(u"games_tab")
+        self.verticalLayout_10 = QVBoxLayout(self.games_tab)
+        self.verticalLayout_10.setObjectName(u"verticalLayout_10")
+        self.game_settings = QWidget(self.games_tab)
+        self.game_settings.setObjectName(u"game_settings")
+        sizePolicy.setHeightForWidth(self.game_settings.sizePolicy().hasHeightForWidth())
+        self.game_settings.setSizePolicy(sizePolicy)
+        self.verticalLayout_11 = QVBoxLayout(self.game_settings)
+        self.verticalLayout_11.setObjectName(u"verticalLayout_11")
+        self.game_name = QLabel(self.game_settings)
+        self.game_name.setObjectName(u"game_name")
+
+        self.verticalLayout_11.addWidget(self.game_name)
+
+        self.games_spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.verticalLayout_11.addItem(self.games_spacer)
+
+        self.database_button = QPushButton(self.game_settings)
+        self.database_button.setObjectName(u"database_button")
+        sizePolicy.setHeightForWidth(self.database_button.sizePolicy().hasHeightForWidth())
+        self.database_button.setSizePolicy(sizePolicy)
+        self.database_button.setMinimumSize(QSize(0, 25))
+        self.database_button.setMaximumSize(QSize(16777214, 50))
+        self.database_button.setStyleSheet(u"font: 12pt \"Segoe UI\";")
+
+        self.verticalLayout_11.addWidget(self.database_button)
+
+        self.verticalSpacer_5 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.verticalLayout_11.addItem(self.verticalSpacer_5)
+
+
+        self.verticalLayout_10.addWidget(self.game_settings)
+
+        self.settings_selection.addTab(self.games_tab, "")
 
         self.verticalLayout_4.addWidget(self.settings_selection)
 
@@ -387,6 +424,9 @@ class Ui_MainWindow(object):
         self.latency_setting_box.setText(QCoreApplication.translate("MainWindow", u"Display Controller Latency", None))
         self.settings_selection.setTabText(self.settings_selection.indexOf(self.network_tab), QCoreApplication.translate("MainWindow", u"Networks", None))
         self.settings_selection.setTabText(self.settings_selection.indexOf(self.controller_tab), QCoreApplication.translate("MainWindow", u"Controllers", None))
+        self.game_name.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:14pt; font-weight:700;\">Game: </span><span style=\" font-size:14pt;\">None</span></p></body></html>", None))
+        self.database_button.setText(QCoreApplication.translate("MainWindow", u"Explore Database", None))
+        self.settings_selection.setTabText(self.settings_selection.indexOf(self.games_tab), QCoreApplication.translate("MainWindow", u"Games", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:14pt; font-weight:700;\">Pair Code:</span></p></body></html>", None))
         self.view_code_button.setText("")
         self.pair_code_label.setText(QCoreApplication.translate("MainWindow", u"123 456", None))

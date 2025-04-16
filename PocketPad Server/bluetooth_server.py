@@ -1,21 +1,20 @@
-from functools import cached_property
-import sys
-import logging
-import asyncio
-import concurrent.futures
 import json
-import threading
 import time
 import enums
-from enums import AllButtons, ControllerUpdateTypes
+import logging
+import asyncio
+import threading
+import concurrent.futures
+import game_database as gdb
+from typing import Dict, Union
+from inputs import parse_input
 from struct import unpack, pack
-from typing import Any, Dict, Union
+from functools import cached_property
+from enums import AllButtons, ControllerUpdateTypes
+from shared_definitions import input_server, inputId_to_inputs
 from server_constants import (POCKETPAD_SERVICE, LATENCY_CHARACTERISTIC, 
                         CONNECTION_CHARACTERISTIC, CONTROLLER_TYPE_CHARACTERISTIC,
                         INPUT_CHARACTERISTIC, ConnectionMessage)
-from inputs import parse_input
-from shared_definitions import input_server, inputId_to_inputs
-from ctypes import c_uint8
 
 from bless import (  # type: ignore
     BlessServer,
@@ -56,6 +55,7 @@ send_latency = None
 connection_function = None
 controller_function = None
 input_function = None
+game_function = None
 
 gatt: Dict = {
     POCKETPAD_SERVICE: {
@@ -139,6 +139,23 @@ def set_controller_callback(controller_function_callback):
 def set_input_callback(input_function_callback):
     global input_function
     input_function = input_function_callback
+
+def set_game_callback(game_function_callback):
+    global game_function
+    game_function = game_function_callback
+
+def save_layout(game_name, player_id):
+    layout_to_save = layout_jsons[player_id_str_arr.index(player_id)]
+    gdb.add_to_database(game_name, layout_to_save)
+
+def request_game_data(game: str):
+    game_function(game)
+    print("Requesting game data")
+
+def send_game_data():
+    print("Sending game data")
+
+
 
 def reconstruct_timestamp(sent_ms):
     """Reconstruct possible timestamps based on the last 5 digits."""
