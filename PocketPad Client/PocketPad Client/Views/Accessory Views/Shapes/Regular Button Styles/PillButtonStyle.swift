@@ -11,6 +11,7 @@ struct PillButtonStyle: ButtonStyle {
     @Environment(\.colorScheme) var colorScheme
     
     var style: RegularButtonStyle
+    var isTurboEnabled: Bool
     
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -27,7 +28,7 @@ struct PillButtonStyle: ButtonStyle {
             .clipShape(Capsule())
             .overlay(
                 Capsule()
-                    .strokeBorder(getStrokeColor(), lineWidth: style.properties.borderThickness)
+                    .strokeBorder(isTurboEnabled ? Color.yellow : getStrokeColor(), lineWidth: style.properties.borderThickness)
                     .opacity(configuration.isPressed ? 0.0 : 1.0)
             )
     }
@@ -69,6 +70,6 @@ struct PillButtonStyle: ButtonStyle {
     Button(action: {}) {
         Text("Button")
     }
-    .buttonStyle(PillButtonStyle(style: .init(shape: .Pill, iconType: .Text)))
+    .buttonStyle(PillButtonStyle(style: .init(shape: .Pill, iconType: .Text), isTurboEnabled: false))
     .padding()
 }
