@@ -168,6 +168,13 @@ class LayoutManager: ObservableObject {
     }
     
     func importLayoutFile(url: URL) throws -> String {
+        // scope the resource
+        let accessing = url.startAccessingSecurityScopedResource()
+        defer {
+            if accessing {
+                url.stopAccessingSecurityScopedResource()
+            }
+        }
         let decoder = PropertyListDecoder()
         let data = try Data(contentsOf: url)
         var layout = try decoder.decode(LayoutConfig.self, from: data)
