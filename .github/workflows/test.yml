@@ -51,10 +51,6 @@ jobs:
 
         steps:
             - uses: actions/checkout@v4
-
-              # Install any dependencies
-            - name: Install Dependencies
-              run: swift package resolve
               
             - name: List available Xcode versions
               run: ls /Applications | grep Xcode
