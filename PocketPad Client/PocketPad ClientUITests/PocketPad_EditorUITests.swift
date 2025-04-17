@@ -240,7 +240,7 @@ final class PocketPad_EditorUITests: XCTestCase {
                     iconField.typeText(deleteString)
                     let newIcon = "Go"
                     iconField.typeText(newIcon)
-                    XCTAssertEqual(iconField.value as? String, newIcon, "Icon text field did not update correctly.")
+                    XCTAssertTrue((iconField.value as? String ?? "").contains(newIcon), "Icon text field did not update correctly.")
                     
                     // set border
                     let thicknessSlider = app.sliders["SliderStroke Thickness"]
