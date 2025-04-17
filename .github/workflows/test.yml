@@ -71,4 +71,4 @@ jobs:
               with:
                 name: results
                 path: |
-                  ${{ github.workspace }}/PocketPad Client/*.xcresults
+                  ${{ github.workspace }}/PocketPad Client/*.xcresult
