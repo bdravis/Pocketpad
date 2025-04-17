@@ -60,23 +60,14 @@ jobs:
             - name: Run tests
               run: |
                 set -o pipefail && xcodebuild test -scheme "PocketPad ClientTests" -destination 'platform=iOS Simulator,name=iPhone 16 Plus,OS=18.2' -resultBundlePath ClientTests.xcresult | xcbeautify --renderer github-actions
-                
-            - name: Upload ClientTests.xcresult
-              uses: actions/upload-artifact@v4
-              if: ${{ failure() }}
-              with:
-                name: ClientTests-${{ github.run_number }}.xcresult
-                path: |
-                  ClientTests.xcresult
 
             - name: Run UI tests
               run: |
                 set -o pipefail && xcodebuild -scheme "PocketPad ClientUITests" -destination 'platform=iOS Simulator,name=iPhone 16 Plus,OS=18.2' -parallel-testing-worker-count 3 test -resultBundlePath ClientUITests.xcresult | xcbeautify --renderer github-actions
                 
-            - name: Upload ClientUITests.xcresult
+            - name: Upload xcresults
               uses: actions/upload-artifact@v4
-              if: ${{ failure() }}
               with:
-                name: ClientUITests-${{ github.run_number }}.xcresult
+                name: results
                 path: |
-                  ClientUITests.xcresult
+                  ${{ github.workspace }}/PocketPad Client/*.xcresults
