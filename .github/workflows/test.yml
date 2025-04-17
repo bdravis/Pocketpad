@@ -59,7 +59,7 @@ jobs:
 
             - name: Run tests
               run: |
-                set -o pipefail && xcodebuild test -scheme "PocketPad ClientTests" -destination 'platform=iOS Simulator,name=iPhone 16 Plus,OS=18.2' -resultBundlePath ClientTests.xcresult | xcbeautify --renderer github-actions
+                pwd && set -o pipefail && xcodebuild test -scheme "PocketPad ClientTests" -destination 'platform=iOS Simulator,name=iPhone 16 Plus,OS=18.2' -resultBundlePath ClientTests.xcresult | xcbeautify --renderer github-actions
                 
             - name: Upload ClientTests.xcresult
               uses: actions/upload-artifact@v4
