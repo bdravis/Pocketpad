@@ -165,6 +165,7 @@ final class PocketPad_EditorUITests: XCTestCase {
                     // turn it into a pill, set to plus symbol, and rotate 40º
                     let shapePicker = app.buttons["ButtonShapePicker"]
                     // first do slanted pill
+                    editList.scrollToElement(shapePicker, upward: false, amt: -100)
                     XCTAssertTrue(shapePicker.exists, "The button shape picker does not exist.")
                     shapePicker.tap()
                     let slantedPillShape = app.buttons["Slanted Pill"]
@@ -201,7 +202,7 @@ final class PocketPad_EditorUITests: XCTestCase {
                     
                     // set rotation
                     let rotBtn = app.buttons["EditorRotationBtn"]
-                    editList.scrollToElement(rotBtn, upward: true)
+                    editList.scrollToElement(rotBtn, upward: true, amt: -100)
                     XCTAssertTrue(rotBtn.waitForExistence(timeout: TIMEOUT), "Rotation edit button was not found.")
                     rotBtn.tap()
                     let rotField = app.textFields["0"]
