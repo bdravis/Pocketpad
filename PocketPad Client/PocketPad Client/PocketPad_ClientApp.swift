@@ -10,6 +10,7 @@ import SwiftUI
 @main
 struct PocketPad_ClientApp: App {
     @UIApplicationDelegateAdaptor var appDelegate: AppDelegate
+    @AppStorage("finishedTutorial") var finishedTutorial: Bool = false
     
     @State private var isShowingSplash = true
     @State private var openedAsImport: Bool = false
@@ -17,7 +18,15 @@ struct PocketPad_ClientApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            Group {
+                if finishedTutorial {
+                    ContentView()
+                } else {
+                    OnBoardingView()
+                }
+            }
+            .transition(.opacity)
+            .animation(.easeOut(duration: 0.5), value: finishedTutorial)
                 .environmentObject(motionManager)
                 .environmentObject(AlertManager.shared)
                 .overlay {
