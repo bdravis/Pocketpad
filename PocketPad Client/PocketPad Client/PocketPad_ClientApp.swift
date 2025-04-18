@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import TipKit
 
 @main
 struct PocketPad_ClientApp: App {
@@ -75,5 +76,10 @@ struct PocketPad_ClientApp: App {
                     }
                 })
         }
+    }
+    
+    init() {
+        // Load and configure the state of all the tips of the app
+        try? Tips.configure([.displayFrequency(.immediate), .datastoreLocation(.applicationDefault)])
     }
 }
