@@ -79,6 +79,26 @@ struct PocketPad_ClientApp: App {
     }
     
     init() {
+        // MARK: Launch Arguments
+        #if DEBUG
+        if CommandLine.arguments.contains("reset-tips") {
+            try? Tips.resetDatastore()
+        }
+        if CommandLine.arguments.contains("hide-tips") {
+            Tips.hideAllTipsForTesting()
+        } else if CommandLine.arguments.contains("show-tips") {
+            Tips.showAllTipsForTesting()
+        }
+        if CommandLine.arguments.contains("no-tutorial") {
+            finishedTutorial = true
+        } else if CommandLine.arguments.contains("show-tutorial") {
+            finishedTutorial = false
+        }
+        if CommandLine.arguments.contains("remove-layouts") {
+            try? LayoutManager.shared.deleteAllLayouts()
+        }
+        #endif
+        
         // Load and configure the state of all the tips of the app
         try? Tips.configure([.displayFrequency(.immediate), .datastoreLocation(.applicationDefault)])
     }

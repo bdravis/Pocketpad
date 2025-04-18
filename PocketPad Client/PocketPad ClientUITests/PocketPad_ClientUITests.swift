@@ -26,9 +26,8 @@ final class PocketPad_ClientUITests: XCTestCase {
     @MainActor
     func testOpenandCloseSettingsMenu() throws {
         let app = XCUIApplication()
+        app.launchArguments = ["hide-tips", "no-tutorial"]
         app.launch()
-        
-        app.skipOnBoarding()
         
         let settingsBtn = app.buttons["SettingsGearButton"]
         guard settingsBtn.waitForExistence(timeout: TIMEOUT) else{
@@ -48,9 +47,8 @@ final class PocketPad_ClientUITests: XCTestCase {
     @MainActor
     func testDPadStyle() throws {
         let app = XCUIApplication()
+        app.launchArguments = ["hide-tips", "no-tutorial"]
         app.launch()
-        
-        app.skipOnBoarding()
         
         let dpadTypes = ["Conjoined", "Split"]
         let settingsBtn = app.buttons["SettingsGearButton"]
@@ -126,9 +124,8 @@ final class PocketPad_ClientUITests: XCTestCase {
     func testControllerDisplay() throws {
         // UI tests must launch the application that they test.
         let app = XCUIApplication()
+        app.launchArguments = ["hide-tips", "no-tutorial"]
         app.launch()
-        
-        app.skipOnBoarding()
 
         let validControllers = ["Xbox", "PlayStation", "Switch", "Wii", "GameCube"]
         let controllerBtnCount = [
@@ -189,9 +186,8 @@ final class PocketPad_ClientUITests: XCTestCase {
     func testLayoutSaving() throws {
         // UI tests must launch the application that they test.
         let app = XCUIApplication()
+        app.launchArguments = ["hide-tips", "no-tutorial", "remove-layouts"]
         app.launch()
-        
-        app.skipOnBoarding()
         
         let alertDismiss = app.alerts.element.buttons["AlertCancel"]
         
@@ -202,10 +198,6 @@ final class PocketPad_ClientUITests: XCTestCase {
             return
         }
         settingsBtn.tap()
-        
-        let removeFiles = app.buttons["RemoveLayoutFiles"]
-        XCTAssertTrue(removeFiles.waitForExistence(timeout: TIMEOUT))
-        removeFiles.tap()
         
         // make sure that the buttons don't exist in the list
         let controllerPicker = app.buttons["ControllerPicker"]
@@ -274,8 +266,6 @@ final class PocketPad_ClientUITests: XCTestCase {
         XCTAssertTrue(alertDismiss.waitForExistence(timeout: TIMEOUT))
         XCTAssertTrue(app.alerts.element.staticTexts["Failed to load layout"].exists)
         alertDismiss.tap()
-        XCTAssertTrue(removeFiles.waitForExistence(timeout: TIMEOUT))
-        removeFiles.tap()
     }
     
     @MainActor
@@ -283,9 +273,8 @@ final class PocketPad_ClientUITests: XCTestCase {
         // tests if the settings view dpad option hides when a gamepad without a dpad is selected
         continueAfterFailure = false
         let app = XCUIApplication() // Initializes the XCTest app
+        app.launchArguments = ["hide-tips", "no-tutorial"]
         app.launch() // Launches the app
-        
-        app.skipOnBoarding()
         
         // make it go to the view
         let settingsBtn = app.buttons["SettingsGearButton"]
@@ -334,9 +323,8 @@ final class PocketPad_ClientUITests: XCTestCase {
         // tests that the orientation locks properly
         continueAfterFailure = false
         let app = XCUIApplication() // Initializes the XCTest app
+        app.launchArguments = ["hide-tips", "no-tutorial"]
         app.launch() // Launches the app
-        
-        app.skipOnBoarding()
         
         // Define the buttons
         let settingsBtn = app.buttons["SettingsGearButton"]
