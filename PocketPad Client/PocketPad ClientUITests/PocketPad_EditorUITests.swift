@@ -41,12 +41,10 @@ final class PocketPad_EditorUITests: XCTestCase {
         
         // clear all layouts
         let removeFiles = app.buttons["RemoveLayoutFiles"]
-//        app.scrollViews["SettingsScrollView"].scrollToElement(removeFiles, upward: false)
         removeFiles.tap()
         
         // create new layout
         let createLayout = app.buttons["CreateNewLayoutButton"]
-//        app.scrollViews["SettingsScrollView"].scrollToElement(createLayout, upward: true)
         createLayout.tap()
         let nameField = app.textFields["Layout Name"]
         guard nameField.waitForExistence(timeout: TIMEOUT) else {
@@ -62,7 +60,6 @@ final class PocketPad_EditorUITests: XCTestCase {
         
         // verify the name in the controller input
         let controllerPicker = app.buttons["ControllerPicker"]
-//        app.scrollViews["SettingsScrollView"].scrollToElement(controllerPicker, upward: true)
         XCTAssertEqual(controllerPicker.label, "Picker\(layoutName)", "Layout name did not update the controller picker.")
         controllerPicker.tap()
         let nameInList = app.buttons[layoutName]
@@ -324,5 +321,120 @@ final class PocketPad_EditorUITests: XCTestCase {
         XCTAssertNotEqual(controllerPicker.label, "Picker\(newName)", "Layout name was not removed from the controller picker.")
         controllerPicker.tap()
         XCTAssertFalse(app.buttons[newName].waitForExistence(timeout: TIMEOUT), "Layout name was found in the list.")
+    }
+    
+    @MainActor
+    func testEditorOrientationOverrides() throws {
+        let app = XCUIApplication()
+        app.launch()
+        
+        // start in portrait
+        XCUIDevice.shared.orientation = .portrait
+        
+        // open settings
+        let settingsBtn = app.buttons["SettingsGearButton"]
+        guard settingsBtn.waitForExistence(timeout: TIMEOUT) else{
+            XCTFail("Settings button open not found")
+            return
+        }
+        settingsBtn.tap()
+        let settingsCloseBtn = app.buttons["SettingsCloseButton"]
+        guard settingsCloseBtn.waitForExistence(timeout: TIMEOUT) else { XCTFail("Settings button close not found"); return }
+        
+        // clear all layouts
+        let removeFiles = app.buttons["RemoveLayoutFiles"]
+        removeFiles.tap()
+        
+        // create new layout
+        let createLayout = app.buttons["CreateNewLayoutButton"]
+        createLayout.tap()
+        let nameField = app.textFields["Layout Name"]
+        guard nameField.waitForExistence(timeout: TIMEOUT) else {
+            XCTFail("Name field not found")
+            return
+        }
+        let layoutName = "Editor Orientation Test"
+        nameField.typeText(layoutName)
+        XCTAssertEqual(nameField.value as? String, layoutName, "Layout name text field did not update correctly.")
+        let setButton = app.alerts.buttons["LayoutNameOK"]
+        setButton.tap()
+        XCTAssertTrue(setButton.waitForNonExistence(timeout: TIMEOUT), "Ok button did not disappear.")
+        
+        // verify the name in the controller input
+        let controllerPicker = app.buttons["ControllerPicker"]
+        XCTAssertEqual(controllerPicker.label, "Picker\(layoutName)", "Layout name did not update the controller picker.")
+        
+        // open up the editor
+        guard settingsCloseBtn.waitForExistence(timeout: TIMEOUT) else { XCTFail("Settings button close not found"); return }
+        settingsCloseBtn.tap()
+        let modifyLayoutView = app.buttons["ModifyLayoutView"]
+        XCTAssertTrue(modifyLayoutView.waitForExistence(timeout: TIMEOUT), "No modify button was found.")
+        modifyLayoutView.tap()
+        
+        let mainEditorView = app.otherElements["MainControllerScreen"]
+        XCTAssertTrue(mainEditorView.waitForExistence(timeout: TIMEOUT), "The main controller screen could not be found.")
+        
+        // unlock rotation
+        let rotLockBtn = app.navigationBars.switches["RotationLock"]
+        XCTAssertTrue(rotLockBtn.exists, "The rotation lock button does not exist")
+        rotLockBtn.tap()
+        
+        // add a button
+        let newButtonBtn = app.buttons["NewButtonBtn"]
+        let addButtonBtn = app.buttons["AddButtonBtn"]
+        XCTAssertTrue(newButtonBtn.waitForExistence(timeout: TIMEOUT), "The new button button was not found.")
+        newButtonBtn.tap()
+        XCTAssertTrue(addButtonBtn.waitForExistence(timeout: TIMEOUT), "The add button button doesn't exist.")
+        addButtonBtn.tap()
+        let button = app.otherElements["SelectedBtn"]
+        XCTAssertTrue(button.waitForExistence(timeout: TIMEOUT), "The selected button was not found on screen.")
+        // move it to the far left
+        let startCoord = button.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        let endCoord = mainEditorView.coordinate(withNormalizedOffset: CGVector(dx: 0.1, dy: 0.4))
+        startCoord.press(forDuration: 0.01, thenDragTo: endCoord)
+        // make sure the button is on screen
+        XCTAssertTrue(button.exists, "The button no longer exists!")
+        
+        // rotate device and override orientation
+        XCUIDevice.shared.orientation = .landscapeLeft
+        let delayExpectation = XCTestExpectation()
+        delayExpectation.isInverted = true
+        XCTWaiter().wait(for: [delayExpectation], timeout: 3)
+        XCTAssertGreaterThan(mainEditorView.frame.size.width, mainEditorView.frame.size.height, "The editor view did not rotate")
+        let finalBtn = app.buttons["ControllerButton"]
+        let overrideToggle = app.switches.element(matching: .switch, identifier: "OverrideOrientation")
+        XCTAssertTrue(overrideToggle.waitForExistence(timeout: TIMEOUT), "Override toggle was not found")
+        overrideToggle.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
+        XCTAssertEqual(overrideToggle.value as? String, "1", "The toggle was not set to true")
+        
+        // move button to right side
+        let startCoord2 = button.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        let endCoord2 = mainEditorView.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.4))
+        startCoord2.press(forDuration: 0.01, thenDragTo: endCoord2)
+        // make sure the button is on screen
+        XCTAssertTrue(button.exists, "The button no longer exists!")
+        
+        // save and exit
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        XCUIDevice.shared.orientation = .portrait
+        
+        // open up the main controller view
+        let controllerViewBtn = app.buttons["OpenControllerView"]
+        XCTAssertTrue(controllerViewBtn.waitForExistence(timeout: TIMEOUT), "The controller view button does not exist")
+        controllerViewBtn.tap()
+        
+        // find the button
+        XCTAssertTrue(finalBtn.waitForExistence(timeout: TIMEOUT), "The controller button could not be found")
+        // make sure the button is on the correct side
+        XCTAssertLessThan(finalBtn.frame.midX, mainEditorView.frame.midX, "The button is not on the left side of the screen")
+        // rotate and make sure it is on the correct side again
+        XCUIDevice.shared.orientation = .landscapeLeft
+        let delayExpectation2 = XCTestExpectation()
+        delayExpectation2.isInverted = true
+        XCTWaiter().wait(for: [delayExpectation2], timeout: 3)
+        XCTAssertGreaterThan(finalBtn.frame.midX, mainEditorView.frame.midX, "The button is not on the right side of the screen")
+        
+        // set back to portrait
+        XCUIDevice.shared.orientation = .portrait
     }
 }

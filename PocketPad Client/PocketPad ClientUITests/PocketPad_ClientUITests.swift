@@ -318,6 +318,76 @@ final class PocketPad_ClientUITests: XCTestCase {
         // make sure the button is no longer there
         XCTAssertTrue(dpadStyleBtn.waitForNonExistence(timeout: TIMEOUT))
     }
+    
+    @MainActor
+    func testOrientationLock() throws {
+        // tests that the orientation locks properly
+        continueAfterFailure = false
+        let app = XCUIApplication() // Initializes the XCTest app
+        app.launch() // Launches the app
+        
+        // Define the buttons
+        let settingsBtn = app.buttons["SettingsGearButton"]
+        let settingsCloseBtn = app.buttons["SettingsCloseButton"]
+        let controllerViewBtn = app.buttons["OpenControllerView"]
+        let controllerPicker = app.buttons["ControllerPicker"]
+        
+        let tests = [
+            [
+                "Controller": "Xbox",
+                "Orientation": UIDeviceOrientation.landscapeLeft
+            ],
+            [
+                "Controller": "Wii",
+                "Orientation": UIDeviceOrientation.portrait
+            ],
+            [
+                "Controller": "Wii",
+                "Orientation": UIDeviceOrientation.landscapeLeft
+            ],
+            [
+                "Controller": "GameCube",
+                "Orientation": UIDeviceOrientation.landscapeRight
+            ]
+        ]
+        
+        XCUIDevice.shared.orientation = .portrait
+        
+        for test in tests {
+            if let controller = test["Controller"] as? String, let orien = test["Orientation"] as? UIDeviceOrientation {
+                XCTAssertTrue(XCUIDevice.shared.orientation.isPortrait, "The device is not in portrait!")
+                // set the controller
+                XCTAssertTrue(settingsBtn.waitForExistence(timeout: TIMEOUT), "The settings button did not appear")
+                settingsBtn.tap()
+                XCTAssertTrue(controllerPicker.waitForExistence(timeout: TIMEOUT), "The controller picker did not appear")
+                controllerPicker.tap()
+                let controllerBtn = app.buttons[controller]
+                guard controllerBtn.waitForExistence(timeout: TIMEOUT) else {
+                    XCTFail()
+                    return
+                }
+                controllerBtn.tap()
+                XCTAssertTrue(settingsCloseBtn.waitForExistence(timeout: TIMEOUT), "The settings close button does not exist")
+                settingsCloseBtn.tap()
+                // set the orientation if it is Wii landscape
+                if (controller == "Wii" && orien == .landscapeLeft) || orien == .landscapeRight {
+                    XCUIDevice.shared.orientation = orien
+                }
+                
+                // open up the controller menu and assert that the orientation was set
+                XCTAssertTrue(controllerViewBtn.waitForExistence(timeout: TIMEOUT), "The controller view button does not exist")
+                controllerViewBtn.tap()
+                let mainEditorView = app.otherElements["MainControllerScreen"]
+                XCTAssertTrue(mainEditorView.waitForExistence(timeout: TIMEOUT), "The main controller screen could not be found.")
+                let editorSize = mainEditorView.frame.size
+                // assert that the orientation is correct
+                XCTAssertTrue(orien.isPortrait ? editorSize.height > editorSize.width : editorSize.width > editorSize.height, "The orientation did not change to the proper orientation")
+                // go back to the previous view
+                app.navigationBars.buttons.element(boundBy: 0).tap()
+                XCUIDevice.shared.orientation = .portrait
+            }
+        }
+    }
 
 //    @MainActor
 //    func testLaunchPerformance() throws {

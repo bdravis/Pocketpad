@@ -35,6 +35,7 @@ struct ControllerView: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var isPortait: Bool = false
     @State private var didLockRotation: Bool = false
+    @State private var ranStartLock: Bool = false
     @ObservedObject private var layoutManager = LayoutManager.shared
     
     let isEditor: Bool
@@ -270,7 +271,10 @@ struct ControllerView: View {
             .onChange(of: geometry.size, initial: true) {
                 isPortait = geometry.size.height > geometry.size.width
                 // MARK: Lock Orientation
-                lockRotation()
+                if !ranStartLock {
+                    ranStartLock = true
+                    lockRotation()
+                }
             }
             .onDisappear {
                 // MARK: Unlock Orientation
@@ -322,6 +326,7 @@ struct ControllerView: View {
                                         unlockRotation()
                                     }
                                 }
+                                .accessibilityIdentifier("RotationLock")
                         }
                     })
                     ToolbarItem(placement: .topBarTrailing, content: {

@@ -17,7 +17,7 @@ struct EditButtonView: View {
     @State private var showDeleteAlert: Bool = false
     
     // Values for if the sections are expanded
-    @State private var positionExpanded: Bool = false
+    @State private var positionExpanded: Bool = true
     @State private var scaleRotExpanded: Bool = true
     @State private var iconExpanded: Bool = true
     @State private var styleExpanded: Bool = true
@@ -33,6 +33,7 @@ struct EditButtonView: View {
             Section(isExpanded: $positionExpanded) {
                 // MARK: Override for orientation
                 Toggle("Override for \((button.overriding && !button.defaultIsPortrait) || isPortait ? "Portrait" : "Landscape")", isOn: $button.overriding)
+                    .accessibilityIdentifier("OverrideOrientation")
                     .onChange(of: button.overriding, initial: false) {
                         if button.overriding {
                             button.overrideScaledPos = button.scaledPos
