@@ -9,6 +9,8 @@ import SwiftUI
 
 @main
 struct PocketPad_ClientApp: App {
+    @UIApplicationDelegateAdaptor var appDelegate: AppDelegate
+    
     @State private var isShowingSplash = true
     @State private var openedAsImport: Bool = false
     @StateObject private var motionManager = MotionManager()

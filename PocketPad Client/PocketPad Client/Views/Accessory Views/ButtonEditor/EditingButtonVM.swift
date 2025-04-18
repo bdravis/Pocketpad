@@ -13,6 +13,11 @@ class EditingButtonVM: ObservableObject {
     // General Protocol values
     @Published var scaledPos: CGPoint = CGPointZero
     @Published var offset: CGPoint = CGPointZero
+    @Published var overriding: Bool = false
+    @Published var defaultIsPortrait: Bool = false
+    @Published var overrideScaledPos: CGPoint = CGPointZero
+    @Published var overrideOffset: CGPoint = CGPointZero
+    
     @Published var scale: CGFloat = 0.0
     @Published var rotation: Double = 0.0
     
@@ -54,6 +59,11 @@ class EditingButtonVM: ObservableObject {
         // Set the general protocol values
         self.scaledPos = config.position.scaledPos
         self.offset = config.position.offset
+        self.overriding = config.position.defaultIsPortrait != nil
+        self.defaultIsPortrait = config.position.defaultIsPortrait ?? false
+        self.overrideScaledPos = config.position.overrideScaledPos ?? CGPointZero
+        self.overrideOffset = config.position.overrideOffset ?? CGPointZero
+        
         self.scale = config.scale
         self.rotation = config.rotation
         
@@ -149,9 +159,17 @@ class EditingButtonVM: ObservableObject {
         )
     }
     
+    func getPos() -> ButtonPosition {
+        return ButtonPosition(
+            scaledPos: self.scaledPos, offset: self.offset,
+            defaultIsPortrait: self.overriding ? self.defaultIsPortrait : nil,
+            overrideScaledPos: self.overriding ? self.overrideScaledPos : nil,
+            overrideOffset: self.overriding ? self.overrideOffset : nil
+        )
+    }
+    
     func applyToButton(_ button: inout ButtonConfig) {
-        button.position.scaledPos = self.scaledPos
-        button.position.offset = self.offset
+        button.position = getPos()
         button.scale = self.scale
         button.rotation = self.rotation
         
@@ -172,17 +190,17 @@ class EditingButtonVM: ObservableObject {
         switch self.type {
         case .regular, .bumper:
             return RegularButtonConfig(type: self.type,
-                position: .init(scaledPos: self.scaledPos, offset: self.offset),
+                position: getPos(),
                 scale: self.scale, rotation: rotation,
                 inputId: self.inputId, input: self.input,
                 style: .init(shape: self.shape, iconType: self.iconType, icon: self.hasIcon ? self.icon : nil, properties: getGeneralStyle())
             )
         case .joystick:
-            return JoystickConfig(position: .init(scaledPos: self.scaledPos, offset: self.offset), scale: self.scale, rotation: rotation, style: getGeneralStyle(), inputId: self.inputId, input: .RightJoystick)
+            return JoystickConfig(position: getPos(), scale: self.scale, rotation: rotation, style: getGeneralStyle(), inputId: self.inputId, input: .RightJoystick)
         case .dpad:
-            return DPadConfig(position: .init(scaledPos: self.scaledPos, offset: self.offset), scale: self.scale, rotation: rotation, style: getGeneralStyle(), inputId: self.inputId, inputs: [:])
+            return DPadConfig(position: getPos(), scale: self.scale, rotation: rotation, style: getGeneralStyle(), inputId: self.inputId, inputs: [:])
         case .trigger:
-            return TriggerConfig(position: .init(scaledPos: self.scaledPos, offset: self.offset), scale: self.scale, rotation: rotation, style: getGeneralStyle(), inputId: self.inputId, input: self.input, side: self.triggerSide)
+            return TriggerConfig(position: getPos(), scale: self.scale, rotation: rotation, style: getGeneralStyle(), inputId: self.inputId, input: self.input, side: self.triggerSide)
         }
     }
 }
