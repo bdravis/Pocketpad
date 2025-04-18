@@ -39,6 +39,7 @@ struct ControllerView: View {
     @ObservedObject private var layoutManager = LayoutManager.shared
     
     let isEditor: Bool
+    let isInMacroEditor: Bool
     
     // Editing Button View Values
     @State private var showAddPopup: Bool = false

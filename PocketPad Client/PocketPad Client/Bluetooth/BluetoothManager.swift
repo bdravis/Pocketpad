@@ -27,8 +27,14 @@ final class AlertManager: ObservableObject {
     }
 }
 
+// This protocol allows inputs to be captured on the client-side instead of being automatically sent to the server
+// Used to implement macros
+protocol InputReceiving: ObservableObject {
+    func sendInput(_ data: Data)
+}
+
 // MARK: - Bluetooth Manager
-class BluetoothManager: NSObject, ObservableObject {
+class BluetoothManager: NSObject, ObservableObject, InputReceiving {
     static let shared = BluetoothManager()
     
     private var centralManager: CBCentralManager!

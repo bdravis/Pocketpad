@@ -12,9 +12,11 @@ import SwiftUI
 struct BumperButtonView: View {
     @StateObject private var bluetoothManager = BluetoothManager.shared
     @StateObject private var turboManager = TurboManager.shared
+    @StateObject private var macroManager = MacroManager.shared
     @State private var longPressed = false
     
     var config: BumperConfig
+    var isInMacroEditor: Bool = false
     
     var body: some View {
         Button(action: {

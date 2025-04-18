@@ -15,7 +15,11 @@ struct JoystickButtonView: View {
     @Environment(\.colorScheme) var colorScheme
     
     @StateObject private var bluetoothManager = BluetoothManager.shared
+    @StateObject private var macroManager = MacroManager.shared
+    
     var config: JoystickConfig
+    var isInMacroEditor: Bool = false
+
 
     @State private var offset: CGSize = .zero
     @State private var hapticTriggered: Bool = false

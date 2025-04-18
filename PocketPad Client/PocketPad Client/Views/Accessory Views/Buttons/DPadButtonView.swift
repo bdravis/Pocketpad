@@ -15,6 +15,7 @@ struct DPadButtonView: View {
     @Environment(\.colorScheme) var colorScheme
     
     var config: DPadConfig
+    var isInMacroEditor: Bool = false
     @AppStorage("splitDPad") var split: Bool = false
     
     var body: some View {
@@ -35,9 +36,9 @@ struct DPadButtonView: View {
             
             // Horizontal directional arrows
             HStack {
-                DirectionalArrow(split: split, rotation: -90, input: .DPadLeft, direction: .left, config: config) // left arrow
+                DirectionalArrow(split: split, rotation: -90, input: .DPadLeft, direction: .left, config: config, isInMacroEditor: isInMacroEditor) // left arrow
                 Spacer()
-                DirectionalArrow(split: split, rotation: 90, input: .DPadRight, direction: .right, config: config) // right arrow
+                DirectionalArrow(split: split, rotation: 90, input: .DPadRight, direction: .right, config: config, isInMacroEditor: isInMacroEditor) // right arrow
                     .accessibilityIdentifier("DPadButton")
             }
             .frame(maxHeight: DPAD_THICKNESS)
@@ -45,9 +46,9 @@ struct DPadButtonView: View {
             
             // Vertical directional arrows
             VStack {
-                DirectionalArrow(split: split, rotation: 0, input: .DPadUp, direction: .up, config: config) // up arrow
+                DirectionalArrow(split: split, rotation: 0, input: .DPadUp, direction: .up, config: config, isInMacroEditor: isInMacroEditor) // up arrow
                 Spacer()
-                DirectionalArrow(split: split, rotation: 180, input: .DPadDown, direction: .down, config: config) // down arrow
+                DirectionalArrow(split: split, rotation: 180, input: .DPadDown, direction: .down, config: config, isInMacroEditor: isInMacroEditor) // down arrow
             }
             .frame(maxWidth: DPAD_THICKNESS)
         }
@@ -72,6 +73,7 @@ struct DPadButtonView: View {
 struct DirectionalArrow: View {
     @StateObject private var bluetoothManager = BluetoothManager.shared
     @StateObject private var turboManager = TurboManager.shared
+    @StateObject private var macroManager = MacroManager.shared
     @State private var longPressed = false
     
     var split: Bool
@@ -80,6 +82,7 @@ struct DirectionalArrow: View {
     let input: ButtonInput // input used for the button action
     let direction: DPadDirection
     let config: DPadConfig // need to know id of config to identify the unique dpad
+    var isInMacroEditor: Bool = false
     
     var body: some View {
         Button(action: {
