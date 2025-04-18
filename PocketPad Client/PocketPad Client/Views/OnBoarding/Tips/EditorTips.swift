@@ -19,6 +19,16 @@ struct OrientationTip: Tip {
     var image: Image? {
         Image(systemName: "lock.rotation")
     }
+    
+    var id: String {
+        "orientation-1"
+    }
+    
+    var options: [any TipOption] {
+        [
+            Tip.MaxDisplayCount(3)
+        ]
+    }
 }
 
 struct OverrideTip: Tip {
@@ -32,5 +42,15 @@ struct OverrideTip: Tip {
     
     var image: Image? {
         Image(systemName: "arrow.turn.up.forward.iphone")
+    }
+    
+    var id: String {
+        "override-1"
+    }
+    
+    var options: [any TipOption] {
+        [
+            Tip.MaxDisplayCount(3)
+        ]
     }
 }

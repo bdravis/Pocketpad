@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import TipKit
 
 // MARK: - Layout Constants
 private let minMenuWidth: CGFloat = 320
@@ -152,11 +153,12 @@ struct SettingsMenuView: View {
                     .foregroundColor(.primary)
                 Spacer()
                 Picker("Picker\(selectedController)", selection: $selectedController) {
-//                    ForEach(ControllerType.allCases, id: \.self) { type in
-//                        Label(type.stringValue, image: type.stringValue).tag(type.stringValue)
-//                    }
                     ForEach(layoutManager.availableLayouts, id: \.self) { layout in
-                        Label(layout, image: layout.lowercased()).tag(layout)
+                        if UIImage(named: layout.lowercased()) != nil {
+                            Label(layout, image: layout.lowercased()).tag(layout)
+                        } else {
+                            Label(layout, systemImage: "gamecontroller").tag(layout)
+                        }
                     }
                 }
                 .pickerStyle(.menu)
@@ -345,7 +347,16 @@ struct SettingsMenuView: View {
                     .accessibilityIdentifier("HapticFeedbackToggle")
             }
             
-            // MARK: Saving layouts (temporary)
+            // MARK: Resetting Tutorial
+            Button(action: {
+                UserDefaults.standard.set(false, forKey: "finishedTutorial")
+            }) {
+                Text("View Tutorial")
+            }
+            .accessibilityIdentifier("ViewTutorial")
+            
+            // MARK: Saving layouts (debug)
+            #if DEBUG
             Section {
                 // Toggle to save layout as malformed
                 Toggle("Save as malformed file", isOn: $saveAsMalformed)
@@ -382,7 +393,12 @@ struct SettingsMenuView: View {
                 Text("Layouts (testing)")
                     .font(.footnote)
                     .foregroundStyle(Color(uiColor: .secondaryLabel))
+            } footer: {
+                Text("DEBUG BUILD")
+                    .font(.footnote)
+                    .foregroundStyle(Color(uiColor: .secondaryLabel))
             }
+            #endif
         }
         .padding(.horizontal, 16)
     }
