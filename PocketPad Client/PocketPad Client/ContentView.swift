@@ -104,7 +104,7 @@ struct ContentView: View {
                     }
                     
                     // NavigationLink to ControllerView for Debugging
-                    NavigationLink(destination: ControllerView(isEditor: false)) {
+                    NavigationLink(destination: ControllerView(isEditor: false, isInMacroEditor: false)) {
                         Text("Open Controller")
                             .font(.system(size: 18))
                             .padding(.horizontal, 15)
@@ -122,9 +122,10 @@ struct ContentView: View {
                     .padding(.horizontal)
                     .padding(.top, 15)
                     
+                    
                     // TODO: Move to settings page (was greyed out so had to add here)
                     if showModifyBtn {
-                        NavigationLink(destination: ControllerView(isEditor: true), label: {
+                        NavigationLink(destination: ControllerView(isEditor: true, isInMacroEditor: false), label: {
                             Text("Modify Controller")
                                 .font(.system(size: 18))
                                 .padding(.horizontal, 10)
@@ -140,6 +141,24 @@ struct ContentView: View {
                         .frame(minWidth: 250)
                         .accessibilityIdentifier("ModifyLayoutView")
                     }
+                    
+                    // MARK: NavigationLink to macro recorder view
+                    NavigationLink(destination: ControllerView(isEditor: false, isInMacroEditor: true)) {
+                        Text("Record Macro")
+                            .font(.system(size: 18))
+                            .padding(.horizontal, 23)
+                            .padding(.vertical, 5)
+                            .foregroundColor(.white)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 25)
+                                    .stroke(Color.white, lineWidth: 4)
+                            )
+                    }
+                    .background(Color.blue)
+                    .cornerRadius(25)
+                    .frame(minWidth: 250)
+                    .accessibilityIdentifier("RecordMacroView")
+                    .padding(.horizontal)
                     
                     Spacer()
                 }
