@@ -36,6 +36,7 @@ struct OnBoardingCardButtons: View {
                     )
                 }
                 .accentColor(Color.white)
+                .accessibilityIdentifier("OnBoardingSkip")
             }
             
             // MARK: Next Button
@@ -66,6 +67,7 @@ struct OnBoardingCardButtons: View {
                 )
             }
             .accentColor(Color.white)
+            .accessibilityIdentifier("OnBoardingNext")
         }
     }
     

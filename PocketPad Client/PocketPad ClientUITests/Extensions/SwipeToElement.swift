@@ -24,3 +24,21 @@ extension XCUIElement {
         }
     }
 }
+
+extension XCUIApplication {
+    func closeAllPopups() {
+        while self.otherElements["PopoverDismissRegion"].exists {
+            let curr = self.otherElements["PopoverDismissRegion"].firstMatch
+            curr.tap()
+            curr.waitForNonExistence(timeout: 3)
+        }
+    }
+    
+    func skipOnBoarding() {
+        let skipBtn = self.buttons["OnBoardingSkip"]
+        if skipBtn.waitForExistence(timeout: 5) {
+            skipBtn.tap()
+            XCTAssertTrue(skipBtn.waitForNonExistence(timeout: 5), "Failed to skip OnBoarding")
+        }
+    }
+}

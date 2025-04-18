@@ -28,6 +28,8 @@ final class PocketPad_ClientUITests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
         
+        app.skipOnBoarding()
+        
         let settingsBtn = app.buttons["SettingsGearButton"]
         guard settingsBtn.waitForExistence(timeout: TIMEOUT) else{
             XCTFail("Settings button open not found")
@@ -47,6 +49,8 @@ final class PocketPad_ClientUITests: XCTestCase {
     func testDPadStyle() throws {
         let app = XCUIApplication()
         app.launch()
+        
+        app.skipOnBoarding()
         
         let dpadTypes = ["Conjoined", "Split"]
         let settingsBtn = app.buttons["SettingsGearButton"]
@@ -123,6 +127,8 @@ final class PocketPad_ClientUITests: XCTestCase {
         // UI tests must launch the application that they test.
         let app = XCUIApplication()
         app.launch()
+        
+        app.skipOnBoarding()
 
         let validControllers = ["Xbox", "PlayStation", "Switch", "Wii", "GameCube"]
         let controllerBtnCount = [
@@ -184,6 +190,8 @@ final class PocketPad_ClientUITests: XCTestCase {
         // UI tests must launch the application that they test.
         let app = XCUIApplication()
         app.launch()
+        
+        app.skipOnBoarding()
         
         let alertDismiss = app.alerts.element.buttons["AlertCancel"]
         
@@ -277,6 +285,8 @@ final class PocketPad_ClientUITests: XCTestCase {
         let app = XCUIApplication() // Initializes the XCTest app
         app.launch() // Launches the app
         
+        app.skipOnBoarding()
+        
         // make it go to the view
         let settingsBtn = app.buttons["SettingsGearButton"]
         guard settingsBtn.waitForExistence(timeout: TIMEOUT) else {
@@ -325,6 +335,8 @@ final class PocketPad_ClientUITests: XCTestCase {
         continueAfterFailure = false
         let app = XCUIApplication() // Initializes the XCTest app
         app.launch() // Launches the app
+        
+        app.skipOnBoarding()
         
         // Define the buttons
         let settingsBtn = app.buttons["SettingsGearButton"]

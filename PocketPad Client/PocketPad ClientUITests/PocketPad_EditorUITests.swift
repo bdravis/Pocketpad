@@ -29,6 +29,8 @@ final class PocketPad_EditorUITests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
         
+        app.skipOnBoarding()
+        
         // open settings
         let settingsBtn = app.buttons["SettingsGearButton"]
         guard settingsBtn.waitForExistence(timeout: TIMEOUT) else{
@@ -117,6 +119,8 @@ final class PocketPad_EditorUITests: XCTestCase {
         let addButtonBtn = app.buttons["AddButtonBtn"]
         let mainEditorView = app.otherElements["MainControllerScreen"]
         XCTAssertTrue(mainEditorView.waitForExistence(timeout: TIMEOUT), "The main controller screen could not be found.")
+        // dismiss the tip if it appears
+        app.closeAllPopups()
         var counter = 0
         for (btnType, inputs) in typesToAdd {
             for (inp, pos) in inputs {
@@ -147,6 +151,7 @@ final class PocketPad_EditorUITests: XCTestCase {
                 addButtonBtn.tap()
                 let button = app.otherElements["SelectedBtn"]
                 XCTAssertTrue(button.waitForExistence(timeout: TIMEOUT), "The selected button was not found on screen.")
+                app.closeAllPopups()
                 
                 // drag the button to the position
                 let startCoord = button.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
@@ -161,6 +166,7 @@ final class PocketPad_EditorUITests: XCTestCase {
                 
                 // configure certain properties for certain elements
                 let editList = app.otherElements["EditBtnList"]
+                app.closeAllPopups()
                 if inp == "Start" {
                     // turn it into a pill, set to plus symbol, and rotate 40º
                     let shapePicker = app.buttons["ButtonShapePicker"]
@@ -329,6 +335,8 @@ final class PocketPad_EditorUITests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
         
+        app.skipOnBoarding()
+        
         // start in portrait
         XCUIDevice.shared.orientation = .portrait
         
@@ -374,6 +382,8 @@ final class PocketPad_EditorUITests: XCTestCase {
         
         let mainEditorView = app.otherElements["MainControllerScreen"]
         XCTAssertTrue(mainEditorView.waitForExistence(timeout: TIMEOUT), "The main controller screen could not be found.")
+        // close all popups
+        app.closeAllPopups()
         
         // unlock rotation
         let rotLockBtn = app.navigationBars.switches["RotationLock"]
@@ -389,6 +399,7 @@ final class PocketPad_EditorUITests: XCTestCase {
         addButtonBtn.tap()
         let button = app.otherElements["SelectedBtn"]
         XCTAssertTrue(button.waitForExistence(timeout: TIMEOUT), "The selected button was not found on screen.")
+        app.closeAllPopups()
         // move it to the far left
         let startCoord = button.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
         let endCoord = mainEditorView.coordinate(withNormalizedOffset: CGVector(dx: 0.1, dy: 0.4))
@@ -403,6 +414,7 @@ final class PocketPad_EditorUITests: XCTestCase {
         XCTWaiter().wait(for: [delayExpectation], timeout: 3)
         XCTAssertGreaterThan(mainEditorView.frame.size.width, mainEditorView.frame.size.height, "The editor view did not rotate")
         let finalBtn = app.buttons["ControllerButton"]
+        app.closeAllPopups()
         let overrideToggle = app.switches.element(matching: .switch, identifier: "OverrideOrientation")
         XCTAssertTrue(overrideToggle.waitForExistence(timeout: TIMEOUT), "Override toggle was not found")
         overrideToggle.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
