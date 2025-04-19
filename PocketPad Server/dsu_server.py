@@ -388,7 +388,7 @@ class DSU_Server:
     
     def _input_loop(self):
         while True:
-            time.sleep(0.5)
+            time.sleep(1)
             for index, state in enumerate(self.controller_states):
 
                 if state.connected == False:
@@ -544,95 +544,96 @@ class DSU_Server:
         # if event type is MOTION, value is [pitch, yaw, roll]
 
         print(f"updating state: {player_num}, {event_type}, {value}")
+        print(f"current state: {self.controller_states[player_num].button_mask}")
 
-        state = self.controller_states[player_num]
+        #state = self.controller_states[player_num]
 
         if event_type == ControllerUpdateTypes.CONNECTION.value:
 
             if value[0] == ConnectionMessage.connecting.value:
-                state.connected = True
+                self.controller_states[player_num].connected = True
 
             if value[0] == ConnectionMessage.disconnecting.value:
-                state.connected = False
+                self.controller_states[player_num].connected = False
 
         if event_type == ControllerUpdateTypes.BUTTON.value:
-            if value[0] == AllButtons.top_diamond:
+            if value[0] == AllButtons.top_diamond.value:
                 if value[1] == ButtonEvent.PRESSED.value:
-                    state.button_mask |= 1 << 4
+                    self.controller_states[player_num].button_mask |= 1 << 4
                 if value[1] == ButtonEvent.RELEASED.value:
-                    state.button_mask |= 0 << 4
+                    self.controller_states[player_num].button_mask &= ~(1 << 4)
 
-            elif value[0] == AllButtons.bottom_diamond:
+            elif value[0] == AllButtons.bottom_diamond.value:
                 if value[1] == ButtonEvent.PRESSED.value:
-                    state.button_mask |= 1 << 6
+                    self.controller_states[player_num].button_mask |= 1 << 6
                 if value[1] == ButtonEvent.RELEASED.value:
-                    state.button_mask |= 0 << 6
+                    self.controller_states[player_num].button_mask &= ~(1 << 6)
 
-            elif value[0] == AllButtons.left_diamond:
+            elif value[0] == AllButtons.left_diamond.value:
                 if value[1] == ButtonEvent.PRESSED.value:
-                    state.button_mask |= 1 << 7
+                    self.controller_states[player_num].button_mask |= 1 << 7
                 if value[1] == ButtonEvent.RELEASED.value:
-                    state.button_mask |= 0 << 7
+                    self.controller_states[player_num].button_mask &= ~(1 << 7)
 
-            elif value[0] == AllButtons.right_diamond:
+            elif value[0] == AllButtons.right_diamond.value:
                 if value[1] == ButtonEvent.PRESSED.value:
-                    state.button_mask |= 1 << 5
+                    self.controller_states[player_num].button_mask |= 1 << 5
                 if value[1] == ButtonEvent.RELEASED.value:
-                    state.button_mask |= 0 << 5
+                    self.controller_states[player_num].button_mask &= ~(1 << 5)
 
-            elif value[0] == AllButtons.up_dpad:
+            elif value[0] == AllButtons.up_dpad.value:
                 if value[1] == ButtonEvent.PRESSED.value:
-                    state.dpad_mask |= 1 << 4
+                    self.controller_states[player_num].dpad_mask |= 1 << 4
                 if value[1] == ButtonEvent.RELEASED.value:
-                    state.dpad_mask |= 0 << 4
+                    self.controller_states[player_num].dpad_mask &= ~(1 << 4)
 
-            elif value[0] == AllButtons.down_dpad:
+            elif value[0] == AllButtons.down_dpad.value:
                 if value[1] == ButtonEvent.PRESSED.value:
-                    state.dpad_mask |= 1 << 6
+                    self.controller_states[player_num].dpad_mask |= 1 << 6
                 if value[1] == ButtonEvent.RELEASED.value:
-                    state.dpad_mask |= 0 << 6
+                    self.controller_states[player_num].dpad_mask &= ~(1 << 6)
 
-            elif value[0] == AllButtons.left_dpad:
+            elif value[0] == AllButtons.left_dpad.value:
                 if value[1] == ButtonEvent.PRESSED.value:
-                    state.dpad_mask |= 1 << 7
+                    self.controller_states[player_num].dpad_mask |= 1 << 7
                 if value[1] == ButtonEvent.RELEASED.value:
-                    state.dpad_mask |= 0 << 7
+                    self.controller_states[player_num].dpad_mask &= ~(1 << 7)
 
-            elif value[0] == AllButtons.right_dpad:
+            elif value[0] == AllButtons.right_dpad.value:
                 if value[1] == ButtonEvent.PRESSED.value:
-                    state.dpad_mask |= 1 << 5
+                    self.controller_states[player_num].dpad_mask |= 1 << 5
                 if value[1] == ButtonEvent.RELEASED.value:
-                    state.dpad_mask |= 0 << 5
+                    self.controller_states[player_num].dpad_mask &= ~(1 << 5)
 
-            elif value[0] == AllButtons.left_bumper:
+            elif value[0] == AllButtons.left_bumper.value:
                 if value[1] == ButtonEvent.PRESSED.value:
-                    state.button_mask |= 1 << 2
+                    self.controller_states[player_num].button_mask |= 1 << 2
                 if value[1] == ButtonEvent.RELEASED.value:
-                    state.button_mask |= 0 << 2
+                    self.controller_states[player_num].button_mask &= ~(1 << 2)
 
-            elif value[0] == AllButtons.right_bumper:
+            elif value[0] == AllButtons.right_bumper.value:
                 if value[1] == ButtonEvent.PRESSED.value:
-                    state.button_mask |= 1 << 3
+                    self.controller_states[player_num].button_mask |= 1 << 3
                 if value[1] == ButtonEvent.RELEASED.value:
-                    state.button_mask |= 0 << 3
+                    self.controller_states[player_num].button_mask &= ~(1 << 3)
 
-            elif value[0] == AllButtons.left_trigger:
+            elif value[0] == AllButtons.left_trigger.value:
                 if value[1] == ButtonEvent.PRESSED.value:
-                    state.button_mask |= 1 << 0
+                    self.controller_states[player_num].button_mask |= 1 << 0
                 if value[1] == ButtonEvent.RELEASED.value:
-                    state.button_mask |= 0 << 0
+                    self.controller_states[player_num].button_mask &= ~(1 << 0)
 
-            elif value[0] == AllButtons.right_trigger:
+            elif value[0] == AllButtons.right_trigger.value:
                 if value[1] == ButtonEvent.PRESSED.value:
-                    state.button_mask |= 1 << 1
+                    self.controller_states[player_num].button_mask |= 1 << 1
                 if value[1] == ButtonEvent.RELEASED.value:
-                    state.button_mask |= 0 << 1
+                    self.controller_states[player_num].button_mask &= ~(1 << 1)
 
-            elif value[0] == AllButtons.options:
+            elif value[0] == AllButtons.options.value:
                 if value[1] == ButtonEvent.PRESSED.value:
-                    state.dpad_mask |= 1 << 3
+                    self.controller_states[player_num].dpad_mask |= 1 << 3
                 if value[1] == ButtonEvent.RELEASED.value:
-                    state.dpad_mask |= 0 << 3
+                    self.controller_states[player_num].dpad_mask &= ~(1 << 3)
 
 
         if event_type == ControllerUpdateTypes.JOYSTICK.value:
@@ -640,18 +641,21 @@ class DSU_Server:
 
                 angle_radians = 2 * math.pi * (value[1] / 255)
 
-                state.left_stick_x = value[2] * math.cos(angle_radians)
-                state.left_stick_y = value[2] * math.sin(angle_radians)
+                self.controller_states[player_num].left_stick_x = value[2] * math.cos(angle_radians)
+                self.controller_states[player_num].left_stick_y = value[2] * math.sin(angle_radians)
 
 
             if value[0] == Sticks.right.value:
                 angle_radians = 2 * math.pi * (value[1] / 255)
 
-                state.right_stick_x = value[2] * math.cos(angle_radians)
-                state.right_stick_y = value[2] * math.sin(angle_radians)
+                self.controller_states[player_num].right_stick_x = value[2] * math.cos(angle_radians)
+                self.controller_states[player_num].right_stick_y = value[2] * math.sin(angle_radians)
 
         if event_type == ControllerUpdateTypes.MOTION.value:
-            state.motion_timestamp = int(time.time() * 1_000_000)
-            state.pitch = value[1]
-            state.yaw = value[2]
-            state.roll = value[3]
+            self.controller_states[player_num].motion_timestamp = int(time.time() * 1_000_000)
+            self.controller_states[player_num].pitch = value[1]
+            self.controller_states[player_num].yaw = value[2]
+            self.controller_states[player_num].roll = value[3]
+
+
+        print(f"updated state: {self.controller_states[player_num].button_mask}")
