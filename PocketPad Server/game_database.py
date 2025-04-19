@@ -18,7 +18,6 @@ def initialize_database():
         db_connection.commit()
 
 def add_to_database(game: str, controller_data: str):
-    print("Hello World\n\n")
     with get_connection() as db_connection:
         cursor = db_connection.cursor()
         cursor.execute(

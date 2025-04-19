@@ -14,7 +14,7 @@ from enums import AllButtons, ControllerUpdateTypes
 from shared_definitions import input_server, inputId_to_inputs
 from server_constants import (POCKETPAD_SERVICE, LATENCY_CHARACTERISTIC, 
                         CONNECTION_CHARACTERISTIC, CONTROLLER_TYPE_CHARACTERISTIC,
-                        INPUT_CHARACTERISTIC, ConnectionMessage)
+                        INPUT_CHARACTERISTIC, LAYOUT_REQUEST_CHARACTERISTIC, ConnectionMessage)
 
 from bless import (  # type: ignore
     BlessServer,
@@ -119,6 +119,18 @@ gatt: Dict = {
                 | GATTAttributePermissions.writeable
             ),
             "Value": None,
+        }, 
+
+        LAYOUT_REQUEST_CHARACTERISTIC: {
+            "Properties": (
+                GATTCharacteristicProperties.read
+                | GATTCharacteristicProperties.write
+            ),
+            "Permissions": (
+                GATTAttributePermissions.readable
+                | GATTAttributePermissions.writeable
+            ),
+            "Value": None,
         }
     },
 }
@@ -152,10 +164,31 @@ def request_game_data(game: str):
     game_function(game)
     print("Requesting game data")
 
-def send_game_data():
-    print("Sending game data")
-
-
+MTU = 20
+def send_game_data(server):
+    char = server.get_characteristic(CONTROLLER_TYPE_CHARACTERISTIC)
+    for player_index, layout_json in enumerate(layout_jsons):
+        # signal start
+        char.value = bytearray([player_index,
+                                 ConnectionMessage.transmitting_layout.value,
+                                 255])
+        server.update_value(POCKETPAD_SERVICE, CONTROLLER_TYPE_CHARACTERISTIC)
+        # send chunks
+        data = layout_json.encode('utf-8')
+        for i in range(0, len(data), MTU):
+            chunk = data[i:i+MTU]
+            pkt = pack(f"<BBB{len(chunk)}s>",
+                       player_index,
+                       ConnectionMessage.transmitting_layout.value,
+                       len(chunk),
+                       chunk)
+            char.value = bytearray(pkt)
+            server.update_value(POCKETPAD_SERVICE, CONTROLLER_TYPE_CHARACTERISTIC)
+        # signal end
+        char.value = bytearray([player_index,
+                                 ConnectionMessage.transmitting_layout.value,
+                                 0])
+        server.update_value(POCKETPAD_SERVICE, CONTROLLER_TYPE_CHARACTERISTIC)
 
 def reconstruct_timestamp(sent_ms):
     """Reconstruct possible timestamps based on the last 5 digits."""
@@ -443,6 +476,8 @@ def process_write_request(characteristic: BlessGATTCharacteristic, value):
         process_connection_characteristic(characteristic)
     elif (upper_uuid == CONTROLLER_TYPE_CHARACTERISTIC):
         process_controller_characteristic(characteristic)
+    elif upper_uuid == LAYOUT_REQUEST_CHARACTERISTIC:
+        send_game_data(characteristic.server)
     else:
         logger.error("ERROR: Unrecognized Write Request")
 

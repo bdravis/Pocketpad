@@ -1048,6 +1048,8 @@ class MainWindow(QMainWindow):
     def update_game(self, game_name):
         self.game = game_name
         self.ui.game_name.setText(f"<b>Game:</b> {game_name}")
+        PopupDatabaseDisplay(self.game, self.application_background_color, self.application_widgets_color, self.application_font_color).exec()
+        
 
     def display_database_viewer(self):
         database_viewer = DatabaseDisplayer(self.game, self.application_background_color, self.application_widgets_color, self.application_font_color)
@@ -1136,6 +1138,90 @@ class TextInput(QDialog):
     def get_text(self):
         return self.text_input.text()
 
+class PopupDatabaseDisplay(QDialog):
+    def __init__(self, game, application_color, widget_color, font_color):
+        super().__init__()
+
+        self.setWindowIcon(QIcon("icons/logo.png"))
+        self.setWindowTitle("PocketPad Layout Request")
+        self.setGeometry(500, 600, 600, 500)
+
+        layout = QVBoxLayout()
+        
+        header_label = QLabel(
+            "<h2>Instructions</h2>"
+            "<ol>"
+            "<li>Determine Whether You Would Like To Use the Custom Controller</li>"
+            "<li>Go into the settings menu of you PocketPad Application</li>"
+            "<li>Select the 'Request Controller Layout' option</li>"
+            "<li>Play Your Game With the Saved Controller</li>"
+            "</ol>"
+        )
+        header_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        header_label.setWordWrap(True)
+        header_label.setStyleSheet(f"""
+            QLabel {{
+                font-size: 14px;
+                color: {font_color.name()};
+                padding: 10px;
+            }}
+            h2 {{
+                font-size: 20px;
+                margin-bottom: 10px;
+            }}
+            ul {{
+                margin-left: 20px;
+            }}
+        """)
+        layout.addWidget(header_label)
+
+
+        current_game_shown = QLabel(f"<b>Game:</b> {game}")
+        layout.addWidget(current_game_shown)
+
+        current_displayed_controller = None
+        if game:
+            game_layout = gdb.get_controller_layout(game) 
+            if game_layout:
+                current_displayed_controller = ControllerWidget(game_layout, widget_color)
+            else: 
+                current_displayed_controller = QWidget()
+                temp_layout = QVBoxLayout(current_displayed_controller)
+                label = QLabel("Game Does Not Exist In Database")
+                label.setAlignment(Qt.AlignCenter)
+                temp_layout.addWidget(label)
+        else:
+            temporary_widget = QWidget()
+            temp_layout = QVBoxLayout(temporary_widget)
+            label = QLabel("No Current Game")
+            label.setAlignment(Qt.AlignCenter)
+            temp_layout.addWidget(label)
+            current_displayed_controller = temporary_widget
+        layout.addWidget(current_displayed_controller)
+
+        self.setLayout(layout)
+
+        style_sheet = f"""
+            QDialog {{
+                background-color: {application_color.name()};
+                color: {font_color.name()};
+            }}
+            QLabel {{
+                color: {font_color.name()};
+                font-size: 16px;
+            }}
+        """
+        self.setStyleSheet(style_sheet)
+        self.center_on_screen()
+        QTimer.singleShot(2 * 60 * 1000, self.close)
+
+    def center_on_screen(self):
+        screen = QApplication.primaryScreen()
+        screen_geometry = screen.availableGeometry()
+        dialog_geometry = self.frameGeometry()
+        dialog_geometry.moveCenter(screen_geometry.center())
+        self.move(dialog_geometry.topLeft())
+
 class DatabaseDisplayer(QDialog):
     def __init__(self, game, application_color, widget_color, font_color):
         super().__init__()
@@ -1146,6 +1232,7 @@ class DatabaseDisplayer(QDialog):
 
         layout = QVBoxLayout()
 
+        self.og_game = game
         self.selected_game = game
         self.application_color = application_color
         self.widget_color = widget_color
@@ -1154,37 +1241,41 @@ class DatabaseDisplayer(QDialog):
         self.current_game_shown = QLabel(f"<b>Game:</b> {self.selected_game}")
         layout.addWidget(self.current_game_shown)
         
-        games_in_db = gdb.get_games_in_database()
-        print(f"\n\n\n{games_in_db}\n\n\n")
-        
         self.current_displayed_controller = None
-        if game:
-            self.current_displayed_controller = ControllerWidget(gdb.get_controller_layout(game), self.widget_color)
+        if self.og_game:
+            game_layout = gdb.get_controller_layout(self.og_game) 
+            if game_layout:
+                self.current_displayed_controller = ControllerWidget(game_layout, self.widget_color)
+            else: 
+                self.current_displayed_controller = QWidget()
+                temp_layout = QVBoxLayout(self.current_displayed_controller)
+                label = QLabel("No Layout For Current Game")
+                label.setAlignment(Qt.AlignCenter)
+                temp_layout.addWidget(label)
         else:
             temporary_widget = QWidget()
             temp_layout = QVBoxLayout(temporary_widget)
-            label = QLabel("No Controllers in Database ")
+            label = QLabel("No Layout For Current Game")
             label.setAlignment(Qt.AlignCenter)
             temp_layout.addWidget(label)
             self.current_displayed_controller = temporary_widget
         layout.addWidget(self.current_displayed_controller)
         
         self.current_game_playing = QPushButton("Current Game's Controller")
-        self.current_game_playing.clicked.connect(lambda: self.update_controller_graphic(game))
+        self.current_game_playing.clicked.connect(lambda: self.update_controller_graphic(self.og_game))
         layout.addWidget(self.current_game_playing)
 
-        self.games_menu = QMenuBar(self)
-        self.game_menu = self.games_menu.addMenu("Games")
-
-        for game in games_in_db:
-            game_controller = QAction(f"{game}", self)
-            self.game_menu.addAction(game_controller)
-            game_controller.triggered.connect(lambda _, g=game: self.update_controller_graphic(g))
-
-        layout.addWidget(self.games_menu)
+        self.game_dropdown = QPushButton("Games")
+        self.game_dropdown.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.game_dropdown.setFixedHeight(25)
+        self.game_menu = QMenu(self)
+        self.game_menu.setMinimumWidth(self.game_dropdown.width())
+        self.game_dropdown.setMenu(self.game_menu)
+        layout.addWidget(self.game_dropdown)
+        self.update_game_menu()
 
         self.delete_game_data = QPushButton("Remove Controller From Database")
-        self.delete_game_data.clicked.connect(lambda _, g=self.selected_game: self.remove_controller(g))
+        self.delete_game_data.clicked.connect(self.remove_controller)
         layout.addWidget(self.delete_game_data)
 
         self.clear_database = QPushButton("Clear Controller Database")
@@ -1206,6 +1297,27 @@ class DatabaseDisplayer(QDialog):
                 background-color: {self.widget_color.name()};
                 color: {self.font_color.name()};
             }}
+            QMenuBar {{
+                background-color: {self.widget_color.name()};
+                color: {self.font_color.name()};
+            }}
+            QMenuBar::item {{
+                background: transparent;
+                padding: 4px 10px;
+            }}
+            QMenuBar::item:selected {{
+                background: {self.font_color.name()};
+                color: {self.widget_color.name()};
+            }}
+            QMenu {{
+                background-color: {self.widget_color.name()};
+                color: {self.font_color.name()};
+                border: 1px solid {self.font_color.name()};
+            }}
+            QMenu::item:selected {{
+                background-color: {self.font_color.name()};
+                color: {self.widget_color.name()};
+            }}
         """
         self.setStyleSheet(style_sheet)
         self.center_on_screen()
@@ -1216,27 +1328,57 @@ class DatabaseDisplayer(QDialog):
         dialog_geometry = self.frameGeometry()
         dialog_geometry.moveCenter(screen_geometry.center())
         self.move(dialog_geometry.topLeft())
-    
-    def remove_controller(self, game: str):
-        gdb.remove_game_controller(game)
+
+    def update_game_menu(self):
+        self.game_menu.clear()
+        for game in gdb.get_games_in_database():
+            action = QAction(game, self)
+            action.triggered.connect(lambda _, g=game: self.update_controller_graphic(g))
+            self.game_menu.addAction(action)
+
+    def remove_controller(self):
+        if not self.selected_game:
+            return
+        gdb.remove_game_controller(self.selected_game)
+
+        self.game_menu.clear()
+        self.update_game_menu()
         self.update_controller_graphic(None)
     
     def remove_all_controllers(self):
         gdb.clear_database()
+
+        self.game_menu.clear()
+        self.update_game_menu()
         self.update_controller_graphic(None)
 
     def update_controller_graphic(self, game: str):
         self.current_game_shown.setText(f"<b>Game:</b> {game}")
+        self.selected_game = game
+
+        layout = self.layout()
+        if self.current_displayed_controller is not None:
+            layout.removeWidget(self.current_displayed_controller)
+            self.current_displayed_controller.deleteLater()
 
         if game:
-            self.current_displayed_controller = ControllerWidget(gdb.get_controller_layout(game), self.widget_color)
+            controller_layout = gdb.get_controller_layout(game) 
+            if controller_layout:
+                self.current_displayed_controller = ControllerWidget(controller_layout, self.widget_color)
+            else: 
+                self.current_displayed_controller = QWidget()
+                temp_layout = QVBoxLayout(self.current_displayed_controller)
+                label = QLabel("No Layout For Current Game")
+                label.setAlignment(Qt.AlignCenter)
+                temp_layout.addWidget(label)
         else:
-            temporary_widget = QWidget()
-            temp_layout = QVBoxLayout(temporary_widget)
+            self.current_displayed_controller = QWidget()
+            temp_layout = QVBoxLayout(self.current_displayed_controller)
             label = QLabel("No Controller Displayed")
             label.setAlignment(Qt.AlignCenter)
             temp_layout.addWidget(label)
-            self.current_displayed_controller = temporary_widget
+
+        layout.insertWidget(1, self.current_displayed_controller)
 
 class ColorPickerPopup(QDialog):
 
