@@ -37,6 +37,7 @@ struct ControllerView: View {
     @State private var didLockRotation: Bool = false
     @State private var ranStartLock: Bool = false
     @ObservedObject private var layoutManager = LayoutManager.shared
+    @ObservedObject private var macroManager = MacroManager.shared
     
     let isEditor: Bool
     let isInMacroEditor: Bool
@@ -136,21 +137,21 @@ struct ControllerView: View {
                             Group {
                                 switch btn.wrappedValue.type {
                                 case .regular:
-                                    RegularButtonView(config: btn.wrappedValue as! RegularButtonConfig)
+                                    RegularButtonView(config: btn.wrappedValue as! RegularButtonConfig, isInMacroEditor: isInMacroEditor)
                                         .accessibilityAddTraits(.isButton)
                                         .accessibilityIdentifier("ControllerButton")
                                 case .joystick:
-                                    JoystickButtonView(config: btn.wrappedValue as! JoystickConfig)
+                                    JoystickButtonView(config: btn.wrappedValue as! JoystickConfig, isInMacroEditor: isInMacroEditor)
                                         .accessibilityAddTraits(.isButton)
                                         .accessibilityIdentifier("ControllerButton")
                                 case .dpad:
-                                    DPadButtonView(config: btn.wrappedValue as! DPadConfig)
+                                    DPadButtonView(config: btn.wrappedValue as! DPadConfig, isInMacroEditor: isInMacroEditor)
                                 case .bumper:
-                                    BumperButtonView(config: btn.wrappedValue as! BumperConfig)
+                                    BumperButtonView(config: btn.wrappedValue as! BumperConfig, isInMacroEditor: isInMacroEditor)
                                         .accessibilityAddTraits(.isButton)
                                         .accessibilityIdentifier("ControllerButton")
                                 case .trigger:
-                                    TriggerButtonView(config: btn.wrappedValue as! TriggerConfig)
+                                    TriggerButtonView(config: btn.wrappedValue as! TriggerConfig, isInMacroEditor: isInMacroEditor)
                                         .accessibilityAddTraits(.isButton)
                                         .accessibilityIdentifier("ControllerButton")
                                 }
@@ -290,6 +291,9 @@ struct ControllerView: View {
                     } catch {
                         UIApplication.shared.alert(body: error.localizedDescription)
                     }
+                }
+                if isInMacroEditor {
+                    macroManager.saveMacro()
                 }
             }
             .toolbar {

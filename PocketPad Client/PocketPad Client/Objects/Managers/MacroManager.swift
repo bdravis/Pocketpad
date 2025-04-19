@@ -11,14 +11,15 @@ class MacroManager : ObservableObject {
     static let shared = MacroManager()
     
     // captured inputs
-    var inputsReceived: [Data] = []
+    var currentInputsReceived: [Data] = []
     
     // captures every controller input into an array called inputsReceived
     func sendInput(_ data: Data) {
-        
+        currentInputsReceived.append(data)
+        print(currentInputsReceived)
     }
     
-    func clear() {
-        inputsReceived = []
+    func saveMacro() {
+        currentInputsReceived = []
     }
 }

@@ -72,53 +72,51 @@ struct JoystickButtonView: View {
                       hapticTriggered = true
                     }
 #endif
-                    if let service = bluetoothManager.selectedService {
-                        let ui8_playerId: UInt8 = LayoutManager.shared.player_id
-                        let ui8_inputId : UInt8 = config.inputId
-                        let ui8_buttonType : UInt8 = config.type.rawValue
-                        let ui8_event : UInt8 = ButtonEvent.pressed.rawValue
-                        
-                        var degrees = angle * 180 / .pi
-                        while degrees < 0 {
-                            degrees += 360
-                        }
-                        while degrees > 360 {
-                            degrees -= 360
-                        }
-                        let ui8_angle: UInt8
-                        if degrees.isNaN || degrees.isInfinite {
-                            ui8_angle = 0
-                        } else {
-                            ui8_angle = UInt8(Int((degrees * 256 / 360)) & 255)
-                        }
-                        // Convert to degrees in range of 255
-                        
-                        let normalizedMagnitude = (clampedDistance - deadzoneRadius) / (DEFAULT_BUTTON_SIZE / 2 - deadzoneRadius) * 100
+                    let ui8_playerId: UInt8 = LayoutManager.shared.player_id
+                    let ui8_inputId : UInt8 = config.inputId
+                    let ui8_buttonType : UInt8 = config.type.rawValue
+                    let ui8_event : UInt8 = ButtonEvent.pressed.rawValue
+                    
+                    var degrees = angle * 180 / .pi
+                    while degrees < 0 {
+                        degrees += 360
+                    }
+                    while degrees > 360 {
+                        degrees -= 360
+                    }
+                    let ui8_angle: UInt8
+                    if degrees.isNaN || degrees.isInfinite {
+                        ui8_angle = 0
+                    } else {
+                        ui8_angle = UInt8(Int((degrees * 256 / 360)) & 255)
+                    }
+                    // Convert to degrees in range of 255
+                    
+                    let normalizedMagnitude = (clampedDistance - deadzoneRadius) / (DEFAULT_BUTTON_SIZE / 2 - deadzoneRadius) * 100
 //#if DEBUG
 //                    print("Normalized magnitude: \(normalizedMagnitude)")
 //#endif
-                        let ui8_magnitude: UInt8
-                        if normalizedMagnitude.isNaN || normalizedMagnitude.isInfinite {
-                            ui8_magnitude = 0
-                        } else {
-                            ui8_magnitude = UInt8(min(max(normalizedMagnitude, 0), 255))
-                        }
-                        
-                        let now = Date()
-                        if let last_time = last_send_time, now.timeIntervalSince(last_time) < minimum_time_interval { return }
-                        
-                        if abs(Int(ui8_angle) - Int(last_sent_angle)) < Int(minimum_angle_threshold) &&
-                            abs(Int(ui8_magnitude) - Int(last_sent_magnitude)) < Int(minimum_angle_threshold) {
-                            return
-                        }
-                        
-                        last_send_time = now
-                        last_sent_angle = ui8_angle
-                        last_sent_magnitude = ui8_magnitude
-                        
-                        let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event, ui8_angle, ui8_magnitude])
-                        bluetoothManager.sendInput(data)
+                    let ui8_magnitude: UInt8
+                    if normalizedMagnitude.isNaN || normalizedMagnitude.isInfinite {
+                        ui8_magnitude = 0
+                    } else {
+                        ui8_magnitude = UInt8(min(max(normalizedMagnitude, 0), 255))
                     }
+                    
+                    let now = Date()
+                    if let last_time = last_send_time, now.timeIntervalSince(last_time) < minimum_time_interval { return }
+                    
+                    if abs(Int(ui8_angle) - Int(last_sent_angle)) < Int(minimum_angle_threshold) &&
+                        abs(Int(ui8_magnitude) - Int(last_sent_magnitude)) < Int(minimum_angle_threshold) {
+                        return
+                    }
+                    
+                    last_send_time = now
+                    last_sent_angle = ui8_angle
+                    last_sent_magnitude = ui8_magnitude
+                    
+                    let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event, ui8_angle, ui8_magnitude])
+                    sendControllerInput(data, isRecordingMacro: isInMacroEditor)
                 } else {
 #if DEBUG
                     print("NOT SENDING, WITHIN DEADZONE)")
@@ -156,7 +154,7 @@ struct JoystickButtonView: View {
         let ui8_magnitude : UInt8 = UInt8(0) // Convert to percentage
         
         let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event, ui8_angle, ui8_magnitude])
-        bluetoothManager.sendInput(data)
+        sendControllerInput(data, isRecordingMacro: isInMacroEditor)
     }
 
     var body: some View {

@@ -21,3 +21,15 @@ struct GeneralButtonView: View {
         }
     }
 }
+
+func sendControllerInput(_ data: Data, isRecordingMacro: Bool) {
+    if isRecordingMacro { // send the inputs to the macro recorder
+        MacroManager.shared.sendInput(data)
+    } else if let service = BluetoothManager.shared.selectedService { // send inputs to server over Bluetooth
+        BluetoothManager.shared.sendInput(data)
+    } else {
+#if DEBUG
+        print("Input received but not sent anywhere")
+#endif
+    }
+}

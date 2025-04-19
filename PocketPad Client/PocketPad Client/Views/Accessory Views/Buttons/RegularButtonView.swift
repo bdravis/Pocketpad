@@ -99,7 +99,7 @@ struct RegularButtonView: View {
         let ui8_event : UInt8 = ButtonEvent.pressed.rawValue;
         
         let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
-        bluetoothManager.sendInput(data);
+        sendControllerInput(data, isRecordingMacro: isInMacroEditor)
     }
     
     // send button release
@@ -113,6 +113,8 @@ struct RegularButtonView: View {
         let ui8_event : UInt8 = ButtonEvent.released.rawValue;
 
         let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
-        bluetoothManager.sendInput(data);
+        sendControllerInput(data, isRecordingMacro: isInMacroEditor)
     }
+    
+    
 }

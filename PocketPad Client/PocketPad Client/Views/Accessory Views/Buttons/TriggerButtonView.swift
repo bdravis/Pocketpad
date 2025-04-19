@@ -70,29 +70,29 @@ struct TriggerButtonView: View {
     }
     
     private func sendTriggerPress() {
-        if let service = bluetoothManager.selectedService {
-            let ui8_playerId: UInt8 = LayoutManager.shared.player_id
-            let ui8_inputId : UInt8 = config.inputId
-            let ui8_buttonType : UInt8 = config.type.rawValue
-            let ui8_event : UInt8 = ButtonEvent.pressed.rawValue
-            
-            let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
-            print("PRESS TRIGGER")
-            bluetoothManager.sendInput(data)
-        }
+#if DEBUG
+        print("PRESS TRIGGER")
+#endif
+        let ui8_playerId: UInt8 = LayoutManager.shared.player_id
+        let ui8_inputId : UInt8 = config.inputId
+        let ui8_buttonType : UInt8 = config.type.rawValue
+        let ui8_event : UInt8 = ButtonEvent.pressed.rawValue
+        
+        let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
+        sendControllerInput(data, isRecordingMacro: isInMacroEditor)
     }
     
     private func sendTriggerRelease() {
-        if let service = bluetoothManager.selectedService {
-            let ui8_playerId: UInt8 = LayoutManager.shared.player_id
-            let ui8_inputId : UInt8 = config.inputId
-            let ui8_buttonType : UInt8 = config.type.rawValue
-            let ui8_event : UInt8 = ButtonEvent.released.rawValue
-            
-            let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
-            print("RELEASE TRIGGER")
-            bluetoothManager.sendInput(data)
-        }
+#if DEBUG
+        print("RELEASE TRIGGER")
+#endif
+        let ui8_playerId: UInt8 = LayoutManager.shared.player_id
+        let ui8_inputId : UInt8 = config.inputId
+        let ui8_buttonType : UInt8 = config.type.rawValue
+        let ui8_event : UInt8 = ButtonEvent.released.rawValue
+        
+        let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
+        sendControllerInput(data, isRecordingMacro: isInMacroEditor)
     }
 }
 
