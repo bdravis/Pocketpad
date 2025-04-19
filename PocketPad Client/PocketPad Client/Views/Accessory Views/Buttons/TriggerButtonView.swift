@@ -79,7 +79,7 @@ struct TriggerButtonView: View {
         let ui8_event : UInt8 = ButtonEvent.pressed.rawValue
         
         let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
-        sendControllerInput(data, isRecordingMacro: isInMacroEditor)
+        sendControllerInput(data, isInMacroEditor: isInMacroEditor)
     }
     
     private func sendTriggerRelease() {
@@ -92,7 +92,7 @@ struct TriggerButtonView: View {
         let ui8_event : UInt8 = ButtonEvent.released.rawValue
         
         let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
-        sendControllerInput(data, isRecordingMacro: isInMacroEditor)
+        sendControllerInput(data, isInMacroEditor: isInMacroEditor)
     }
 }
 

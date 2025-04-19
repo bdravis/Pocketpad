@@ -116,7 +116,7 @@ struct JoystickButtonView: View {
                     last_sent_magnitude = ui8_magnitude
                     
                     let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event, ui8_angle, ui8_magnitude])
-                    sendControllerInput(data, isRecordingMacro: isInMacroEditor)
+                    sendControllerInput(data, isInMacroEditor: isInMacroEditor)
                 } else {
 #if DEBUG
                     print("NOT SENDING, WITHIN DEADZONE)")
@@ -154,7 +154,7 @@ struct JoystickButtonView: View {
         let ui8_magnitude : UInt8 = UInt8(0) // Convert to percentage
         
         let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event, ui8_angle, ui8_magnitude])
-        sendControllerInput(data, isRecordingMacro: isInMacroEditor)
+        sendControllerInput(data, isInMacroEditor: isInMacroEditor)
     }
 
     var body: some View {

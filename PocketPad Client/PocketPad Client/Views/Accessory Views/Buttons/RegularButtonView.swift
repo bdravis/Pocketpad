@@ -44,31 +44,31 @@ struct RegularButtonView: View {
         }
         .applyButtonStyle(config.style, isTurboEnabled: turboManager.isTurboEnabled(config.input))
         .onLongPressGesture(minimumDuration: 0.5, maximumDistance: 50, pressing: { isPressing in
-            if isPressing {
+            if isPressing { // press button
                 longPressed = true
                 if config.turbo { // if this button is the turbo button itself
                     turboManager.activateTurboMode()
                 } else if turboManager.turboActive { // turbo button is being held and then another button is pressed
                     turboManager.toggleTurboForButton(config.input)
                 } else if turboManager.isTurboEnabled(config.input) { // while turbo is not being held, a turbo-enabled button is held
-                    turboManager.startTurboForButton(
+                    turboManager.startTurboForButton( // start firing inputs
                         config.input,
-                        buttonPressHandler: sendRegularButtonPress,
-                        buttonReleaseHandler: sendRegularButtonRelease
+                        buttonPressHandler: handleRegularButtonPress,
+                        buttonReleaseHandler: handleRegularButtonRelease
                     )
                 } else { // turbo button is not being held, button is not turbo-enabled
                     // this case is a simple button press/hold
-                    sendRegularButtonPress()
+                    handleRegularButtonPress()
                 }
             }
-            else {
+            else { // release button
                 if config.turbo { // if released button is the turbo button itself
                     turboManager.deactivateTurboMode()
                 } else if !turboManager.turboActive { // if turbo button is not being held
                     // note: for the case of turbo button being held, do nothing to avoid duplicate toggling of turbo for a button
                     
                     // if turbo button is not being held:
-                    sendRegularButtonRelease()
+                    handleRegularButtonRelease()
                     if (turboManager.isTurboEnabled(config.input)) { // the released button is a turbo-enabled button
                         turboManager.stopTurboForButton(config.input)
                     }
@@ -77,6 +77,7 @@ struct RegularButtonView: View {
         }, perform: {})
     }
     
+    // MARK: Functions to handle button inputs
     private func handleTap() {
 #if DEBUG
         print("Button Tapped")
@@ -88,7 +89,25 @@ struct RegularButtonView: View {
         }
     }
     
-    // send button press
+    // Handler function for button release
+    private func handleRegularButtonPress() {
+        // check if the button has a macro, if it does then execute it
+        if !macroManager.hasMacro(for: config.input, willExecute: true) {
+            // if button is not assigned a macro, then send over the button input normally
+            sendRegularButtonPress()
+        }
+    }
+    
+    // Handler function for input release
+    private func handleRegularButtonRelease() {
+        // check if the button has a macro
+        if !macroManager.hasMacro(for: config.input, willExecute: false) {
+            // if the button is not assigned a macro, then send over the button input normally
+            sendRegularButtonRelease()
+        }
+    }
+    
+    // Send button press
     private func sendRegularButtonPress() {
 #if DEBUG
         print("REGULAR BUTTON PRESS")
@@ -99,10 +118,10 @@ struct RegularButtonView: View {
         let ui8_event : UInt8 = ButtonEvent.pressed.rawValue;
         
         let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
-        sendControllerInput(data, isRecordingMacro: isInMacroEditor)
+        sendControllerInput(data, isInMacroEditor: isInMacroEditor)
     }
     
-    // send button release
+    // Send button release
     private func sendRegularButtonRelease() {
 #if DEBUG
         print("REGULAR BUTTON RELEASE")
@@ -113,7 +132,7 @@ struct RegularButtonView: View {
         let ui8_event : UInt8 = ButtonEvent.released.rawValue;
 
         let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event])
-        sendControllerInput(data, isRecordingMacro: isInMacroEditor)
+        sendControllerInput(data, isInMacroEditor: isInMacroEditor)
     }
     
     
