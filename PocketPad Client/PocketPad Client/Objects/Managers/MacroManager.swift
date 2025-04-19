@@ -19,10 +19,10 @@ class MacroManager : ObservableObject {
     }
     private var currentMacro : [TimeStampedInput] = [] // An array of captured inputs during the current macro recording
     
-    // Macro variables
     // A macro is essentially an array of timestamped inputs (TimeStampedInput)
     private var macrosByButton: [ButtonInput : [TimeStampedInput]] = [:] // Macro-assigned buttons for current controller (not persistent)
-    private var macrosByName: [String : [TimeStampedInput]] = [:] // Used for displaying list of macros + assigning macros to buttons
+    private var macrosByName: [String : [TimeStampedInput]] = [:] // Used for displaying list of macros, persistent across controllers
+    // TODO: Save to user settings
     
     // MARK: Functions for recording and capturing inputs
     // Allow inputs to be recorded for the new macro
@@ -36,7 +36,7 @@ class MacroManager : ObservableObject {
         isRecording = false
     }
     
-    // While recording is on, capture every controller input into the currentInputsReceived array
+    // While recording is on, capture every controller input into a temporary array
     func sendInput(_ data: Data, timestamp: Date) {
         if isRecording {
 #if DEBUG
@@ -50,8 +50,9 @@ class MacroManager : ObservableObject {
         }
     }
     
-    // MARK: Functions to save and fetch macros
-    // A button will stop the recording, and there will be a popup asking user to save the macro with a name
+    // MARK: Functions to saving, fetching, and deleting macros
+    
+    // Save the current macro with a specified name
     // Returns false if there already exists a macro with the specified name (macros must have unique names)
     func saveCurrentMacro(as macroName: String) -> Bool {
         if macrosByName[macroName] != nil { // A macro with this name already exists
@@ -67,39 +68,54 @@ class MacroManager : ObservableObject {
         return [String] (macrosByName.keys)
     }
     
+    // Deletes the macro with the specified name from the current device
+    // Buttons already assigned to this macro will still have this macro
+    func deleteMacro(named macroName: String) {
+        macrosByName[macroName] = nil
+    }
+    
     // MARK: Functions to check macro existence and execute macros
+    
     // Checks if there is a macro associated with the specified button
     // May also execute the macro
-    private func hasMacro(for buttonInput: ButtonInput, willExecute: Bool) -> Bool {
+    private func hasMacro(for buttonInput: ButtonInput, willExecute: Bool, isInMacroEditor: Bool = false) -> Bool {
         if let macro = macrosByButton[buttonInput] { // Check if macro exists
             if willExecute {
-                executeMacro(macro: macro) // Actually execute the macro
+                // Actually execute the macro
+                executeMacro(macro: macro, isInMacroEditor: isInMacroEditor)
             }
             return true
-            
         }
-        return false // tell the caller to send a regular button input to the server instead
+        return false // Tell the caller to send a normal button input instead
     }
     
     // Takes a macro (known to exist) and executes it
-    private func executeMacro(macro: [TimeStampedInput]) {
+    private func executeMacro(macro: [TimeStampedInput], isInMacroEditor: Bool) {
 #if DEBUG
-            print("TBD Executing Macro")
+        print("TBD Executing Macro")
 #endif
+        // TODO: Execute this macro
+        // For each timestamped input in the array, call sendControllerInput on it
+        // Need to know whether to send it to the macro recorder (i.e. nested macros) or to Bluetooth
     }
     
     // MARK: Functions to filter inputs through macro
-    func handleButtonPressThroughMacro(buttonInput: ButtonInput, sendButtonFunc: () -> ()) {
-        // check if the button has a macro, if it does then execute it
-        if !hasMacro(for: buttonInput, willExecute: true) {
-            // if button is not assigned a macro, then send over the button input normally
-            sendButtonFunc()
+    // These controller inputs have already been filtered through turbo
+    // Now the client must determine whether to execute it as a macro or send the input normally
+    
+    func handleButtonPressThroughMacro(buttonInput: ButtonInput, sendButtonPressFunc: () -> (), isInMacroEditor: Bool) {
+        // Check if the button has a macro, if it does then execute it
+        if !hasMacro(for: buttonInput, willExecute: true, isInMacroEditor: isInMacroEditor) {
+            // If button is not assigned a macro, then send over the button input normally
+            sendButtonPressFunc()
         }
     }
-    func handleButtonReleaseThroughMacro(buttonInput: ButtonInput, releaseButtonFunc: () -> ()) {
-        // check if the button has a macro
+    
+    func handleButtonReleaseThroughMacro(buttonInput: ButtonInput, sendButtonReleaseFunc: () -> ()) {
+        // Check if the button has a macro
         if !hasMacro(for: buttonInput, willExecute: false) {
-            releaseButtonFunc()
+            // If button is not assigned a macro, then send over the button input normally
+            sendButtonReleaseFunc()
         }
     }
     

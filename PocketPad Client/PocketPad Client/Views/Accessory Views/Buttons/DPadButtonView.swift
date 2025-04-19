@@ -73,7 +73,6 @@ struct DPadButtonView: View {
 struct DirectionalArrow: View {
     @StateObject private var bluetoothManager = BluetoothManager.shared
     @StateObject private var turboManager = TurboManager.shared
-    @StateObject private var macroManager = MacroManager.shared
     @State private var longPressed = false
     
     var split: Bool
@@ -110,47 +109,47 @@ struct DirectionalArrow: View {
         .onLongPressGesture(minimumDuration: 0.5, maximumDistance: 50, pressing: { isPressing in
             if isPressing {
                 longPressed = true
-                if turboManager.turboActive { // turbo button is being held and then another button is pressed
-                    turboManager.toggleTurboForButton(input)
-                } else if turboManager.isTurboEnabled(input) { // while turbo is not being held, a turbo-enabled button is held
-                    turboManager.startTurboForButton(
-                        input,
-                        buttonPressHandler: sendDpadPress,
-                        buttonReleaseHandler: sendDpadRelease
-                    )
-                } else {
-                    // this case is a simple button press/hold
-                    sendDpadPress()
-                }
+                handleButtonPress()
             }
             else {
-                if !turboManager.turboActive { // if turbo button is not being held
-                    // note: for the case of turbo button being held, do nothing to avoid duplicate toggling of turbo for a button
-                    
-                    // if turbo button is not being held:
-                    sendDpadRelease()
-                    if (turboManager.isTurboEnabled(input)) { // the released button is a turbo-enabled button
-                        turboManager.stopTurboForButton(input)
-                    }
-                }
+                handleButtonRelease()
             }
         }, perform: {})
     }
     
+    // MARK: Functions to handle D-pad inputs
     private func handleTap() {
 #if DEBUG
         print("DPad Tapped")
 #endif
-        sendDpadPress()
+        handleButtonPress()
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-            sendDpadRelease()
+            handleButtonRelease()
         }
     }
     
-    private func sendDpadPress() {
+    private func handleButtonPress() {
+        turboManager.handleButtonPressThroughTurbo(
+            input: input,
+            isTurboButton: false,
+            sendButtonPressFunc: sendButtonPress,
+            sendButtonRelaseFunc: sendButtonRelease,
+            isInMacroEditor: isInMacroEditor
+        )
+    }
+    
+    private func handleButtonRelease() {
+        turboManager.handleButtonReleaseThroughTurbo(
+            input: input,
+            isTurboButton: false,
+            sendButtonReleaseFunc: sendButtonRelease
+        )
+    }
+    
+    private func sendButtonPress() {
 #if DEBUG
-        print("DPAD PRESS")
+        print("SEND REGULAR DPAD PRESS")
 #endif
         let ui8_playerId: UInt8 = LayoutManager.shared.player_id
         let ui8_inputId : UInt8 = config.inputId
@@ -162,9 +161,9 @@ struct DirectionalArrow: View {
         let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event, ui8_dpadDirection])
         sendControllerInput(data, isInMacroEditor: isInMacroEditor)
     }
-    private func sendDpadRelease() {
+    private func sendButtonRelease() {
 #if DEBUG
-        print("DPAD RELEASE")
+        print("SEND REGULAR DPAD RELEASE")
 #endif
         let ui8_playerId: UInt8 = LayoutManager.shared.player_id
         let ui8_inputId : UInt8 = config.inputId

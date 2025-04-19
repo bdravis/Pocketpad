@@ -63,8 +63,8 @@ class TurboManager : ObservableObject {
         }
     }
     
-    // Given a button, check it is turbo-enabled {
-    private func isTurboEnabled(_ input: ButtonInput) -> Bool {
+    // Given a button, check it is turbo-enabled
+    func isTurboEnabled(_ input: ButtonInput) -> Bool {
         return turboEnabledButtons.contains(input)
     }
     
@@ -118,25 +118,48 @@ class TurboManager : ObservableObject {
     }
     
     // MARK: Functions to filter inputs through turbo
-    func handleButtonPressThroughTurbo(config: ButtonConfig, sendButtonFunc: () -> (), releaseButtonFunc: () -> ()) {
-        if config.turbo { // if this button is the turbo button itself
+    // // Conditional logic involving turbo for execution flow
+    
+    func handleButtonPressThroughTurbo(input: ButtonInput, isTurboButton: Bool, sendButtonPressFunc: @escaping () -> (), sendButtonRelaseFunc: @escaping () -> (), isInMacroEditor: Bool) {
+        if isTurboButton { // if this button is the turbo button itself
             activateTurboMode()
         } else if turboActive { // turbo button is being held and then another button is pressed
-            toggleTurboForButton(config.input)
-        } else if isTurboEnabled(config.input) { // while turbo is not being held, a turbo-enabled button is held
-            startTurboForButton( // start firing inputs
-                config.input,
-                buttonPressHandler: handleRegularButtonPress,
-                buttonReleaseHandler: handleRegularButtonRelease
-            )
-        } else { // turbo button is not being held, button is not turbo-enabled
-            // this case is a simple button press/hold
-            handleRegularButtonPress()
+            toggleTurboForButton(input)
+        } else { // the turbo button is not being held
+            // Create callbacks to either call normally or pass to startTurboForButton
+            func handleRegularButtonPressThroughMacro() {
+                macroManager.handleButtonPressThroughMacro(buttonInput: input, sendButtonPressFunc: sendButtonPressFunc, isInMacroEditor: isInMacroEditor)
+            }
+            func handleRegularButtonReleaseThroughMacro() {
+                macroManager.handleButtonReleaseThroughMacro(buttonInput: input, sendButtonReleaseFunc: sendButtonRelaseFunc)
+            }
+            
+            // Check if the held button is turbo-enabled
+            if isTurboEnabled(input) {
+                startTurboForButton( // start firing inputs
+                    input,
+                    buttonPressHandler: handleRegularButtonPressThroughMacro,
+                    buttonReleaseHandler: handleRegularButtonReleaseThroughMacro
+                )
+            } else { // the held button is not turbo-enabled
+                // this case is a simple button press/hold
+                handleRegularButtonPressThroughMacro()
+            }
+        
         }
     }
     
-    func handleButtonReleaseThroughTurbo(config: ButtonConfig, releaseButtonFunc: () -> ()) {
-       
+    func handleButtonReleaseThroughTurbo(input: ButtonInput, isTurboButton: Bool, sendButtonReleaseFunc: () -> ()) {
+        if isTurboButton { // if the released button is the turbo button itself
+            deactivateTurboMode()
+        } else if turboActive { // if the turbo button is being held
+            // do nothing to avoid duplicate toggling of turbo for the button
+        } else { // if turbo button is not being held
+            macroManager.handleButtonReleaseThroughMacro(buttonInput: input, sendButtonReleaseFunc: sendButtonReleaseFunc)
+            if (isTurboEnabled(input)) { // the released button is a turbo-enabled button
+                stopTurboForButton(input)
+            }
+        }
     }
     
 }

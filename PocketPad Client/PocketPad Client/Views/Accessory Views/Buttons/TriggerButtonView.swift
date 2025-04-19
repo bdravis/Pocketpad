@@ -12,7 +12,6 @@ import SwiftUI
 struct TriggerButtonView: View {
     @StateObject private var bluetoothManager = BluetoothManager.shared
     @StateObject private var turboManager = TurboManager.shared
-    @StateObject private var macroManager = MacroManager.shared
     @State private var longPressed = false
     
     var config: TriggerConfig
@@ -31,47 +30,47 @@ struct TriggerButtonView: View {
         .onLongPressGesture(minimumDuration: 0.5, maximumDistance: 50, pressing: { isPressing in
             if isPressing {
                 longPressed = true 
-                if turboManager.turboActive { // turbo button is being held and then another button is pressed
-                    turboManager.toggleTurboForButton(config.input)
-                } else if turboManager.isTurboEnabled(config.input) { // while turbo is not being held, a turbo-enabled button is held
-                    turboManager.startTurboForButton(
-                        config.input,
-                        buttonPressHandler: sendTriggerPress,
-                        buttonReleaseHandler: sendTriggerRelease
-                    )
-                } else { // turbo button is not being held, button is not turbo-enabled
-                    // this case is a simple button press/hold
-                    sendTriggerPress()
-                }
+                handleButtonPress()
             }
             else {
-                if !turboManager.turboActive { // if turbo button is not being held
-                    // note: for the case of turbo button being held, do nothing to avoid duplicate toggling of turbo for a button
-                    
-                    // if turbo button is not being held:
-                    sendTriggerRelease()
-                    if (turboManager.isTurboEnabled(config.input)) { // the released button is a turbo-enabled button
-                        turboManager.stopTurboForButton(config.input)
-                    }
-                }
+                handleButtonRelease()
             }
         }, perform: {})
     }
     
+    // MARK: Functions to handle trigger inputs
     private func handleTap() {
 #if DEBUG
         print("Trigger Tapped")
 #endif
-        sendTriggerPress()
+        handleButtonPress()
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-            sendTriggerRelease()
+            handleButtonRelease()
         }
     }
     
-    private func sendTriggerPress() {
+    private func handleButtonPress() {
+        turboManager.handleButtonPressThroughTurbo(
+            input: config.input,
+            isTurboButton: false,
+            sendButtonPressFunc: sendButtonPress,
+            sendButtonRelaseFunc: sendButtonRelease,
+            isInMacroEditor: isInMacroEditor
+        )
+    }
+    
+    private func handleButtonRelease() {
+        turboManager.handleButtonReleaseThroughTurbo(
+            input: config.input,
+            isTurboButton: false,
+            sendButtonReleaseFunc: sendButtonRelease
+        )
+    }
+    
+    private func sendButtonPress() {
 #if DEBUG
-        print("PRESS TRIGGER")
+        print("SEND REGULAR TRIGGER PRESS")
 #endif
         let ui8_playerId: UInt8 = LayoutManager.shared.player_id
         let ui8_inputId : UInt8 = config.inputId
@@ -82,9 +81,9 @@ struct TriggerButtonView: View {
         sendControllerInput(data, isInMacroEditor: isInMacroEditor)
     }
     
-    private func sendTriggerRelease() {
+    private func sendButtonRelease() {
 #if DEBUG
-        print("RELEASE TRIGGER")
+        print("SEND REGULAR TRIGGER PRESS")
 #endif
         let ui8_playerId: UInt8 = LayoutManager.shared.player_id
         let ui8_inputId : UInt8 = config.inputId

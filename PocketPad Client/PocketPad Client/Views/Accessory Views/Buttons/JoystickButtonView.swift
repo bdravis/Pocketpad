@@ -15,7 +15,7 @@ struct JoystickButtonView: View {
     @Environment(\.colorScheme) var colorScheme
     
     @StateObject private var bluetoothManager = BluetoothManager.shared
-    @StateObject private var macroManager = MacroManager.shared
+    @StateObject private var turboManager = TurboManager.shared
     
     var config: JoystickConfig
     var isInMacroEditor: Bool = false
@@ -103,9 +103,11 @@ struct JoystickButtonView: View {
                         ui8_magnitude = UInt8(min(max(normalizedMagnitude, 0), 255))
                     }
                     
+                    // Don't send input information if it's too soon
                     let now = Date()
                     if let last_time = last_send_time, now.timeIntervalSince(last_time) < minimum_time_interval { return }
                     
+                    // Don't send if joystick has not moved much from the last position
                     if abs(Int(ui8_angle) - Int(last_sent_angle)) < Int(minimum_angle_threshold) &&
                         abs(Int(ui8_magnitude) - Int(last_sent_magnitude)) < Int(minimum_angle_threshold) {
                         return
@@ -116,19 +118,35 @@ struct JoystickButtonView: View {
                     last_sent_magnitude = ui8_magnitude
                     
                     let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event, ui8_angle, ui8_magnitude])
-                    sendControllerInput(data, isInMacroEditor: isInMacroEditor)
+                    
+                    func sendButtonPress() { // nested function to use as callback because we need to know angle and magnitude
+#if DEBUG
+                        print("SEND JOYSTICK PRESS")
+#endif
+                        sendControllerInput(data, isInMacroEditor: isInMacroEditor)
+                    }
+                    
+                    // Handle the joystick press, e.g. send data
+                    turboManager.handleButtonPressThroughTurbo(
+                        input: config.input,
+                        isTurboButton: false,
+                        sendButtonPressFunc: sendButtonPress,
+                        sendButtonRelaseFunc: sendButtonRelease,
+                        isInMacroEditor: isInMacroEditor
+                    )
+                    
                 } else {
 #if DEBUG
-                    print("NOT SENDING, WITHIN DEADZONE)")
+                    print("NOT SENDING JOYSTICK PRESS, WITHIN DEADZONE)")
 #endif
                     if isSendingPress {
-                        sendJoystickRelease()
+                        isSendingPress = false
+                        handleButtonRelease()
                     }
                 }
             }
             .onEnded { _ in
-                
-                sendJoystickRelease()
+                handleButtonRelease()
                 
                 if UserDefaults.standard.bool(forKey: "hapticsEnabled") {
                     HapticsManager.playHaptic()
@@ -142,9 +160,15 @@ struct JoystickButtonView: View {
         
     }
     
-    func sendJoystickRelease() {
-        isSendingPress = false
-        
+    // MARK: Helper functions for input sending
+    func handleButtonRelease() {
+        turboManager.handleButtonReleaseThroughTurbo(input: config.input, isTurboButton: false, sendButtonReleaseFunc: sendButtonRelease)
+    }
+    
+    func sendButtonRelease() {
+#if DEBUG
+        print("SEND JOYSTICK RELEASE")
+#endif
         let ui8_playerId: UInt8 = LayoutManager.shared.player_id
         let ui8_inputId : UInt8 = config.inputId
         let ui8_buttonType : UInt8 = config.type.rawValue

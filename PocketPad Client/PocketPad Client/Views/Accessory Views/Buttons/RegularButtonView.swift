@@ -12,7 +12,6 @@ import SwiftUI
 struct RegularButtonView: View {
     @StateObject private var bluetoothManager = BluetoothManager.shared
     @StateObject private var turboManager = TurboManager.shared
-    @StateObject private var macroManager = MacroManager.shared
     @State private var longPressed = false
 
     var config: RegularButtonConfig
@@ -46,71 +45,48 @@ struct RegularButtonView: View {
         .onLongPressGesture(minimumDuration: 0.5, maximumDistance: 50, pressing: { isPressing in
             if isPressing { // press button
                 longPressed = true
-                if config.turbo { // if this button is the turbo button itself
-                    turboManager.activateTurboMode()
-                } else if turboManager.turboActive { // turbo button is being held and then another button is pressed
-                    turboManager.toggleTurboForButton(config.input)
-                } else if turboManager.isTurboEnabled(config.input) { // while turbo is not being held, a turbo-enabled button is held
-                    turboManager.startTurboForButton( // start firing inputs
-                        config.input,
-                        buttonPressHandler: handleRegularButtonPress,
-                        buttonReleaseHandler: handleRegularButtonRelease
-                    )
-                } else { // turbo button is not being held, button is not turbo-enabled
-                    // this case is a simple button press/hold
-                    handleRegularButtonPress()
-                }
+                handleButtonPress()
             }
             else { // release button
-                if config.turbo { // if released button is the turbo button itself
-                    turboManager.deactivateTurboMode()
-                } else if !turboManager.turboActive { // if turbo button is not being held
-                    // note: for the case of turbo button being held, do nothing to avoid duplicate toggling of turbo for a button
-                    
-                    // if turbo button is not being held:
-                    handleRegularButtonRelease()
-                    if (turboManager.isTurboEnabled(config.input)) { // the released button is a turbo-enabled button
-                        turboManager.stopTurboForButton(config.input)
-                    }
-                }
+                handleButtonRelease()
             }
         }, perform: {})
     }
     
-    // MARK: Functions to handle button inputs
+    // MARK: Functions to handle regular button inputs
     private func handleTap() {
 #if DEBUG
         print("Button Tapped")
 #endif
-        sendRegularButtonPress()
+        handleButtonPress()
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-            sendRegularButtonRelease()
+            handleButtonRelease()
         }
     }
     
-    // Handler function for button release
-    private func handleRegularButtonPress() {
-        // check if the button has a macro, if it does then execute it
-        if !macroManager.hasMacro(for: config.input, willExecute: true) {
-            // if button is not assigned a macro, then send over the button input normally
-            sendRegularButtonPress()
-        }
+    private func handleButtonPress() {
+        turboManager.handleButtonPressThroughTurbo(
+            input: config.input,
+            isTurboButton: config.turbo,
+            sendButtonPressFunc: sendButtonPress,
+            sendButtonRelaseFunc: sendButtonRelease,
+            isInMacroEditor: isInMacroEditor
+        )
     }
     
-    // Handler function for input release
-    private func handleRegularButtonRelease() {
-        // check if the button has a macro
-        if !macroManager.hasMacro(for: config.input, willExecute: false) {
-            // if the button is not assigned a macro, then send over the button input normally
-            sendRegularButtonRelease()
-        }
+    private func handleButtonRelease() {
+        turboManager.handleButtonReleaseThroughTurbo(
+            input: config.input,
+            isTurboButton: config.turbo,
+            sendButtonReleaseFunc: sendButtonRelease
+        )
     }
     
     // Send button press
-    private func sendRegularButtonPress() {
+    private func sendButtonPress() {
 #if DEBUG
-        print("REGULAR BUTTON PRESS")
+        print("SEND REGULAR BUTTON PRESS")
 #endif
         let ui8_playerId: UInt8 = LayoutManager.shared.player_id
         let ui8_inputId : UInt8 = config.inputId
@@ -122,9 +98,9 @@ struct RegularButtonView: View {
     }
     
     // Send button release
-    private func sendRegularButtonRelease() {
+    private func sendButtonRelease() {
 #if DEBUG
-        print("REGULAR BUTTON RELEASE")
+        print("SEND REGULAR BUTTON RELEASE")
 #endif
         let ui8_playerId: UInt8 = LayoutManager.shared.player_id
         let ui8_inputId : UInt8 = config.inputId

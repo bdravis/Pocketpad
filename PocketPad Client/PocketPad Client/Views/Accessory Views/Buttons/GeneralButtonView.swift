@@ -22,7 +22,7 @@ struct GeneralButtonView: View {
     }
 }
 
-// This function manages where input data gets sent
+// Controls where the input data gets sent
 func sendControllerInput(_ data: Data, isInMacroEditor: Bool) {
     if isInMacroEditor { // send the inputs to the macro recorder
         // may or may not be saved, depending on whether the recorder is currently on
