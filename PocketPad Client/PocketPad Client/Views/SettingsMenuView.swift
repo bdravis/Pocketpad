@@ -44,6 +44,8 @@ struct SettingsMenuView: View {
     
     @ObservedObject private var turboManager = TurboManager.shared
     @State private var showingTurboSettings: Bool = false
+    
+    @StateObject private var bluetoothManager = BluetoothManager.shared
 
     
     // MARK: - Body
@@ -169,6 +171,7 @@ struct SettingsMenuView: View {
                         turboManager.stopAllTurbo()
                         
                         isCustomLayout = !DefaultLayouts.isDefaultLayout(name: selectedController)
+                        bluetoothManager.updateControllerConfiguration()
                     } catch {
                         UIApplication.shared.alert(title: "Failed to load layout", body: error.localizedDescription)
                         selectedController = ControllerType.getDefaultName()
@@ -194,7 +197,7 @@ struct SettingsMenuView: View {
                     if newLayoutName != "" {
                         do {
                             guard !layoutManager.layoutExists(for: newLayoutName) else { throw LayoutError.duplicate }
-                            let newLayout: LayoutConfig = .init(name: newLayoutName, buttons: [])
+                            let newLayout: LayoutConfig = .init(name: newLayoutName, lockToOrientation: .all, buttons: [])
                             try layoutManager.saveLayout(newLayout)
                             try layoutManager.loadLayouts(includeControllerTypes: true)
                             try layoutManager.setCurrentLayout(to: newLayoutName)

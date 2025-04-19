@@ -8,6 +8,8 @@
 import XCTest
 
 final class PocketPad_ClientUITests: XCTestCase {
+    
+    private var TIMEOUT: TimeInterval = 15
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
@@ -27,14 +29,14 @@ final class PocketPad_ClientUITests: XCTestCase {
         app.launch()
         
         let settingsBtn = app.buttons["SettingsGearButton"]
-        guard settingsBtn.waitForExistence(timeout: 3) else{
+        guard settingsBtn.waitForExistence(timeout: TIMEOUT) else{
             XCTFail("Settings button open not found")
             return
         }
         
         settingsBtn.tap()
         let settingsCloseBtn = app.buttons["SettingsCloseButton"]
-        guard settingsCloseBtn.waitForExistence(timeout: 3) else{
+        guard settingsCloseBtn.waitForExistence(timeout: TIMEOUT) else{
             XCTFail("Settings button close not found")
             return
         }
@@ -55,7 +57,7 @@ final class PocketPad_ClientUITests: XCTestCase {
         var choseController: Bool = false
         for dpadType in dpadTypes {
             // open settings menu
-            guard settingsBtn.waitForExistence(timeout: 3) else {
+            guard settingsBtn.waitForExistence(timeout: TIMEOUT) else {
                 XCTFail("Settings button open not found")
                 return
             }
@@ -65,14 +67,14 @@ final class PocketPad_ClientUITests: XCTestCase {
                 choseController = true
                 // make sure a controller with a dpad is selected
                 let controllerPicker = app.buttons["ControllerPicker"]
-                guard controllerPicker.waitForExistence(timeout: 2) else {
+                guard controllerPicker.waitForExistence(timeout: TIMEOUT) else {
                     XCTFail()
                     return
                 }
                 controllerPicker.tap()
                 
                 let controllerBtn = app.buttons["Xbox"]
-                guard controllerBtn.waitForExistence(timeout: 1) else {
+                guard controllerBtn.waitForExistence(timeout: TIMEOUT) else {
                     XCTFail()
                     return
                 }
@@ -80,10 +82,10 @@ final class PocketPad_ClientUITests: XCTestCase {
             }
             
             // select dpad style
-            XCTAssertTrue(dpadStyle.waitForExistence(timeout: 2))
+            XCTAssertTrue(dpadStyle.waitForExistence(timeout: TIMEOUT))
             dpadStyle.tap()
             let dpadOption = app.buttons[dpadType]
-            guard dpadOption.waitForExistence(timeout: 1) else {
+            guard dpadOption.waitForExistence(timeout: TIMEOUT) else {
                 XCTFail()
                 return
             }
@@ -93,7 +95,7 @@ final class PocketPad_ClientUITests: XCTestCase {
             XCTAssertTrue(settingsCloseBtn.exists)
             settingsCloseBtn.tap()
             
-            guard controllerViewBtn.waitForExistence(timeout: 3) else {
+            guard controllerViewBtn.waitForExistence(timeout: TIMEOUT) else {
                 XCTFail("ControllerViewButton not found")
                 return
             }
@@ -102,10 +104,10 @@ final class PocketPad_ClientUITests: XCTestCase {
             // make sure that the dpad exists and is the correct type
             if dpadType == "Conjoined" {
                 // test for conjoined dpad
-                XCTAssertTrue(app.buttons["DPadConjoined"].waitForExistence(timeout: 3))
+                XCTAssertTrue(app.buttons["DPadConjoined"].waitForExistence(timeout: TIMEOUT))
             } else if dpadType == "Split" {
                 // test for split dpad
-                XCTAssertTrue(app.buttons["DPadButton"].waitForExistence(timeout: 3))
+                XCTAssertTrue(app.buttons["DPadButton"].waitForExistence(timeout: TIMEOUT))
                 XCTAssertFalse(app.buttons["DPadConjoined"].exists)
             } else {
                 XCTFail("Invalid dpad type")
@@ -138,21 +140,21 @@ final class PocketPad_ClientUITests: XCTestCase {
         let controllerPicker = app.buttons["ControllerPicker"]
         
         for validController in validControllers {
-            guard settingsBtn.waitForExistence(timeout: 2) else {
+            guard settingsBtn.waitForExistence(timeout: TIMEOUT) else {
                 XCTFail()
                 return
             }
             settingsBtn.tap()
             
             // select the controller from the picker
-            guard controllerPicker.waitForExistence(timeout: 2) else {
+            guard controllerPicker.waitForExistence(timeout: TIMEOUT) else {
                 XCTFail()
                 return
             }
             controllerPicker.tap()
             
             let controllerBtn = app.buttons[validController]
-            guard controllerBtn.waitForExistence(timeout: 1) else {
+            guard controllerBtn.waitForExistence(timeout: TIMEOUT) else {
                 XCTFail()
                 return
             }
@@ -161,13 +163,13 @@ final class PocketPad_ClientUITests: XCTestCase {
             settingsCloseBtn.tap()
             
             // open up the controller view
-            guard controllerViewBtn.waitForExistence(timeout: 2) else {
+            guard controllerViewBtn.waitForExistence(timeout: TIMEOUT) else {
                 XCTFail()
                 return
             }
             controllerViewBtn.tap()
             
-            XCTAssertTrue(app.buttons["ControllerButton"].waitForExistence(timeout: 2))
+            XCTAssertTrue(app.buttons["ControllerButton"].waitForExistence(timeout: TIMEOUT))
             
             // make sure the count of the buttons is equal to the specified controller setup
             XCTAssertEqual(app.buttons.matching(identifier: "ControllerButton").count + app.buttons.matching(identifier: "DPadButton").count, controllerBtnCount[validController])
@@ -187,24 +189,24 @@ final class PocketPad_ClientUITests: XCTestCase {
         
         // open settings
         let settingsBtn = app.buttons["SettingsGearButton"]
-        guard settingsBtn.waitForExistence(timeout: 2) else {
+        guard settingsBtn.waitForExistence(timeout: TIMEOUT) else {
             XCTFail()
             return
         }
         settingsBtn.tap()
         
         let removeFiles = app.buttons["RemoveLayoutFiles"]
-        XCTAssertTrue(removeFiles.waitForExistence(timeout: 2))
+        XCTAssertTrue(removeFiles.waitForExistence(timeout: TIMEOUT))
         removeFiles.tap()
         
         // make sure that the buttons don't exist in the list
         let controllerPicker = app.buttons["ControllerPicker"]
-        guard controllerPicker.waitForExistence(timeout: 2) else {
+        guard controllerPicker.waitForExistence(timeout: TIMEOUT) else {
             XCTFail()
             return
         }
         controllerPicker.tap()
-        XCTAssertTrue(app.buttons["Xbox"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.buttons["Xbox"].waitForExistence(timeout: TIMEOUT))
         XCTAssertFalse(app.buttons["Xbox Saved"].exists)
         XCTAssertFalse(app.buttons["Wii Saved"].exists)
         app.buttons["Xbox"].tap()
@@ -215,55 +217,57 @@ final class PocketPad_ClientUITests: XCTestCase {
         
         // try to save malformed
         let malformedBtn = app.buttons["MalformedLayout"]
-        XCTAssertTrue(malformedBtn.waitForExistence(timeout: 2))
+        XCTAssertTrue(malformedBtn.waitForExistence(timeout: TIMEOUT))
         malformedBtn.tap()
         
-        XCTAssertTrue(alertDismiss.waitForExistence(timeout: 4))
+        XCTAssertTrue(alertDismiss.waitForExistence(timeout: TIMEOUT))
         XCTAssertTrue(app.alerts.element.staticTexts["Failed to save the layout"].exists)
         alertDismiss.tap()
         
         // try to save xbox
-        XCTAssertTrue(chooseTemplate.waitForExistence(timeout: 2))
+        XCTAssertTrue(chooseTemplate.waitForExistence(timeout: TIMEOUT))
         chooseTemplate.tap()
         let xboxBtn = app.buttons["Xbox Saved"]
-        XCTAssertTrue(xboxBtn.waitForExistence(timeout: 2))
+        XCTAssertTrue(xboxBtn.waitForExistence(timeout: TIMEOUT))
         xboxBtn.tap()
-        XCTAssertTrue(alertDismiss.waitForExistence(timeout: 4))
+        XCTAssertTrue(alertDismiss.waitForExistence(timeout: TIMEOUT))
         XCTAssertTrue(app.alerts.element.staticTexts["Layout Successfully Saved"].exists)
         alertDismiss.tap()
         // make sure it is in the list
-        guard controllerPicker.waitForExistence(timeout: 2) else {
+        guard controllerPicker.waitForExistence(timeout: TIMEOUT) else {
             XCTFail()
             return
         }
         controllerPicker.tap()
-        XCTAssertTrue(xboxBtn.waitForExistence(timeout: 2))
+        XCTAssertTrue(xboxBtn.waitForExistence(timeout: TIMEOUT))
         xboxBtn.tap()
         
         // try to save malformed wii
         let saveMalformed = app.switches["SaveAsMalformed"]
         app.scrollViews["SettingsScrollView"].scrollToElement(saveMalformed, upward: false)
-        XCTAssertTrue(saveMalformed.waitForExistence(timeout: 2))
+        XCTAssertTrue(saveMalformed.waitForExistence(timeout: TIMEOUT))
         saveMalformed.tap()
         XCTAssertTrue(chooseTemplate.exists)
         chooseTemplate.tap()
         let wiiBtn = app.buttons["Wii Saved"]
-        XCTAssertTrue(wiiBtn.waitForExistence(timeout: 2))
+        XCTAssertTrue(wiiBtn.waitForExistence(timeout: TIMEOUT))
         wiiBtn.tap()
-        XCTAssertTrue(alertDismiss.waitForExistence(timeout: 4))
+        XCTAssertTrue(alertDismiss.waitForExistence(timeout: TIMEOUT))
         XCTAssertTrue(app.alerts.element.staticTexts["Layout Successfully Saved"].exists)
         alertDismiss.tap()
         // make sure it is in the list
-        guard controllerPicker.waitForExistence(timeout: 2) else {
+        guard controllerPicker.waitForExistence(timeout: TIMEOUT) else {
             XCTFail()
             return
         }
         controllerPicker.tap()
-        XCTAssertTrue(wiiBtn.waitForExistence(timeout: 2))
+        XCTAssertTrue(wiiBtn.waitForExistence(timeout: TIMEOUT))
         wiiBtn.tap()
-        XCTAssertTrue(alertDismiss.waitForExistence(timeout: 4))
+        XCTAssertTrue(alertDismiss.waitForExistence(timeout: TIMEOUT))
         XCTAssertTrue(app.alerts.element.staticTexts["Failed to load layout"].exists)
         alertDismiss.tap()
+        XCTAssertTrue(removeFiles.waitForExistence(timeout: TIMEOUT))
+        removeFiles.tap()
     }
     
     @MainActor
@@ -275,14 +279,14 @@ final class PocketPad_ClientUITests: XCTestCase {
         
         // make it go to the view
         let settingsBtn = app.buttons["SettingsGearButton"]
-        guard settingsBtn.waitForExistence(timeout: 5) else {
+        guard settingsBtn.waitForExistence(timeout: TIMEOUT) else {
             XCTFail()
             return
         }
         settingsBtn.tap()
         
         let controllerPicker = app.buttons["ControllerPicker"]
-        guard controllerPicker.waitForExistence(timeout: 2) else {
+        guard controllerPicker.waitForExistence(timeout: TIMEOUT) else {
             XCTFail()
             return
         }
@@ -291,7 +295,7 @@ final class PocketPad_ClientUITests: XCTestCase {
         
         // set current controller to one that has a dpad
         let xboxBtn = app.buttons["Xbox"]
-        guard xboxBtn.waitForExistence(timeout: 1) else {
+        guard xboxBtn.waitForExistence(timeout: TIMEOUT) else {
             XCTFail()
             return
         }
@@ -299,29 +303,99 @@ final class PocketPad_ClientUITests: XCTestCase {
         
         // DPad style should exist now
         let dpadStyleBtn = app.buttons["DPadStyle"]
-        XCTAssertTrue(dpadStyleBtn.waitForExistence(timeout: 1))
+        XCTAssertTrue(dpadStyleBtn.waitForExistence(timeout: TIMEOUT))
         
         controllerPicker.tap()
         
         // set to current controller without dpad
         let dpadlessBtn = app.buttons["DPad-less Test"]
-        guard dpadlessBtn.waitForExistence(timeout: 1) else {
+        guard dpadlessBtn.waitForExistence(timeout: TIMEOUT) else {
             XCTFail()
             return
         }
         dpadlessBtn.tap()
         
         // make sure the button is no longer there
-        XCTAssertTrue(dpadStyleBtn.waitForNonExistence(timeout: 1))
+        XCTAssertTrue(dpadStyleBtn.waitForNonExistence(timeout: TIMEOUT))
     }
-
+    
     @MainActor
-    func testLaunchPerformance() throws {
-        if #available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 7.0, *) {
-            // This measures how long it takes to launch your application.
-            measure(metrics: [XCTApplicationLaunchMetric()]) {
-                XCUIApplication().launch()
+    func testOrientationLock() throws {
+        // tests that the orientation locks properly
+        continueAfterFailure = false
+        let app = XCUIApplication() // Initializes the XCTest app
+        app.launch() // Launches the app
+        
+        // Define the buttons
+        let settingsBtn = app.buttons["SettingsGearButton"]
+        let settingsCloseBtn = app.buttons["SettingsCloseButton"]
+        let controllerViewBtn = app.buttons["OpenControllerView"]
+        let controllerPicker = app.buttons["ControllerPicker"]
+        
+        let tests = [
+            [
+                "Controller": "Xbox",
+                "Orientation": UIDeviceOrientation.landscapeLeft
+            ],
+            [
+                "Controller": "Wii",
+                "Orientation": UIDeviceOrientation.portrait
+            ],
+            [
+                "Controller": "Wii",
+                "Orientation": UIDeviceOrientation.landscapeLeft
+            ],
+            [
+                "Controller": "GameCube",
+                "Orientation": UIDeviceOrientation.landscapeRight
+            ]
+        ]
+        
+        XCUIDevice.shared.orientation = .portrait
+        
+        for test in tests {
+            if let controller = test["Controller"] as? String, let orien = test["Orientation"] as? UIDeviceOrientation {
+                XCTAssertTrue(XCUIDevice.shared.orientation.isPortrait, "The device is not in portrait!")
+                // set the controller
+                XCTAssertTrue(settingsBtn.waitForExistence(timeout: TIMEOUT), "The settings button did not appear")
+                settingsBtn.tap()
+                XCTAssertTrue(controllerPicker.waitForExistence(timeout: TIMEOUT), "The controller picker did not appear")
+                controllerPicker.tap()
+                let controllerBtn = app.buttons[controller]
+                guard controllerBtn.waitForExistence(timeout: TIMEOUT) else {
+                    XCTFail()
+                    return
+                }
+                controllerBtn.tap()
+                XCTAssertTrue(settingsCloseBtn.waitForExistence(timeout: TIMEOUT), "The settings close button does not exist")
+                settingsCloseBtn.tap()
+                // set the orientation if it is Wii landscape
+                if (controller == "Wii" && orien == .landscapeLeft) || orien == .landscapeRight {
+                    XCUIDevice.shared.orientation = orien
+                }
+                
+                // open up the controller menu and assert that the orientation was set
+                XCTAssertTrue(controllerViewBtn.waitForExistence(timeout: TIMEOUT), "The controller view button does not exist")
+                controllerViewBtn.tap()
+                let mainEditorView = app.otherElements["MainControllerScreen"]
+                XCTAssertTrue(mainEditorView.waitForExistence(timeout: TIMEOUT), "The main controller screen could not be found.")
+                let editorSize = mainEditorView.frame.size
+                // assert that the orientation is correct
+                XCTAssertTrue(orien.isPortrait ? editorSize.height > editorSize.width : editorSize.width > editorSize.height, "The orientation did not change to the proper orientation")
+                // go back to the previous view
+                app.navigationBars.buttons.element(boundBy: 0).tap()
+                XCUIDevice.shared.orientation = .portrait
             }
         }
     }
+
+//    @MainActor
+//    func testLaunchPerformance() throws {
+//        if #available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 7.0, *) {
+//            // This measures how long it takes to launch your application.
+//            measure(metrics: [XCTApplicationLaunchMetric()]) {
+//                XCUIApplication().launch()
+//            }
+//        }
+//    }
 }

@@ -8,6 +8,9 @@
 import UIKit
 import SwiftUI
 
+// TODO: Figure out how to force this to initialize with button.type = .bumper
+typealias BumperConfig = RegularButtonConfig //where BumperConfig.type == ButtonType.bumper
+
 class DefaultLayouts {
     // MARK: Switch Configuration
     static let SwitchConfig: LayoutConfig = .init(name: "Switch", buttons: [
@@ -40,8 +43,8 @@ class DefaultLayouts {
         RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.2), offset: CGPoint(x: DEFAULT_BUTTON_SIZE * 0.6, y: DEFAULT_BUTTON_SIZE * 0.6)), scale: 0.6, inputId: 10, input: .Share, style: .init(shape: .Circle, iconType: .SFSymbol, icon: "square")),
         
         // Bumpers
-        BumperConfig(position: .init(scaledPos: CGPoint(x: 0.1, y: 0.1), offset: CGPoint(x: DEFAULT_BUTTON_SIZE / 2, y: DEFAULT_BUTTON_SIZE * 1.5)), scale: 1.5, inputId: 10, input: .LB),
-        BumperConfig(position: .init(scaledPos: CGPoint(x: 0.9, y: 0.1), offset: CGPoint(x: -DEFAULT_BUTTON_SIZE / 2, y: DEFAULT_BUTTON_SIZE * 1.5)), scale: 1.5, inputId: 11, input: .RB),
+        BumperConfig(type: .bumper, position: .init(scaledPos: CGPoint(x: 0.1, y: 0.1), offset: CGPoint(x: DEFAULT_BUTTON_SIZE / 2, y: DEFAULT_BUTTON_SIZE * 1.5)), scale: 1.5, inputId: 10, input: .LB),
+        BumperConfig(type: .bumper, position: .init(scaledPos: CGPoint(x: 0.9, y: 0.1), offset: CGPoint(x: -DEFAULT_BUTTON_SIZE / 2, y: DEFAULT_BUTTON_SIZE * 1.5)), scale: 1.5, inputId: 11, input: .RB),
         
         // Triggers
         TriggerConfig(position: .init(scaledPos: CGPoint(x: 0.1, y: 0.1)), scale: 1.5, inputId: 12, input: .LT, side: .left),
@@ -78,8 +81,8 @@ class DefaultLayouts {
         RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.2), offset: CGPoint(x: 0, y: DEFAULT_BUTTON_SIZE * 0.6)), scale: 0.6, inputId: 9, input: .Share, style: .init(shape: .Circle, iconType: .SFSymbol, icon: "square.and.arrow.up")),
         
         // Bumpers
-        BumperConfig(position: .init(scaledPos: CGPoint(x: 0.1, y: 0.1), offset: CGPoint(x: DEFAULT_BUTTON_SIZE / 2, y: DEFAULT_BUTTON_SIZE * 1.5)), scale: 1.5, inputId: 10, input: .LB),
-        BumperConfig(position: .init(scaledPos: CGPoint(x: 0.9, y: 0.1), offset: CGPoint(x: -DEFAULT_BUTTON_SIZE / 2, y: DEFAULT_BUTTON_SIZE * 1.5)), scale: 1.5, inputId: 11, input: .RB),
+        BumperConfig(type: .bumper, position: .init(scaledPos: CGPoint(x: 0.1, y: 0.1), offset: CGPoint(x: DEFAULT_BUTTON_SIZE / 2, y: DEFAULT_BUTTON_SIZE * 1.5)), scale: 1.5, inputId: 10, input: .LB),
+        BumperConfig(type: .bumper, position: .init(scaledPos: CGPoint(x: 0.9, y: 0.1), offset: CGPoint(x: -DEFAULT_BUTTON_SIZE / 2, y: DEFAULT_BUTTON_SIZE * 1.5)), scale: 1.5, inputId: 11, input: .RB),
         
         // Triggers
         TriggerConfig(position: .init(scaledPos: CGPoint(x: 0.1, y: 0.1)), scale: 1.5, inputId: 12, input: .LT, side: .left),
@@ -113,8 +116,8 @@ class DefaultLayouts {
         RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.2), offset: CGPoint(x: DEFAULT_BUTTON_SIZE * 0.6, y: 0)), scale: 0.6, inputId: 8, input: .Select, style: .init(shape: .Circle, iconType: .SFSymbol, icon: "light.max")),
         
         // Bumpers
-        BumperConfig(position: .init(scaledPos: CGPoint(x: 0.1, y: 0.1), offset: CGPoint(x: DEFAULT_BUTTON_SIZE / 2, y: DEFAULT_BUTTON_SIZE * 1.5)), scale: 1.5, inputId: 10, input: .LB),
-        BumperConfig(position: .init(scaledPos: CGPoint(x: 0.9, y: 0.1), offset: CGPoint(x: -DEFAULT_BUTTON_SIZE / 2, y: DEFAULT_BUTTON_SIZE * 1.5)), scale: 1.5, inputId: 11, input: .RB),
+        BumperConfig(type: .bumper, position: .init(scaledPos: CGPoint(x: 0.1, y: 0.1), offset: CGPoint(x: DEFAULT_BUTTON_SIZE / 2, y: DEFAULT_BUTTON_SIZE * 1.5)), scale: 1.5, inputId: 10, input: .LB),
+        BumperConfig(type: .bumper, position: .init(scaledPos: CGPoint(x: 0.9, y: 0.1), offset: CGPoint(x: -DEFAULT_BUTTON_SIZE / 2, y: DEFAULT_BUTTON_SIZE * 1.5)), scale: 1.5, inputId: 11, input: .RB),
         
         // Triggers
         TriggerConfig(position: .init(scaledPos: CGPoint(x: 0.1, y: 0.1)), scale: 1.5, inputId: 12, input: .LT, side: .left),
@@ -122,16 +125,36 @@ class DefaultLayouts {
     ])
 
     // MARK: Wii Config
-    static let WiiConfig: LayoutConfig = .init(name: "Wii", buttons: [
+    static let WiiConfig: LayoutConfig = .init(name: "Wii", lockToOrientation: .all, buttons: [
         // Diamond of buttons
-        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.8), offset: CGPoint(x: 0, y: -DEFAULT_BUTTON_SIZE * 0.75)), scale: 0.75, inputId: 0, input: .One),
-        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.8), offset: CGPoint(x: 0, y: DEFAULT_BUTTON_SIZE * 0.75)), scale: 0.75, inputId: 1, input: .Two),
-        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.35)), scale: 1.5, inputId: 2, input: .A),
-        TriggerConfig(position: .init(scaledPos: CGPoint(x: 0.8, y: 0.35)), scale: 1.5, inputId: 3, input: .B, side: .middle),
+        RegularButtonConfig(position: .init(
+            scaledPos: CGPoint(x: 0.5, y: 0.8), offset: CGPoint(x: 0, y: -DEFAULT_BUTTON_SIZE * 0.75),
+            defaultIsPortrait: true,
+            overrideScaledPos: CGPoint(x: 0.5, y: 0.75), overrideOffset: CGPoint(x: -40, y: 0)
+        ), scale: 0.75, inputId: 0, input: .One),
+        RegularButtonConfig(position: .init(
+            scaledPos: CGPoint(x: 0.5, y: 0.8), offset: CGPoint(x: 0, y: DEFAULT_BUTTON_SIZE * 0.75),
+            defaultIsPortrait: true,
+            overrideScaledPos: CGPoint(x: 0.5, y: 0.75), overrideOffset: CGPoint(x: 40, y: 0)
+        ), scale: 0.75, inputId: 1, input: .Two),
+        RegularButtonConfig(position: .init(
+            scaledPos: CGPoint(x: 0.5, y: 0.35),
+            defaultIsPortrait: true,
+            overrideScaledPos: CGPoint(x: 0.75, y: 0.7), overrideOffset: CGPointZero
+        ), scale: 1.5, inputId: 2, input: .A),
+        TriggerConfig(position: .init(
+            scaledPos: CGPoint(x: 0.8, y: 0.35),
+            defaultIsPortrait: true,
+            overrideScaledPos: CGPoint(x: 0.87, y: 0.45), overrideOffset: CGPointZero
+        ), scale: 1.5, inputId: 3, input: .B, side: .middle),
         
         // DPad
         DPadConfig(
-            position: .init(scaledPos: CGPoint(x: 0.5, y: 0.2)), scale: 1.5, inputId: 4,
+            position: .init(
+                scaledPos: CGPoint(x: 0.5, y: 0.2),
+                defaultIsPortrait: true,
+                overrideScaledPos: CGPoint(x: 0.15, y: 0.75), overrideOffset: CGPointZero
+            ), scale: 1.5, inputId: 4,
             inputs: [
                 .up: .DPadUp, .right: .DPadRight, .down: .DPadDown, .left: .DPadLeft
             ]
@@ -222,8 +245,8 @@ class DefaultLayouts {
         RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.2), offset: CGPoint(x: 0, y: DEFAULT_BUTTON_SIZE * 0.6)), scale: 0.6, inputId: 9, input: .Share, style: .init(shape: .Circle, iconType: .SFSymbol, icon: "square.and.arrow.up")),
         
         // Bumpers
-        BumperConfig(position: .init(scaledPos: CGPoint(x: 0.1, y: 0.1), offset: CGPoint(x: DEFAULT_BUTTON_SIZE / 2, y: DEFAULT_BUTTON_SIZE * 1.5)), scale: 1.5, inputId: 10, input: .LB),
-        BumperConfig(position: .init(scaledPos: CGPoint(x: 0.9, y: 0.1), offset: CGPoint(x: -DEFAULT_BUTTON_SIZE / 2, y: DEFAULT_BUTTON_SIZE * 1.5)), scale: 1.5, inputId: 11, input: .RB),
+        BumperConfig(type: .bumper, position: .init(scaledPos: CGPoint(x: 0.1, y: 0.1), offset: CGPoint(x: DEFAULT_BUTTON_SIZE / 2, y: DEFAULT_BUTTON_SIZE * 1.5)), scale: 1.5, inputId: 10, input: .LB),
+        BumperConfig(type: .bumper, position: .init(scaledPos: CGPoint(x: 0.9, y: 0.1), offset: CGPoint(x: -DEFAULT_BUTTON_SIZE / 2, y: DEFAULT_BUTTON_SIZE * 1.5)), scale: 1.5, inputId: 11, input: .RB),
         
         // Triggers
         TriggerConfig(position: .init(scaledPos: CGPoint(x: 0.1, y: 0.1)), scale: 1.5, inputId: 12, input: .LT, side: .left),

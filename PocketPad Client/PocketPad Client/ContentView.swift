@@ -14,7 +14,7 @@ struct ContentView: View {
     @State private var showModifyBtn = false
 
     @StateObject private var bluetoothManager = BluetoothManager.shared
-    
+        
     var body: some View {
         NavigationStack {
             ZStack {
@@ -104,19 +104,40 @@ struct ContentView: View {
                     }
                     
                     // NavigationLink to ControllerView for Debugging
-                    HStack {
-                        NavigationLink(destination: ControllerView(isEditor: false)) {
-                            Text("Open Debug ControllerView")
-                        }
-                        .accessibilityIdentifier("OpenControllerView")
+                    NavigationLink(destination: ControllerView(isEditor: false)) {
+                        Text("Open Controller")
+                            .font(.system(size: 18))
+                            .padding(.horizontal, 15)
+                            .padding(.vertical, 5)
+                            .foregroundColor(.white)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 25)
+                                    .stroke(Color.white, lineWidth: 4)
+                            )
                     }
+                    .background(Color.blue)
+                    .cornerRadius(25)
+                    .frame(minWidth: 250)
+                    .accessibilityIdentifier("OpenControllerView")
                     .padding(.horizontal)
+                    .padding(.top, 15)
                     
                     // TODO: Move to settings page (was greyed out so had to add here)
                     if showModifyBtn {
                         NavigationLink(destination: ControllerView(isEditor: true), label: {
-                            Text("Modify Layout")
+                            Text("Modify Controller")
+                                .font(.system(size: 18))
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .foregroundColor(.white)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 25)
+                                        .stroke(Color.white, lineWidth: 4)
+                                )
                         })
+                        .background(Color.blue)
+                        .cornerRadius(25)
+                        .frame(minWidth: 250)
                         .accessibilityIdentifier("ModifyLayoutView")
                     }
                     
@@ -178,11 +199,11 @@ struct ContentView: View {
                 bluetoothManager.stopScanning()
             }
         }
-        .onAppear {
-            Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
-                bluetoothManager.pingServer()
-            }
-        }
+//        .onAppear {
+//            Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { _ in
+//                bluetoothManager.pingServer()
+//            }
+//        }
     }
 }
 
