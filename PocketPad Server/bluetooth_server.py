@@ -33,8 +33,9 @@ trigger: Union[asyncio.Event, threading.Event] = None
 thread = None
 loop = None
 
+BLESS_SERVER = None
 
-executor = concurrent.futures.ThreadPoolExecutor(max_workers=8)
+executor = concurrent.futures.ThreadPoolExecutor(max_workers=16)
 
 num_players_lock = threading.Lock()
 next_id_lock = threading.Lock()
@@ -49,6 +50,8 @@ layout_jsons_status = []
 layout_jsons = []
 
 player_id_str_arr = []
+
+current_game = None
 
 latency_function = None
 send_latency = None
@@ -96,7 +99,7 @@ gatt: Dict = {
         CONTROLLER_TYPE_CHARACTERISTIC: {
             "Properties": (
                 GATTCharacteristicProperties.read
-                | GATTCharacteristicProperties.write_without_response
+                | GATTCharacteristicProperties.write
                 | GATTCharacteristicProperties.indicate
             ),
             "Permissions": (
@@ -161,34 +164,55 @@ def save_layout(game_name, player_id):
     gdb.add_to_database(game_name, layout_to_save)
 
 def request_game_data(game: str):
+    global current_game
+    current_game = game
     game_function(game)
     print("Requesting game data")
 
 MTU = 20
-def send_game_data(server):
+def send_game_data(characteristic):
+    global current_game, BLESS_SERVER
+
+    server = BLESS_SERVER
+
+    print("\n\nHello World\n\n")
+
+    current_game = "pie"
+
+    data_length_in_bytes = len(characteristic.value)
+    format_str = "B" * data_length_in_bytes
+    connection_information = unpack(format_str, characteristic.value)
+
+    player_id = connection_information[0]
+    logger.debug(f"{player_id} requested the current game's saved layout")
+    
+    response_data = [0, ConnectionMessage.transmitting_layout.value]
+    response = bytearray(response_data)
+    characteristic.value = response
+
     char = server.get_characteristic(CONTROLLER_TYPE_CHARACTERISTIC)
-    for player_index, layout_json in enumerate(layout_jsons):
+
+    print(f"\n\nCurrent Game: {current_game}\n\n")
+    if current_game != None:
+        layout_json = gdb.get_controller_layout(current_game)
         # signal start
-        char.value = bytearray([player_index,
-                                 ConnectionMessage.transmitting_layout.value,
-                                 255])
-        server.update_value(POCKETPAD_SERVICE, CONTROLLER_TYPE_CHARACTERISTIC)
+        char.value = bytearray([ConnectionMessage.transmitting_layout.value, 255])
+        print("First Chunk")
+        # server.update_value(POCKETPAD_SERVICE, CONTROLLER_TYPE_CHARACTERISTIC)
         # send chunks
-        data = layout_json.encode('utf-8')
-        for i in range(0, len(data), MTU):
-            chunk = data[i:i+MTU]
-            pkt = pack(f"<BBB{len(chunk)}s>",
-                       player_index,
-                       ConnectionMessage.transmitting_layout.value,
-                       len(chunk),
-                       chunk)
-            char.value = bytearray(pkt)
-            server.update_value(POCKETPAD_SERVICE, CONTROLLER_TYPE_CHARACTERISTIC)
-        # signal end
-        char.value = bytearray([player_index,
-                                 ConnectionMessage.transmitting_layout.value,
-                                 0])
-        server.update_value(POCKETPAD_SERVICE, CONTROLLER_TYPE_CHARACTERISTIC)
+
+    #     data = layout_json.encode('utf-8')
+    #     for i in range(0, len(data), MTU):
+    #         chunk = data[i:i+MTU]
+    #         pkt = pack(f"<BB{len(chunk)}s>",
+    #                    ConnectionMessage.transmitting_layout.value,
+    #                    len(chunk),
+    #                    chunk)
+    #         char.value = bytearray(pkt)
+    #         server.update_value(POCKETPAD_SERVICE, CONTROLLER_TYPE_CHARACTERISTIC)
+    # # signal end
+    # char.value = bytearray([ConnectionMessage.transmitting_layout.value, 0])
+    # server.update_value(POCKETPAD_SERVICE, CONTROLLER_TYPE_CHARACTERISTIC)
 
 def reconstruct_timestamp(sent_ms):
     """Reconstruct possible timestamps based on the last 5 digits."""
@@ -477,7 +501,7 @@ def process_write_request(characteristic: BlessGATTCharacteristic, value):
     elif (upper_uuid == CONTROLLER_TYPE_CHARACTERISTIC):
         process_controller_characteristic(characteristic)
     elif upper_uuid == LAYOUT_REQUEST_CHARACTERISTIC:
-        send_game_data(characteristic.server)
+        send_game_data(characteristic)
     else:
         logger.error("ERROR: Unrecognized Write Request")
 
@@ -496,7 +520,9 @@ class Threaded_Bless_Server(BlessServer):
 class QBlessServer(QObject):
     @cached_property
     def server(self):
+        global BLESS_SERVER
         server = Threaded_Bless_Server(name="PocketPad")
+        BLESS_SERVER = server
 
         self.loop = None 
         server.read_request_func = read_request
