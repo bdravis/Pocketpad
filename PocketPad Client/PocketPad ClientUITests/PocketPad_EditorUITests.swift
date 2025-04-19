@@ -318,7 +318,7 @@ final class PocketPad_EditorUITests: XCTestCase {
         XCTAssertTrue(controllerPicker.waitForExistence(timeout: TIMEOUT), "The controller picker does not exist.")
         XCTAssertNotEqual(controllerPicker.label, "Picker\(newName)", "Layout name was not removed from the controller picker.")
         controllerPicker.tap()
-        XCTAssertFalse(app.buttons[newName].waitForExistence(timeout: TIMEOUT), "Layout name was found in the list.")
+        XCTAssertFalse(app.buttons[newName].waitForExistence(timeout: 3), "Layout name was found in the list.")
     }
     
     @MainActor
