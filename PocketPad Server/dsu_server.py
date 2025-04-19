@@ -168,6 +168,12 @@ class DSU_Server:
             self.sending = False
             self.dpad_mask = 0
             self.button_mask = 0
+
+            self.sq = 0
+            self.cr = 0
+            self.ci = 0
+            self.tr = 0
+
             self.home = 0
             self.touch_button = 0
             self.left_stick_x = 128
@@ -410,7 +416,7 @@ class DSU_Server:
 
                 connected_int = 0
                 if state.connected:
-                    connected_int = 2
+                    connected_int = 1
 
                 packet_number = self.packet_counter
                 self.packet_counter += 1
@@ -429,11 +435,11 @@ class DSU_Server:
                         index, # slot
                         slot_state_int, # slot state (connected / not connected)
                         2, # device model (gyro)
-                        0, # Connection type
+                        2, # Connection type
                         0, #MAC
                         0, #MAC
                         0, #MAC
-                        0, #Battery
+                        0x4, #Battery
                         connected_int,
                         packet_number,
                         state.dpad_mask,
@@ -448,10 +454,10 @@ class DSU_Server:
                         0,
                         0,
                         0,
-                        0,
-                        0,
-                        0,
-                        0,
+                        state.sq,
+                        state.cr,
+                        state.ci,
+                        state.tr,
                         0,
                         0,
                         0,
@@ -544,7 +550,9 @@ class DSU_Server:
         # if event type is MOTION, value is [pitch, yaw, roll]
 
         print(f"updating state: {player_num}, {event_type}, {value}")
-        print(f"current state: {self.controller_states[player_num].button_mask}")
+        print(f"current buttons: {self.controller_states[player_num].button_mask}")
+        print(f"current dpad: {self.controller_states[player_num].dpad_mask}")
+        print(f"current connected: {self.controller_states[player_num].connected}")
 
         #state = self.controller_states[player_num]
 
@@ -560,26 +568,34 @@ class DSU_Server:
             if value[0] == AllButtons.top_diamond.value:
                 if value[1] == ButtonEvent.PRESSED.value:
                     self.controller_states[player_num].button_mask |= 1 << 4
+                    self.tr = 255
                 if value[1] == ButtonEvent.RELEASED.value:
                     self.controller_states[player_num].button_mask &= ~(1 << 4)
+                    self.tr = 0
 
             elif value[0] == AllButtons.bottom_diamond.value:
                 if value[1] == ButtonEvent.PRESSED.value:
                     self.controller_states[player_num].button_mask |= 1 << 6
+                    self.cr = 255
                 if value[1] == ButtonEvent.RELEASED.value:
                     self.controller_states[player_num].button_mask &= ~(1 << 6)
+                    self.cr = 0
 
             elif value[0] == AllButtons.left_diamond.value:
                 if value[1] == ButtonEvent.PRESSED.value:
                     self.controller_states[player_num].button_mask |= 1 << 7
+                    self.sq = 255
                 if value[1] == ButtonEvent.RELEASED.value:
                     self.controller_states[player_num].button_mask &= ~(1 << 7)
+                    self.sq = 0
 
             elif value[0] == AllButtons.right_diamond.value:
                 if value[1] == ButtonEvent.PRESSED.value:
                     self.controller_states[player_num].button_mask |= 1 << 5
+                    self.ci = 255
                 if value[1] == ButtonEvent.RELEASED.value:
                     self.controller_states[player_num].button_mask &= ~(1 << 5)
+                    self.ci = 0
 
             elif value[0] == AllButtons.up_dpad.value:
                 if value[1] == ButtonEvent.PRESSED.value:
@@ -658,4 +674,6 @@ class DSU_Server:
             self.controller_states[player_num].roll = value[3]
 
 
-        print(f"updated state: {self.controller_states[player_num].button_mask}")
+        print(f"updated buttons: {self.controller_states[player_num].button_mask}")
+        print(f"updated dpad: {self.controller_states[player_num].dpad_mask}")
+        print(f"updated connected: {self.controller_states[player_num].connected}")
