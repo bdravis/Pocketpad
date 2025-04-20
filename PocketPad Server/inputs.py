@@ -4,7 +4,7 @@
 # Created by Jack
 
 import logging
-from enums import (ButtonType, DPadDirection, ButtonEvent, ControllerUpdateTypes)
+from enums import (ButtonType, DPadDirection, ButtonEvent, ControllerUpdateTypes, AllButtons)
 from struct import unpack, unpack_from
 from shared_definitions import inputId_to_inputs, input_server
 
@@ -82,7 +82,13 @@ def parse_input(raw_data):
             raw_angle = unpacked_data[NUM_COMMON_FIELDS]
             raw_magnitude = unpacked_data[NUM_COMMON_FIELDS + 1]
 
-            #input_server.update_controller_state(player_id, ControllerUpdateTypes.JOYSTICK.value, [raw_angle, raw_magnitude])
+            print(player_id)
+            print(ControllerUpdateTypes.JOYSTICK.value)
+            print(inputId_to_inputs[input_id].value)
+            print(raw_angle)
+            print(raw_magnitude)
+            print(f"updating: {player_id} {ControllerUpdateTypes.JOYSTICK.value} {inputId_to_inputs[input_id].value} {raw_angle} {raw_magnitude}")
+            input_server.update_controller_state(player_id, ControllerUpdateTypes.JOYSTICK.value, [inputId_to_inputs[input_id].value, raw_angle, raw_magnitude])
         except:
             logger.error("Joystick input format missing fields")
             return (-1, -1, None)
@@ -121,6 +127,16 @@ def parse_input(raw_data):
             DPadDirection.RIGHT: "RIGHT"
         }
         dpad_input = direction_map[direction]
+
+        vc_direction_map: dict[DPadDirection, AllButtons] = {
+            DPadDirection.UP: AllButtons.up_dpad,
+            DPadDirection.DOWN: AllButtons.down_dpad,
+            DPadDirection.LEFT: AllButtons.left_dpad,
+            DPadDirection.RIGHT: AllButtons.right_dpad
+        }
+        vc_dpad_input = vc_direction_map[direction]
+
+        input_server.update_controller_state(player_id, ControllerUpdateTypes.BUTTON.value, [vc_dpad_input.value, raw_event])
 
         logger.debug(f"Received DPad input {dpad_input} from DPad {input_id} from player {player_id}")
     else:

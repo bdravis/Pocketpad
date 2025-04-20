@@ -17,150 +17,6 @@ from dataclasses import dataclass
 
 class DSU_Server:
 
-    """
-    @dataclass
-    class ControllerMessage:
-        magic: int = 0x53555344
-        protocol_version: int = 1001
-        length: int = 84
-        crc: int = 0
-        server_id: int = 0
-        event_type: int = 0x100002
-        slot: int = 0
-        slot_state: int = 0
-        device_model: int = 2
-        connection_type: int = 2
-        mac: int = 0
-        battery: int = 0x04
-        connected: int = 0
-        packet_number: int = 0
-        dpad_mask: int = 0
-        button_mask: int = 0
-        home: int = 0
-        touch_button: int = 0
-        left_stick_x: int = 0
-        left_stick_y: int = 0
-        right_stick_x: int = 0
-        right_stick_y: int = 0
-        unused: int = 0
-        motion_timestamp: int = 0
-        pitch: int = 0
-        yaw: int = 0
-        roll: int = 0
-
-
-        def pack(self):
-            # Temporarily set CRC to 0 for calculation
-            self.crc = 0
-            data = struct.pack(
-                "IHHIIIBBBBHHHBBIBBBBBBBBBBBBBBBBBBBBHHHHHHQIIIIII",
-                self.magic,
-                self.protocol_version,
-                self.length,
-                self.crc,
-                self.server_id,
-                self.event_type,
-                self.slot,
-                self.slot_state,
-                self.device_model,
-                self.connection_type,
-                self.mac,
-                self.mac,
-                self.mac,
-                self.battery,
-                self.connected,
-                self.packet_number,
-                self.dpad_mask,
-                self.button_mask,
-                self.home,
-                self.touch_button
-                self.left_stick_x,
-                self.left_stick_y,
-                self.right_stick_x,
-                self.right_stick_y,
-                self.unused,
-                self.unused,
-                self.unused,
-                self.unused,
-                self.unused,
-                self.unused,
-                self.unused,
-                self.unused,
-                self.unused,
-                self.unused,
-                self.unused,
-                self.unused,
-                self.unused,
-                self.unused,
-                self.unused,
-                self.unused,
-                self.unused,
-                self.unused,
-                self.motion_timestamp,
-                self.unused,
-                self.unused,
-                self.unused,
-                self.pitch,
-                self.yaw,
-                self.roll
-            )
-            # Calculate and set CRC
-            self.crc = zlib.crc32(data)
-            # Repack with correct CRC
-            return struct.pack(
-                "IHHIIIBBBBHHHBBIBBBBBBBBBBBBBBBBBBBBHHHHHHQIIIIII",
-                self.magic,
-                self.protocol_version,
-                self.length,
-                self.crc,
-                self.server_id,
-                self.event_type,
-                self.slot,
-                self.slot_state,
-                self.device_model,
-                self.connection_type,
-                self.mac,
-                self.mac,
-                self.mac,
-                self.battery,
-                self.connected,
-                self.packet_number,
-                self.dpad_mask,
-                self.button_mask,
-                self.home,
-                self.touch_button
-                self.left_stick_x,
-                self.left_stick_y,
-                self.right_stick_x,
-                self.right_stick_y,
-                self.unused,
-                self.unused,
-                self.unused,
-                self.unused,
-                self.unused,
-                self.unused,
-                self.unused,
-                self.unused,
-                self.unused,
-                self.unused,
-                self.unused,
-                self.unused,
-                self.unused,
-                self.unused,
-                self.unused,
-                self.unused,
-                self.unused,
-                self.unused,
-                self.motion_timestamp,
-                self.unused,
-                self.unused,
-                self.unused,
-                self.pitch,
-                self.yaw,
-                self.roll
-            )
-    """
-
     class Controller_State:
         def __init__(self, is_null: bool):
             self.is_null = is_null
@@ -173,6 +29,16 @@ class DSU_Server:
             self.cr = 0
             self.ci = 0
             self.tr = 0
+
+            self.le = 0
+            self.do = 0
+            self.ri = 0
+            self.up = 0
+
+            self.l1 = 0
+            self.l2 = 0
+            self.r1 = 0
+            self.r2 = 0
 
             self.home = 0
             self.touch_button = 0
@@ -244,6 +110,11 @@ class DSU_Server:
         if event_type == 0x100002:
             self._handle_controller_data(data, addr)
 
+        if event_type == 0x110001:
+            print("rumble sent")
+
+        if event_type == 0x110002:
+            print("rumble sent")
 
     # --- Message Type Handlers ---
     def _handle_info_request(self, data, addr):
@@ -265,7 +136,8 @@ class DSU_Server:
                 input_with_crc[7],
                 )
 
-        server_id = input_with_crc[4]
+        #server_id = input_with_crc[4]
+        server_id = 5
 
         ports = struct.unpack("<I", data[20:24])[0]
 
@@ -308,7 +180,8 @@ class DSU_Server:
                     0x100001, # Event type
                     slot_number_to_report, # slot number
                     slot_state, # Slot state
-                    gyro, # Device model / gyro
+                    #gyro, # Device model / gyro
+                    1, # TEMP NO GYRO
                     connection_type, # Connection type
                     0,0,0,0,0,0, # MAC address
                     battery, # Battery status
@@ -328,7 +201,8 @@ class DSU_Server:
                     0x100001, # Event type
                     slot_number_to_report, # slot number
                     slot_state, # Slot state
-                    gyro, # Device model / gyro
+                    #gyro, # Device model / gyro
+                    1, # TEMP NO GYRO
                     connection_type, # Connection type
                     0,0,0,0,0,0, # MAC address
                     battery, # Battery status
@@ -340,26 +214,10 @@ class DSU_Server:
             #print(response_addr)
             self.sock.sendto(slot_packet, response_addr)
 
-    def crc32custom(self, s: bytes) -> int:
-        crc = 0xFFFFFFFF
-        
-        for byte in s:
-            crc ^= byte
-            for _ in range(8):
-                if crc & 1:
-                    crc = (crc >> 1) ^ 0xedb88320
-                else:
-                    crc >>= 1
-        
-        return ~crc & 0xFFFFFFFF
-
-    def is_any_controller_sending(self) -> bool:
-        for state in self.controller_states:
-            if state.sending:
-                return True
-        return False
-
     def _handle_controller_data(self, data, addr):
+
+        print("data req at: ",addr)
+        print("packet: ", struct.unpack("<IHHIIIBB6B", data))
 
         actions_requested = int.from_bytes(struct.unpack("<B", data[20:21]))
 
@@ -394,7 +252,7 @@ class DSU_Server:
     
     def _input_loop(self):
         while True:
-            time.sleep(1)
+            time.sleep(0.01)
             for index, state in enumerate(self.controller_states):
 
                 if state.connected == False:
@@ -407,8 +265,6 @@ class DSU_Server:
                 if state.last_request_time != 0 and time.time() - state.last_request_time > self.request_timeout:
                     state.sending = False
                     continue
-
-                print(f"sending inputs for {index}")
 
                 slot_state_int = 0
                 if state.connected:
@@ -425,11 +281,69 @@ class DSU_Server:
                 randmac = random.randint(0,255)
 
                 input_packet_no_crc_packed = struct.pack(
-                        "<IHHIIIBBBBHHHBBIBBBBBBBBBBBBBBBBBBBBHHHHHHQIIIIII",
+                        "<IHHIIIBBBB6BBBIBBBBBBBBBBBBBBBBBBBBHHHHHHQIIIIII",
                         0x53555344,
                         1001, # Protocol version
                         84, # Len without header
                         0, # crc
+                        self.server_id,
+                        0x100002, #event type
+                        index, # slot
+                        slot_state_int, # slot state (connected / not connected)
+                        #2, # device model (gyro)
+                        1, # TEMP NO GYRO
+                        2, # Connection type
+                        0,0,0,0,0,0, # MAC address
+                        0x4, #Battery
+                        connected_int,
+                        packet_number,
+                        state.dpad_mask,
+                        state.button_mask,
+                        state.home,
+                        state.touch_button,
+                        state.left_stick_x,
+                        state.left_stick_y,
+                        state.right_stick_x,
+                        state.right_stick_y,
+                        state.le, # ana_dpad left
+                        state.do, # ana_dpad down
+                        state.ri, # ana_dpad right
+                        state.up, # ana_dpad up
+                        state.sq,
+                        state.cr,
+                        state.ci,
+                        state.tr,
+                        state.r1, # ana_r1
+                        state.l1, # ana_l1
+                        state.r2, # ana_r2
+                        state.l2, # ana_l2
+                        0, # Touch 1
+                        0, # Touch 1
+                        0, # Touch 1
+                        0, # Touch 2
+                        0, # Touch 2
+                        0, # Touch 2
+                        #state.motion_timestamp,
+                        0, #TEMP NO MOTION
+                        #0, # Accel x
+                        #0, # Accel y
+                        #0, # Accel z
+                        0, 0, 0, #TEMP NO MOTION
+                        # state.pitch,
+                        # state.yaw,
+                        # state.roll
+                        0, 0, 0, #TEMP NO MOTION
+                        )
+
+                crc = zlib.crc32(input_packet_no_crc_packed)
+
+                """
+                input_packet = struct.pack(
+                        "<IHHIIIBBBBHHHBBIBBBBBBBBBBBBBBBBBBBBHHHHHHQIIIIII",
+                        0x53555344,
+                        1001, # Protocol version
+                        84, # Len without header
+                        crc, # crc
                         self.server_id,
                         0x100002, #event type
                         index, # slot
@@ -450,39 +364,37 @@ class DSU_Server:
                         state.left_stick_y,
                         state.right_stick_x,
                         state.right_stick_y,
-                        0,
-                        0,
-                        0,
-                        0,
+                        0, # ana_dpad left
+                        0, # ana_dpad down
+                        0, # ana_dpad right
+                        0, # ana_dpad up
                         state.sq,
                         state.cr,
                         state.ci,
                         state.tr,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
+                        0, # ana_r1
+                        0, # ana_l1
+                        0, # ana_r2
+                        0, # ana_l2
+                        0, # Touch 1
+                        0, # Touch 1
+                        0, # Touch 1
+                        0, # Touch 2
+                        0, # Touch 2
+                        0, # Touch 2
                         state.motion_timestamp,
-                        0,
-                        0,
-                        0,
+                        0, # Accel x
+                        0, # Accel y
+                        0, # Accel z
                         state.pitch,
                         state.yaw,
                         state.roll
                         )
 
-                crc = zlib.crc32(input_packet_no_crc_packed)
-
-
-                input_packet_no_crc = struct.unpack("<IHHIIIBBBBHHHBBIBBBBBBBBBBBBBBBBBBBBHHHHHHQIIIIII", input_packet_no_crc_packed)
+                """
+                input_packet_no_crc = struct.unpack("<IHHIIIBBBB6BBBIBBBBBBBBBBBBBBBBBBBBHHHHHHQIIIIII", input_packet_no_crc_packed)
                 input_packet = struct.pack(
-                        "<IHHIIIBBBBHHHBBIBBBBBBBBBBBBBBBBBBBBHHHHHHQIIIIII",
+                        "<IHHIIIBBBB6BBBIBBBBBBBBBBBBBBBBBBBBHHHHHHQIIIIII",
                         input_packet_no_crc[0],
                         input_packet_no_crc[1],
                         input_packet_no_crc[2],
@@ -532,10 +444,16 @@ class DSU_Server:
                         input_packet_no_crc[46],
                         input_packet_no_crc[47],
                         input_packet_no_crc[48],
+                        input_packet_no_crc[49],
+                        input_packet_no_crc[50],
+                        input_packet_no_crc[51],
                         )
 
-                print(f"buttons: {state.button_mask}")
-
+                """
+                print(struct.unpack("<IHHIIIBBBBHHHBBIBBBBBBBBBBBBBBBBBBBBHHHHHHQIIIIII", input_packet))
+                print("Raw bytes:", input_packet.hex(' '))
+                print(self.addr)
+                """
                 self.sock.sendto(input_packet, self.addr)
 
 
@@ -549,10 +467,16 @@ class DSU_Server:
         # If event type is JOYSTICK, value is [Sticks int, angle, magnitude]
         # if event type is MOTION, value is [pitch, yaw, roll]
 
+        """
         print(f"updating state: {player_num}, {event_type}, {value}")
         print(f"current buttons: {self.controller_states[player_num].button_mask}")
         print(f"current dpad: {self.controller_states[player_num].dpad_mask}")
         print(f"current connected: {self.controller_states[player_num].connected}")
+        """
+        #print(f"current tr: {self.controller_states[player_num].tr}")
+        #print(f"current cr: {self.controller_states[player_num].cr}")
+        #print(f"current sq: {self.controller_states[player_num].sq}")
+        #print(f"current ci: {self.controller_states[player_num].ci}")
 
         #state = self.controller_states[player_num]
 
@@ -568,82 +492,98 @@ class DSU_Server:
             if value[0] == AllButtons.top_diamond.value:
                 if value[1] == ButtonEvent.PRESSED.value:
                     self.controller_states[player_num].button_mask |= 1 << 4
-                    self.tr = 255
+                    self.controller_states[player_num].tr = 255
                 if value[1] == ButtonEvent.RELEASED.value:
                     self.controller_states[player_num].button_mask &= ~(1 << 4)
-                    self.tr = 0
+                    self.controller_states[player_num].tr = 0
 
             elif value[0] == AllButtons.bottom_diamond.value:
                 if value[1] == ButtonEvent.PRESSED.value:
                     self.controller_states[player_num].button_mask |= 1 << 6
-                    self.cr = 255
+                    self.controller_states[player_num].cr = 255
                 if value[1] == ButtonEvent.RELEASED.value:
                     self.controller_states[player_num].button_mask &= ~(1 << 6)
-                    self.cr = 0
+                    self.controller_states[player_num].cr = 0
 
             elif value[0] == AllButtons.left_diamond.value:
                 if value[1] == ButtonEvent.PRESSED.value:
                     self.controller_states[player_num].button_mask |= 1 << 7
-                    self.sq = 255
+                    self.controller_states[player_num].sq = 255
                 if value[1] == ButtonEvent.RELEASED.value:
                     self.controller_states[player_num].button_mask &= ~(1 << 7)
-                    self.sq = 0
+                    self.controller_states[player_num].sq = 0
 
             elif value[0] == AllButtons.right_diamond.value:
                 if value[1] == ButtonEvent.PRESSED.value:
                     self.controller_states[player_num].button_mask |= 1 << 5
-                    self.ci = 255
+                    self.controller_states[player_num].ci = 255
                 if value[1] == ButtonEvent.RELEASED.value:
                     self.controller_states[player_num].button_mask &= ~(1 << 5)
-                    self.ci = 0
+                    self.controller_states[player_num].ci = 0
 
             elif value[0] == AllButtons.up_dpad.value:
                 if value[1] == ButtonEvent.PRESSED.value:
                     self.controller_states[player_num].dpad_mask |= 1 << 4
+                    self.controller_states[player_num].up = 255
                 if value[1] == ButtonEvent.RELEASED.value:
                     self.controller_states[player_num].dpad_mask &= ~(1 << 4)
+                    self.controller_states[player_num].up = 0
 
             elif value[0] == AllButtons.down_dpad.value:
                 if value[1] == ButtonEvent.PRESSED.value:
                     self.controller_states[player_num].dpad_mask |= 1 << 6
+                    self.controller_states[player_num].do = 255
                 if value[1] == ButtonEvent.RELEASED.value:
                     self.controller_states[player_num].dpad_mask &= ~(1 << 6)
+                    self.controller_states[player_num].do = 0
 
             elif value[0] == AllButtons.left_dpad.value:
                 if value[1] == ButtonEvent.PRESSED.value:
                     self.controller_states[player_num].dpad_mask |= 1 << 7
+                    self.controller_states[player_num].le = 255
                 if value[1] == ButtonEvent.RELEASED.value:
                     self.controller_states[player_num].dpad_mask &= ~(1 << 7)
+                    self.controller_states[player_num].le = 0
 
             elif value[0] == AllButtons.right_dpad.value:
                 if value[1] == ButtonEvent.PRESSED.value:
                     self.controller_states[player_num].dpad_mask |= 1 << 5
+                    self.controller_states[player_num].ri = 255
                 if value[1] == ButtonEvent.RELEASED.value:
                     self.controller_states[player_num].dpad_mask &= ~(1 << 5)
+                    self.controller_states[player_num].ri = 0
 
             elif value[0] == AllButtons.left_bumper.value:
                 if value[1] == ButtonEvent.PRESSED.value:
                     self.controller_states[player_num].button_mask |= 1 << 2
+                    self.controller_states[player_num].l1 = 255
                 if value[1] == ButtonEvent.RELEASED.value:
                     self.controller_states[player_num].button_mask &= ~(1 << 2)
+                    self.controller_states[player_num].l1 = 0
 
             elif value[0] == AllButtons.right_bumper.value:
                 if value[1] == ButtonEvent.PRESSED.value:
                     self.controller_states[player_num].button_mask |= 1 << 3
+                    self.controller_states[player_num].r1 = 255
                 if value[1] == ButtonEvent.RELEASED.value:
                     self.controller_states[player_num].button_mask &= ~(1 << 3)
+                    self.controller_states[player_num].r1 = 0
 
             elif value[0] == AllButtons.left_trigger.value:
                 if value[1] == ButtonEvent.PRESSED.value:
                     self.controller_states[player_num].button_mask |= 1 << 0
+                    self.controller_states[player_num].l2 = 255
                 if value[1] == ButtonEvent.RELEASED.value:
                     self.controller_states[player_num].button_mask &= ~(1 << 0)
+                    self.controller_states[player_num].l2 = 0
 
             elif value[0] == AllButtons.right_trigger.value:
                 if value[1] == ButtonEvent.PRESSED.value:
                     self.controller_states[player_num].button_mask |= 1 << 1
+                    self.controller_states[player_num].r2 = 255
                 if value[1] == ButtonEvent.RELEASED.value:
                     self.controller_states[player_num].button_mask &= ~(1 << 1)
+                    self.controller_states[player_num].r2 = 0
 
             elif value[0] == AllButtons.options.value:
                 if value[1] == ButtonEvent.PRESSED.value:
@@ -653,19 +593,37 @@ class DSU_Server:
 
 
         if event_type == ControllerUpdateTypes.JOYSTICK.value:
-            if value[0] == Sticks.left.value:
+            if value[0] == AllButtons.left_stick.value:
 
                 angle_radians = 2 * math.pi * (value[1] / 255)
 
-                self.controller_states[player_num].left_stick_x = value[2] * math.cos(angle_radians)
-                self.controller_states[player_num].left_stick_y = value[2] * math.sin(angle_radians)
+                raw_x = value[2] * math.cos(angle_radians)
+                raw_y = value[2] * math.sin(angle_radians)
+
+                adjusted_x = min(math.floor(((raw_x / 100) * 128) + 128), 255)
+                adjusted_y = min(math.floor(((raw_y / 100) * 128) + 128), 255)
+
+                print("dx: ", adjusted_x)
+                print("dy: ", adjusted_y)
+
+                self.controller_states[player_num].left_stick_x = adjusted_x
+                self.controller_states[player_num].left_stick_y = adjusted_y
 
 
-            if value[0] == Sticks.right.value:
+            if value[0] == AllButtons.right_stick.value:
                 angle_radians = 2 * math.pi * (value[1] / 255)
 
-                self.controller_states[player_num].right_stick_x = value[2] * math.cos(angle_radians)
-                self.controller_states[player_num].right_stick_y = value[2] * math.sin(angle_radians)
+                raw_x = value[2] * math.cos(angle_radians)
+                raw_y = value[2] * math.sin(angle_radians)
+
+                adjusted_x = min(math.floor(((raw_x / 100) * 128) + 128), 255)
+                adjusted_y = min(math.floor(((raw_y / 100) * 128) + 128), 255)
+
+                print("dx: ", adjusted_x)
+                print("dy: ", adjusted_y)
+
+                self.controller_states[player_num].right_stick_x = adjusted_x
+                self.controller_states[player_num].right_stick_y = adjusted_y
 
         if event_type == ControllerUpdateTypes.MOTION.value:
             self.controller_states[player_num].motion_timestamp = int(time.time() * 1_000_000)
@@ -674,6 +632,12 @@ class DSU_Server:
             self.controller_states[player_num].roll = value[3]
 
 
+        """
         print(f"updated buttons: {self.controller_states[player_num].button_mask}")
         print(f"updated dpad: {self.controller_states[player_num].dpad_mask}")
         print(f"updated connected: {self.controller_states[player_num].connected}")
+        print(f"updated tr: {self.controller_states[player_num].tr}")
+        print(f"updated cr: {self.controller_states[player_num].cr}")
+        print(f"updated sq: {self.controller_states[player_num].sq}")
+        print(f"updated ci: {self.controller_states[player_num].ci}")
+        """
