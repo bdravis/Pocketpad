@@ -19,8 +19,7 @@ struct JoystickButtonView: View {
     
     var config: JoystickConfig
     var isInMacroEditor: Bool = false
-
-
+    
     @State private var offset: CGSize = .zero
     @State private var hapticTriggered: Bool = false
     @State private var isSendingPress: Bool = false
@@ -64,7 +63,7 @@ struct JoystickButtonView: View {
                 if (clampedDistance >= deadzoneRadius) {
                     isSendingPress = true
 #if DEBUG
-                    print("SENDING, OUTSIDE DEADZONE)")
+                    print("OUTSIDE DEADZONE")
                     if !hapticTriggered && dist > 5 {
                         if UserDefaults.standard.bool(forKey: "hapticsEnabled") {
                             HapticsManager.playHaptic()
@@ -134,10 +133,9 @@ struct JoystickButtonView: View {
                         sendButtonRelaseFunc: sendButtonRelease,
                         isInMacroEditor: isInMacroEditor
                     )
-                    
                 } else {
 #if DEBUG
-                    print("NOT SENDING JOYSTICK PRESS, WITHIN DEADZONE)")
+                    print("INSIDE DEADZONE")
 #endif
                     if isSendingPress {
                         isSendingPress = false

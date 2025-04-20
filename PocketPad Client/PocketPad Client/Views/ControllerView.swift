@@ -293,7 +293,7 @@ struct ControllerView: View {
                     }
                 }
                 if isInMacroEditor {
-                    macroManager.saveMacro()
+                    macroManager.saveCurrentMacro(as: "My Macro")
                 }
             }
             .toolbar {

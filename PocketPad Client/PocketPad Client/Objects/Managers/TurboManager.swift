@@ -16,7 +16,7 @@ class TurboManager : ObservableObject {
     private var turboActive: Bool = false // true iff turbo button is behind held
     @Published var turboRate: Double = 10.0 // number of presses per second
     
-    private var turboEnabledButtons: Set<ButtonInput> = [] // List of all turbo enabled buttons, regardless of whether they are held
+    @Published private var turboEnabledButtons: Set<ButtonInput> = [] // List of all turbo enabled buttons, regardless of whether they are held
     private var turboTimers: [ButtonInput: Timer] = [:]  // A turbo enabled button has a timer iff it is being held
     // Having no held buttons implies that turboTimers is empty
     
@@ -37,10 +37,10 @@ class TurboManager : ObservableObject {
     
     // MARK: Functions to activate and deactivate turbo mode
     // Turbo mode is activated iff the turbo button is being held
-    func activateTurboMode() {
+    private func activateTurboMode() {
         turboActive = true
     }
-    func deactivateTurboMode() {
+    private func deactivateTurboMode() {
         turboActive = false
     }
     
@@ -48,7 +48,7 @@ class TurboManager : ObservableObject {
     // Precondition: turbo mode is activated (turbo button is being held)
     // Precondition: a given button is pressed
     // Given a button, this function enables or disables its turbo state
-    func toggleTurboForButton(_ input: ButtonInput) {
+    private func toggleTurboForButton(_ input: ButtonInput) {
         if turboEnabledButtons.contains(input) {
 #if DEBUG
                     print("BUTTON IS NOW TURBO-DISABLED")
@@ -101,7 +101,7 @@ class TurboManager : ObservableObject {
     
     // Often called when a turbo-enabled button is released
     // Destroys the timer object for a button and removes it from the dict turboTimers
-    func stopTurboForButton(_ input: ButtonInput) {
+    private func stopTurboForButton(_ input: ButtonInput) {
         // destroy the timer objects
         turboTimers[input]?.invalidate()
         turboTimers.removeValue(forKey: input)
@@ -118,7 +118,7 @@ class TurboManager : ObservableObject {
     }
     
     // MARK: Functions to filter inputs through turbo
-    // // Conditional logic involving turbo for execution flow
+    // Conditional logic involving turbo for execution flow
     
     func handleButtonPressThroughTurbo(input: ButtonInput, isTurboButton: Bool, sendButtonPressFunc: @escaping () -> (), sendButtonRelaseFunc: @escaping () -> (), isInMacroEditor: Bool) {
         if isTurboButton { // if this button is the turbo button itself

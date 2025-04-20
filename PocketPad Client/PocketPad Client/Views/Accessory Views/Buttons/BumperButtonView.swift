@@ -12,17 +12,13 @@ import SwiftUI
 struct BumperButtonView: View {
     @StateObject private var bluetoothManager = BluetoothManager.shared
     @StateObject private var turboManager = TurboManager.shared
-    @State private var longPressed = false
     
     var config: BumperConfig
     var isInMacroEditor: Bool = false
     
     var body: some View {
         Button(action: {
-            if !longPressed {
-                handleTap()
-            }
-            longPressed = false
+            // Button presses/releases are registered in LongPress gesture
         }) {
             if let icon = config.style.icon {
                 switch config.style.iconType {
@@ -42,7 +38,6 @@ struct BumperButtonView: View {
         .applyButtonStyle(config.style, isTurboEnabled: turboManager.isTurboEnabled(config.input))
         .onLongPressGesture(minimumDuration: 0.5, maximumDistance: 50, pressing: { isPressing in
             if isPressing {
-                longPressed = true
                 handleButtonPress()
             }
             else {
@@ -53,18 +48,6 @@ struct BumperButtonView: View {
     }
     
     // MARK: Functions to handle bumper inputs
-    private func handleTap() {
-        // TODO: Try to delete this + others
-#if DEBUG
-        print("Bumper Tapped")
-#endif
-        handleButtonPress()
-                
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-            handleButtonRelease()
-        }
-    }
-    
     private func handleButtonPress() {
         turboManager.handleButtonPressThroughTurbo(
             input: config.input,

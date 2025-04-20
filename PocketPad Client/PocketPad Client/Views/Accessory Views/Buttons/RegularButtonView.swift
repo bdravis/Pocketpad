@@ -12,17 +12,13 @@ import SwiftUI
 struct RegularButtonView: View {
     @StateObject private var bluetoothManager = BluetoothManager.shared
     @StateObject private var turboManager = TurboManager.shared
-    @State private var longPressed = false
 
     var config: RegularButtonConfig
     var isInMacroEditor: Bool = false
     
     var body: some View {
         Button(action: {
-            if !longPressed {
-                handleTap()
-            }
-            longPressed = false
+            // Button presses/releases are registered in LongPress gesture
         }) {
             Group {
                 if let icon = config.style.icon {
@@ -43,28 +39,15 @@ struct RegularButtonView: View {
         }
         .applyButtonStyle(config.style, isTurboEnabled: turboManager.isTurboEnabled(config.input))
         .onLongPressGesture(minimumDuration: 0.5, maximumDistance: 50, pressing: { isPressing in
-            if isPressing { // press button
-                longPressed = true
+            if isPressing {
                 handleButtonPress()
-            }
-            else { // release button
+            } else {
                 handleButtonRelease()
             }
         }, perform: {})
     }
     
     // MARK: Functions to handle regular button inputs
-    private func handleTap() {
-#if DEBUG
-        print("Button Tapped")
-#endif
-        handleButtonPress()
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-            handleButtonRelease()
-        }
-    }
-    
     private func handleButtonPress() {
         turboManager.handleButtonPressThroughTurbo(
             input: config.input,

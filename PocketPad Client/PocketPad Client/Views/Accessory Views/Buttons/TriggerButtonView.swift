@@ -12,44 +12,27 @@ import SwiftUI
 struct TriggerButtonView: View {
     @StateObject private var bluetoothManager = BluetoothManager.shared
     @StateObject private var turboManager = TurboManager.shared
-    @State private var longPressed = false
     
     var config: TriggerConfig
     var isInMacroEditor: Bool = false
     
     var body: some View {
         Button(action: {
-            if !longPressed {
-                handleTap()
-            }
-            longPressed = false
+            // Button presses/releases are registered in LongPress gesture
         }) {
             Text(config.input.rawValue)
         }
         .buttonStyle(TriggerButtonStyle(side: config.side, style: config.style, isTurboEnabled: turboManager.isTurboEnabled(config.input)))
         .onLongPressGesture(minimumDuration: 0.5, maximumDistance: 50, pressing: { isPressing in
             if isPressing {
-                longPressed = true 
                 handleButtonPress()
-            }
-            else {
+            } else {
                 handleButtonRelease()
             }
         }, perform: {})
     }
     
     // MARK: Functions to handle trigger inputs
-    private func handleTap() {
-#if DEBUG
-        print("Trigger Tapped")
-#endif
-        handleButtonPress()
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-            handleButtonRelease()
-        }
-    }
-    
     private func handleButtonPress() {
         turboManager.handleButtonPressThroughTurbo(
             input: config.input,
@@ -70,7 +53,7 @@ struct TriggerButtonView: View {
     
     private func sendButtonPress() {
 #if DEBUG
-        print("SEND REGULAR TRIGGER PRESS")
+        print("SEND TRIGGER PRESS")
 #endif
         let ui8_playerId: UInt8 = LayoutManager.shared.player_id
         let ui8_inputId : UInt8 = config.inputId
@@ -83,7 +66,7 @@ struct TriggerButtonView: View {
     
     private func sendButtonRelease() {
 #if DEBUG
-        print("SEND REGULAR TRIGGER PRESS")
+        print("SEND TRIGGER RELEASE")
 #endif
         let ui8_playerId: UInt8 = LayoutManager.shared.player_id
         let ui8_inputId : UInt8 = config.inputId

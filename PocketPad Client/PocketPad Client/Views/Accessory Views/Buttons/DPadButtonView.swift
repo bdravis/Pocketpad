@@ -85,10 +85,7 @@ struct DirectionalArrow: View {
     
     var body: some View {
         Button(action: {
-            if !longPressed {
-                handleTap()
-            }
-            longPressed = false
+            // Button presses/releases are registered in LongPress gesture
         }) {
             Triangle()
                 .stroke(
@@ -108,27 +105,14 @@ struct DirectionalArrow: View {
         .buttonStyle(DPadButtonStyle(style: config.style, split: split))
         .onLongPressGesture(minimumDuration: 0.5, maximumDistance: 50, pressing: { isPressing in
             if isPressing {
-                longPressed = true
                 handleButtonPress()
-            }
-            else {
+            } else {
                 handleButtonRelease()
             }
         }, perform: {})
     }
     
     // MARK: Functions to handle D-pad inputs
-    private func handleTap() {
-#if DEBUG
-        print("DPad Tapped")
-#endif
-        handleButtonPress()
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-            handleButtonRelease()
-        }
-    }
-    
     private func handleButtonPress() {
         turboManager.handleButtonPressThroughTurbo(
             input: input,
@@ -149,7 +133,7 @@ struct DirectionalArrow: View {
     
     private func sendButtonPress() {
 #if DEBUG
-        print("SEND REGULAR DPAD PRESS")
+        print("SEND DPAD PRESS")
 #endif
         let ui8_playerId: UInt8 = LayoutManager.shared.player_id
         let ui8_inputId : UInt8 = config.inputId
@@ -163,7 +147,7 @@ struct DirectionalArrow: View {
     }
     private func sendButtonRelease() {
 #if DEBUG
-        print("SEND REGULAR DPAD RELEASE")
+        print("SEND DPAD RELEASE")
 #endif
         let ui8_playerId: UInt8 = LayoutManager.shared.player_id
         let ui8_inputId : UInt8 = config.inputId
