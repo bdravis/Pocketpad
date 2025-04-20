@@ -18,7 +18,7 @@ let DEBUG_BUTTONS: [ButtonConfig] = [ // Example buttons
 //    RegularButtonConfig(position: CGPoint(x: 100, y: 300), scale: 1.0, inputId: 8, input: "Share", style: .init(shape: .Circle, iconType: .SFSymbol, icon: "square.and.arrow.up")), // SF Symbol style test
 //    RegularButtonConfig(position: CGPoint(x: 260, y: 100), scale: 1.0, inputId: 6, input: "Start", style: .init(shape: .Pill, iconType: .Text, icon: "Start")), // Pill style test
 //    RegularButtonConfig(position: CGPoint(x: 200, y: 100), scale: 1.0, inputId: 7, input: "Select", style: .init(shape: .Pill, iconType: .Text)), // No text test
-//    
+//
 //    JoystickConfig(position: CGPoint(x: 100, y: 200), scale: 1.0, inputId: 4, input: "RightJoystick"),
 //    DPadConfig(
 //        position: CGPoint(x: 100, y: 0), scale: 1.0, inputId: 5,
@@ -26,7 +26,7 @@ let DEBUG_BUTTONS: [ButtonConfig] = [ // Example buttons
 //            .up: "DPadUp", .right: "DPadRight", .down: "DPadDown", .left: "DPadLeft"
 //        ]
 //    ),
-//    
+//
 //    TriggerConfig(position: CGPoint(x: 300, y: 0), scale: 1.0, inputId: 10, input: "RT", side: .right)
 ]
 
@@ -177,21 +177,33 @@ struct ControllerView: View {
                         macroManager.startRecording()
                     }) {
                         Image(systemName: (macroManager.isRecording ? "record.circle.fill" : "record.circle"))
+                            .foregroundColor(Color.red)
                     }
-                    .position(getPos(pos: .init(scaledPos: CGPoint(x: 0.05, y: 0.9)), geomSize: geometry.size))
+                    .scaleEffect(CGFloat(2))
+                    .position(getPos(pos: .init(scaledPos: (isPortait ? CGPoint(x: 0.10, y: 0.95) : CGPoint(x: 0.05, y: 0.95))), geomSize: geometry.size))
                     .accessibilityIdentifier("StartMacroRecordingButton")
                     
                     // Button to stop recording
                     Button(action: {
                         macroManager.stopRecording()
-                        
+                    }) {
+                        Image(systemName: "stop.circle")
+                            .foregroundColor(Color.gray)
+                    }
+                    .scaleEffect(CGFloat(2))
+                    .position(getPos(pos: .init(scaledPos: (isPortait ? CGPoint(x: 0.22, y: 0.95) : CGPoint(x: 0.12, y: 0.95))), geomSize: geometry.size))
+                    .accessibilityIdentifier("StopMacroRecordingButton")
+                    
+                    // Button to save recorded macro
+                    Button(action: {
                         newMacroName = ""
                         makingNewMacro.toggle()
                     }) {
-                        Image(systemName: "stop.circle")
+                        Image(systemName: "square.and.arrow.down")
                     }
-                    .position(getPos(pos: .init(scaledPos: CGPoint(x: 0.1, y: 0.9)), geomSize: geometry.size))
-                    .accessibilityIdentifier("StopMacroRecordingButton")
+                    .scaleEffect(CGFloat(2))
+                    .position(getPos(pos: .init(scaledPos: (isPortait ? CGPoint(x: 0.34, y: 0.942) : CGPoint(x: 0.19, y: 0.933))), geomSize: geometry.size))
+                    .accessibilityIdentifier("SaveMacroRecordingButton")
                     .alert("New Macro", isPresented: $makingNewMacro) { // for naming and saving macro
                         TextField("Macro Name", text: $newMacroName)
                             .accessibilityIdentifier("MacroNameTextField")
@@ -338,9 +350,6 @@ struct ControllerView: View {
                         UIApplication.shared.alert(body: error.localizedDescription)
                     }
                 }
-                if isInMacroEditor {
-                    macroManager.saveCurrentMacro(as: "My Macro")
-                }
             }
             .toolbar {
                 if isEditor {
@@ -483,6 +492,7 @@ struct ControllerView: View {
             .simultaneousGesture(magnifyGesture, isEnabled: isEditor && !selectedBtn.isEmpty)
             .simultaneousGesture(rotGesture, isEnabled: isEditor && !selectedBtn.isEmpty)
         }
+        .ignoresSafeArea(.keyboard) // Prevent controller background view from shifting when a keyboard is used to type text input (e.g. naming macros)
         .coordinateSpace(.named("Controller"))
         .navigationTitle("Controller")
         .navigationBarTitleDisplayMode(.inline)
