@@ -12,6 +12,8 @@ import SwiftUI
 let DPAD_THICKNESS = DEFAULT_BUTTON_SIZE * 0.35 // thickness is 35% of the default button size
 
 struct DPadButtonView: View {
+    @Environment(\.colorScheme) var colorScheme
+    
     var config: DPadConfig
     @AppStorage("splitDPad") var split: Bool = false
     
@@ -20,12 +22,12 @@ struct DPadButtonView: View {
             if !split {
                 // Background path
                 Plus(thickness: DPAD_THICKNESS)
-                    .fill(config.style.color ?? Color(uiColor: .secondarySystemFill))
-                    .stroke(.black, style: StrokeStyle(lineWidth: config.style.borderThickness, lineCap: .square, lineJoin: .bevel))
+                    .fill(getBGColor())
+                    .stroke(getStrokeColor(), style: StrokeStyle(lineWidth: config.style.borderThickness, lineCap: .square, lineJoin: .bevel))
                 
                 // Center Circle
                 Circle()
-                    .stroke(.black, style: StrokeStyle(lineWidth: 1.5))
+                    .stroke(getStrokeColor(), style: StrokeStyle(lineWidth: 1.5))
                     .frame(width: DPAD_THICKNESS - 8, height: DPAD_THICKNESS - 8)
                     .accessibilityAddTraits(.isButton)
                     .accessibilityIdentifier("DPadConjoined")
@@ -49,6 +51,20 @@ struct DPadButtonView: View {
             }
             .frame(maxWidth: DPAD_THICKNESS)
         }
+    }
+    
+    /* Color Getter Functions */
+    func getBGColor() -> Color {
+        return (
+            colorScheme == .dark ? config.style.darkModeColors.color
+            : config.style.lightModeColors.color
+        ) ?? DefaultColors.dpad.color
+    }
+    func getStrokeColor() -> Color {
+        return (
+            colorScheme == .dark ? config.style.darkModeColors.strokeColor
+            : config.style.lightModeColors.strokeColor
+        ) ?? DefaultColors.dpad.strokeColor
     }
 }
 

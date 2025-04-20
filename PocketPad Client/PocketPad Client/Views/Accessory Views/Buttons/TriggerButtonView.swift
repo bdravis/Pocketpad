@@ -25,7 +25,7 @@ struct TriggerButtonView: View {
         }) {
             Text(config.input.rawValue)
         }
-        .buttonStyle(TriggerButtonStyle(side: config.side, isTurboEnabled: turboManager.isTurboEnabled(config.input)))
+        .buttonStyle(TriggerButtonStyle(side: config.side, style: config.style, isTurboEnabled: turboManager.isTurboEnabled(config.input)))
         .onLongPressGesture(minimumDuration: 0.5, maximumDistance: 50, pressing: { isPressing in
             if isPressing {
                 longPressed = true 

@@ -13,6 +13,11 @@ class EditingButtonVM: ObservableObject {
     // General Protocol values
     @Published var scaledPos: CGPoint = CGPointZero
     @Published var offset: CGPoint = CGPointZero
+    @Published var overriding: Bool = false
+    @Published var defaultIsPortrait: Bool = false
+    @Published var overrideScaledPos: CGPoint = CGPointZero
+    @Published var overrideOffset: CGPoint = CGPointZero
+    
     @Published var scale: CGFloat = 0.0
     @Published var rotation: Double = 0.0
     
@@ -29,10 +34,19 @@ class EditingButtonVM: ObservableObject {
     @Published var hasIcon: Bool = true
     
     // Style properties
-    @Published var bgColor: Color = .white
-    @Published var bgPressedColor: Color = .black
-    @Published var fgColor: Color = .black
-    @Published var fgPressedColor: Color = .white
+    /* Light Mode */
+    @Published var bgColorL: Color = .white
+    @Published var bgPressedColorL: Color = .black
+    @Published var fgColorL: Color = .black
+    @Published var fgPressedColorL: Color = .white
+    @Published var strokeColorL: Color = .black
+    /* Dark Mode */
+    @Published var bgColorD: Color = .black
+    @Published var bgPressedColorD: Color = .white
+    @Published var fgColorD: Color = .white
+    @Published var fgPressedColorD: Color = .black
+    @Published var strokeColorD: Color = .white
+    
     @Published var stroke: CGFloat = 3
     
     init() {
@@ -45,6 +59,11 @@ class EditingButtonVM: ObservableObject {
         // Set the general protocol values
         self.scaledPos = config.position.scaledPos
         self.offset = config.position.offset
+        self.overriding = config.position.defaultIsPortrait != nil
+        self.defaultIsPortrait = config.position.defaultIsPortrait ?? false
+        self.overrideScaledPos = config.position.overrideScaledPos ?? CGPointZero
+        self.overrideOffset = config.position.overrideOffset ?? CGPointZero
+        
         self.scale = config.scale
         self.rotation = config.rotation
         
@@ -59,25 +78,72 @@ class EditingButtonVM: ObservableObject {
             self.hasIcon = btn.style.icon != nil
             self.icon = btn.style.icon ?? ""
             
-            self.bgColor = btn.style.properties.color ?? Color(uiColor: .secondarySystemFill)
-            self.bgPressedColor = btn.style.properties.pressedColor ?? Color(uiColor: .secondaryLabel)
-            self.fgColor = btn.style.properties.foregroundColor ?? Color(uiColor: .label)
-            self.fgPressedColor = btn.style.properties.foregroundPressedColor ?? Color(uiColor: .systemBackground)
+            let defCols = DefaultColors.regular
+            
+            // set light mode
+            self.bgColorL = btn.style.properties.lightModeColors.color ?? defCols.color
+            self.bgPressedColorL = btn.style.properties.lightModeColors.pressedColor ?? defCols.pressedColor
+            self.fgColorL = btn.style.properties.lightModeColors.foregroundColor ?? defCols.foregroundColor
+            self.fgPressedColorL = btn.style.properties.lightModeColors.foregroundPressedColor ?? defCols.foregroundPressedColor
+            self.strokeColorL = btn.style.properties.lightModeColors.strokeColor ?? defCols.strokeColor
+            
+            // set dark mode
+            self.bgColorD = btn.style.properties.darkModeColors.color ?? defCols.color
+            self.bgPressedColorD = btn.style.properties.darkModeColors.pressedColor ?? defCols.pressedColor
+            self.fgColorD = btn.style.properties.darkModeColors.foregroundColor ?? defCols.foregroundColor
+            self.fgPressedColorD = btn.style.properties.darkModeColors.foregroundPressedColor ?? defCols.foregroundPressedColor
+            self.strokeColorD = btn.style.properties.darkModeColors.strokeColor ?? defCols.strokeColor
+            
             self.stroke = btn.style.properties.borderThickness
         } else if let btn = config as? JoystickConfig {
-            self.bgColor = btn.style.color ?? Color(uiColor: .secondarySystemFill)
-            self.fgColor = btn.style.foregroundColor ?? Color(uiColor: .darkGray)
+            let defCols = DefaultColors.joystick
+            // set light mode
+            self.bgColorL = btn.style.lightModeColors.color ?? defCols.color
+            self.fgColorL = btn.style.lightModeColors.foregroundColor ?? defCols.foregroundColor
+            self.strokeColorL = btn.style.lightModeColors.strokeColor ?? defCols.strokeColor
+            
+            // set dark mode
+            self.bgColorD = btn.style.darkModeColors.color ?? defCols.color
+            self.fgColorD = btn.style.darkModeColors.foregroundColor ?? defCols.foregroundColor
+            self.strokeColorD = btn.style.darkModeColors.strokeColor ?? defCols.strokeColor
+            
             self.stroke = btn.style.borderThickness
         } else if let btn = config as? DPadConfig {
-            self.bgColor = btn.style.color ?? Color(uiColor: .secondarySystemFill)
-            self.fgColor = btn.style.foregroundColor ?? Color(uiColor: .label)
-            self.fgPressedColor = btn.style.foregroundPressedColor ?? Color(uiColor: .systemBackground)
+            let defCols = DefaultColors.dpad
+            // set light mode
+            self.bgColorL = btn.style.lightModeColors.color ?? defCols.color
+            self.fgColorL = btn.style.lightModeColors.foregroundColor ?? defCols.foregroundColor
+            self.fgPressedColorL = btn.style.lightModeColors.foregroundPressedColor ?? defCols.foregroundPressedColor
+            self.strokeColorL = btn.style.lightModeColors.strokeColor ?? defCols.strokeColor
+            
+            // set dark mode
+            self.bgColorD = btn.style.darkModeColors.color ?? defCols.color
+            self.fgColorD = btn.style.darkModeColors.foregroundColor ?? defCols.foregroundColor
+            self.fgPressedColorD = btn.style.darkModeColors.foregroundPressedColor ?? defCols.foregroundPressedColor
+            self.strokeColorD = btn.style.darkModeColors.strokeColor ?? defCols.strokeColor
+            
             self.stroke = btn.style.borderThickness
-        } else if let btn = config as? BumperConfig {
-            self.input = btn.input
         } else if let btn = config as? TriggerConfig {
             self.input = btn.input
             self.triggerSide = btn.side
+            
+            let defCols = DefaultColors.trigger
+            
+            // set light mode
+            self.bgColorL = btn.style.lightModeColors.color ?? defCols.color
+            self.bgPressedColorL = btn.style.lightModeColors.pressedColor ?? defCols.pressedColor
+            self.fgColorL = btn.style.lightModeColors.foregroundColor ?? defCols.foregroundColor
+            self.fgPressedColorL = btn.style.lightModeColors.foregroundPressedColor ?? defCols.foregroundPressedColor
+            self.strokeColorL = btn.style.lightModeColors.strokeColor ?? defCols.strokeColor
+            
+            // set dark mode
+            self.bgColorD = btn.style.darkModeColors.color ?? defCols.color
+            self.bgPressedColorD = btn.style.darkModeColors.pressedColor ?? defCols.pressedColor
+            self.fgColorD = btn.style.darkModeColors.foregroundColor ?? defCols.foregroundColor
+            self.fgPressedColorD = btn.style.darkModeColors.foregroundPressedColor ?? defCols.foregroundPressedColor
+            self.strokeColorD = btn.style.darkModeColors.strokeColor ?? defCols.strokeColor
+            
+            self.stroke = btn.style.borderThickness
         }
     }
     
@@ -86,41 +152,55 @@ class EditingButtonVM: ObservableObject {
     }
     
     private func getGeneralStyle() -> GeneralButtonStyle {
-        return GeneralButtonStyle(color: self.bgColor, pressedColor: self.bgPressedColor, borderThickness: self.stroke, foregroundColor: self.fgColor, foregroundPressedColor: self.fgPressedColor)
+        return GeneralButtonStyle(
+            lightModeColors: .init(color: self.bgColorL, pressedColor: self.bgPressedColorL, foregroundColor: self.fgColorL, foregroundPressedColor: self.fgPressedColorL, strokeColor: self.strokeColorL),
+            darkModeColors: .init(color: self.bgColorD, pressedColor: self.bgPressedColorD, foregroundColor: self.fgColorD, foregroundPressedColor: self.fgPressedColorD, strokeColor: self.strokeColorD),
+            borderThickness: self.stroke
+        )
+    }
+    
+    func getPos() -> ButtonPosition {
+        return ButtonPosition(
+            scaledPos: self.scaledPos, offset: self.offset,
+            defaultIsPortrait: self.overriding ? self.defaultIsPortrait : nil,
+            overrideScaledPos: self.overriding ? self.overrideScaledPos : nil,
+            overrideOffset: self.overriding ? self.overrideOffset : nil
+        )
     }
     
     func applyToButton(_ button: inout ButtonConfig) {
-        button.position.scaledPos = self.scaledPos
-        button.position.offset = self.offset
+        button.position = getPos()
         button.scale = self.scale
         button.rotation = self.rotation
         
-        if button.type == .regular {
+        if button.type == .regular || button.type == .bumper {
             // set the regular button style
             button.updateStyle(to: RegularButtonStyle(shape: self.shape, iconType: self.iconType, icon: self.hasIcon ? self.icon : nil, properties: getGeneralStyle()))
         } else if button.type == .joystick || button.type == .dpad {
             // set the general button style
-            button.updateStyle(to: GeneralButtonStyle(color: self.bgColor, pressedColor: self.bgPressedColor, borderThickness: self.stroke, foregroundColor: self.fgColor, foregroundPressedColor: self.fgPressedColor))
+            button.updateStyle(to: getGeneralStyle())
+        } else if button.type == .trigger {
+            // set the general button style and the trigger side
+            button.updateStyle(to: getGeneralStyle())
+            button.updateValue(name: "side", to: self.triggerSide)
         }
     }
     
     func asButtonConfig() -> ButtonConfig {
         switch self.type {
-        case .regular:
-            return RegularButtonConfig(
-                position: .init(scaledPos: self.scaledPos, offset: self.offset),
+        case .regular, .bumper:
+            return RegularButtonConfig(type: self.type,
+                position: getPos(),
                 scale: self.scale, rotation: rotation,
                 inputId: self.inputId, input: self.input,
                 style: .init(shape: self.shape, iconType: self.iconType, icon: self.hasIcon ? self.icon : nil, properties: getGeneralStyle())
             )
         case .joystick:
-            return JoystickConfig(position: .init(scaledPos: self.scaledPos, offset: self.offset), scale: self.scale, rotation: rotation, style: getGeneralStyle(), inputId: self.inputId, input: .RightJoystick)
+            return JoystickConfig(position: getPos(), scale: self.scale, rotation: rotation, style: getGeneralStyle(), inputId: self.inputId, input: .RightJoystick)
         case .dpad:
-            return DPadConfig(position: .init(scaledPos: self.scaledPos, offset: self.offset), scale: self.scale, rotation: rotation, style: getGeneralStyle(), inputId: self.inputId, inputs: [:])
-        case .bumper:
-            return BumperConfig(position: .init(scaledPos: self.scaledPos, offset: self.offset), scale: self.scale, rotation: rotation, inputId: self.inputId, input: self.input)
+            return DPadConfig(position: getPos(), scale: self.scale, rotation: rotation, style: getGeneralStyle(), inputId: self.inputId, inputs: [:])
         case .trigger:
-            return TriggerConfig(position: .init(scaledPos: self.scaledPos, offset: self.offset), scale: self.scale, rotation: rotation, inputId: self.inputId, input: self.input, side: self.triggerSide)
+            return TriggerConfig(position: getPos(), scale: self.scale, rotation: rotation, style: getGeneralStyle(), inputId: self.inputId, input: self.input, side: self.triggerSide)
         }
     }
 }

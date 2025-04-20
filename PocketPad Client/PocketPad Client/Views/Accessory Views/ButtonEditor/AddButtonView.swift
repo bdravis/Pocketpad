@@ -75,7 +75,7 @@ struct AddButtonView: View {
                 case .dpad:
                     layoutManager.currentController.buttons.append(DPadConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.5)), scale: 1.0, inputId: inputId, inputs: [.up: .DPadUp, .right: .DPadRight, .down: .DPadDown, .left: .DPadLeft]))
                 case .bumper:
-                    layoutManager.currentController.buttons.append(BumperConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.5)), scale: 1.0, inputId: inputId, input: buttonInput))
+                    layoutManager.currentController.buttons.append(BumperConfig(type: .bumper, position: .init(scaledPos: CGPoint(x: 0.5, y: 0.5)), scale: 1.0, inputId: inputId, input: buttonInput))
                 case .trigger:
                     layoutManager.currentController.buttons.append(TriggerConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.5)), scale: 1.0, inputId: inputId, input: buttonInput, side: triggerSide))
                 }

@@ -1,5 +1,6 @@
 .DS_Store
 /PocketPad Client/PocketPad Client.xcodeproj/project.xcworkspace/xcuserdata
+/PocketPad Client/PocketPad Client.xcodeproj/project.pbxproj
 .venv
 
 __pycache__/

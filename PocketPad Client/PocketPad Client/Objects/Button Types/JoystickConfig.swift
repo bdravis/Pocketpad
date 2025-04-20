@@ -14,6 +14,10 @@ struct JoystickConfig: ButtonConfig, ConfigType {
         }
     }
     
+    mutating func updateValue<T>(name: String, to newValue: T) {
+        return
+    }
+    
     // Protocol Properties
     var position: ButtonPosition
     var scale: CGFloat
