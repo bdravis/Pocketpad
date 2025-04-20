@@ -20,9 +20,8 @@ class MacroManager : ObservableObject {
     private var currentMacro : [TimeStampedInput] = [] // An array of captured inputs during the current macro recording
     
     // A macro is essentially an array of timestamped inputs (TimeStampedInput)
-    private var macrosByButton: [ButtonInput : [TimeStampedInput]] = [:] // Macro-assigned buttons for current controller (not persistent)
-    @Published private var macrosByName: [String : [TimeStampedInput]] = [:] // Used for displaying list of macros, persistent across controllers
-    // TODO: Get list of macros in settings
+    @Published private var macrosByName: [String : [TimeStampedInput]] = [:] // Device database of macros (id: name), persistent across controllers
+    @Published private var macroNamesByButton: [ButtonInput : String] = [:] // Macro-assigned buttons for current controller (not persistent)
     // TODO: Assign macro to buttons
     // TODO: Save to user settings
     // TODO: Fix automated tests
@@ -53,7 +52,7 @@ class MacroManager : ObservableObject {
         }
     }
     
-    // MARK: Functions to saving, fetching, and deleting macros
+    // MARK: Functions for saving, fetching, and deleting macros
     
     // Save the current macro with a specified name
     // Returns false if there already exists a macro with the specified name (macros must have unique names)
@@ -77,15 +76,44 @@ class MacroManager : ObservableObject {
         macrosByName[macroName] = nil
     }
     
+    // Deletes the macro-to-button assignments on the current controller
+    func clearMacrosForController() {
+        macroNamesByButton = [:]
+    }
+    
+    // MARK: Functions to assign/unassign macros to buttons
+    
+    // If the button has a macro already, this will override it with the new macro
+    func assignMacro(named macroName: String, to buttonInput: ButtonInput) {
+        macroNamesByButton[buttonInput] = macroName
+    }
+    
+    func unassignMacro(from buttonInput: ButtonInput) {
+        macroNamesByButton[buttonInput] = nil
+    }
+    
+    // Returns the name (optional) of the macro associated with the specified button
+    // Returns nil if no macro has been assigned
+    func getNameOfMacro(for buttonInput: ButtonInput) -> String? {
+        return macroNamesByButton[buttonInput]
+    }
+    
     // MARK: Functions to check macro existence and execute macros
     
     // Checks if there is a macro associated with the specified button
     // May also execute the macro
+    // Returns false if there is no macro associated with the specified button, or if error occurs
     private func hasMacro(for buttonInput: ButtonInput, willExecute: Bool, isInMacroEditor: Bool = false) -> Bool {
-        if let macro = macrosByButton[buttonInput] { // Check if macro exists
+        if let macroName = macroNamesByButton[buttonInput] { // Check if macro exists
             if willExecute {
                 // Actually execute the macro
-                executeMacro(macro: macro, isInMacroEditor: isInMacroEditor)
+                if macrosByName[macroName] == nil {
+#if DEBUG
+                    print("Macro \(macroName) not found. This error should not have occured.")
+#endif
+                    return false
+                }
+                executeMacro(macro: macrosByName[macroName]!, isInMacroEditor: isInMacroEditor)
             }
             return true
         }

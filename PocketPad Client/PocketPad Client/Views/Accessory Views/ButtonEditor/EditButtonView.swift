@@ -11,16 +11,20 @@ struct EditButtonView: View {
     @Environment(\.colorScheme) var colorScheme
     
     @ObservedObject var button: EditingButtonVM
+    @ObservedObject private var macroManager = MacroManager.shared
     
     @Binding var showSymbolPicker: Bool
     @Binding var isPortait: Bool
     @State private var showDeleteAlert: Bool = false
+    @State private var nameOfMacroAssigned: String = ""
     
     // Values for if the sections are expanded
     @State private var positionExpanded: Bool = true
     @State private var scaleRotExpanded: Bool = true
     @State private var iconExpanded: Bool = true
     @State private var styleExpanded: Bool = true
+    @State private var macroExpanded: Bool = true
+    
     
     private var numberFormatter: NumberFormatter {
         let nf = NumberFormatter()
@@ -194,6 +198,41 @@ struct EditButtonView: View {
             } header: {
                 Text("Style")
             }
+            
+            // MARK: Assign macros
+            if button.type == .regular || button.type == .bumper || button.type == .trigger {
+                Section(isExpanded: $macroExpanded) {
+                    HStack {
+                        let macroNames: [String] = macroManager.getMacroNames()
+                        
+                        Picker("Assigned", selection: $nameOfMacroAssigned) {
+                            Text("").tag("")
+                            ForEach(macroNames, id: \.self) { macroName in
+                                Text(macroName).tag(macroName)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .accessibilityIdentifier("AssignMacroPicker")
+                        .onChange(of: nameOfMacroAssigned) { oldValue, newValue in
+                            if newValue == "" {
+                                macroManager.unassignMacro(from: button.input)
+                            } else {
+                                macroManager.assignMacro(named: newValue, to: button.input)
+                            }
+                        }
+                    }
+                    .onAppear {
+                        nameOfMacroAssigned = macroManager.getNameOfMacro(for: button.input) ?? ""
+                    }
+                    .onChange(of: button.input) {
+                        nameOfMacroAssigned = macroManager.getNameOfMacro(for: button.input) ?? ""
+                    }
+                } header: {
+                    Text("Macros")
+                }
+            }
+            
+            
             
             Section {
                 Button(action: {

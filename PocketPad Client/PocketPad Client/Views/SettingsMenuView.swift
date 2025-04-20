@@ -179,6 +179,7 @@ struct SettingsMenuView: View {
                         leftJoystickDeadzone = LayoutManager.shared.getLeftJoystickDeadzone()
                         rightJoystickDeadzone = LayoutManager.shared.getRightJoystickDeadzone()
                         turboManager.stopAllTurbo()
+                        macroManager.clearMacrosForController()
                         
                         isCustomLayout = !DefaultLayouts.isDefaultLayout(name: selectedController)
                         bluetoothManager.updateControllerConfiguration()
