@@ -22,7 +22,10 @@ class MacroManager : ObservableObject {
     // A macro is essentially an array of timestamped inputs (TimeStampedInput)
     private var macrosByButton: [ButtonInput : [TimeStampedInput]] = [:] // Macro-assigned buttons for current controller (not persistent)
     private var macrosByName: [String : [TimeStampedInput]] = [:] // Used for displaying list of macros, persistent across controllers
+    // TODO: Get list of macros in settings
+    // TODO: Assign macro to buttons
     // TODO: Save to user settings
+    // TODO: Fix automated tests
     
     // MARK: Functions for recording and capturing inputs
     // Allow inputs to be recorded for the new macro

@@ -492,7 +492,7 @@ struct ControllerView: View {
             .simultaneousGesture(magnifyGesture, isEnabled: isEditor && !selectedBtn.isEmpty)
             .simultaneousGesture(rotGesture, isEnabled: isEditor && !selectedBtn.isEmpty)
         }
-        .ignoresSafeArea(.keyboard) // Prevent controller background view from shifting when a keyboard is used to type text input (e.g. naming macros)
+        .ignoresSafeArea(.keyboard, edges: isInMacroEditor ? .all : []) // Prevent controller background view from shifting when a keyboard is used to name a macro in the macro editor
         .coordinateSpace(.named("Controller"))
         .navigationTitle("Controller")
         .navigationBarTitleDisplayMode(.inline)
