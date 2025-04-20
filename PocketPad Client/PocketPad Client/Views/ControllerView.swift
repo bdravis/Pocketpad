@@ -168,6 +168,35 @@ struct ControllerView: View {
                     }
                 }
                 
+                // MARK: Macro editor - recording options
+                if isInMacroEditor {
+                    // Button to start recording
+                    Button(action: {
+                        macroManager.startRecording()
+                    }) {
+                        Image(systemName: (macroManager.isRecording ? "record.circle.fill" : "record.circle"))
+                            .resizable()
+                            .scaledToFit() // make sure it does not stretch
+                    }
+                    .frame(width: DEFAULT_BUTTON_SIZE / 2, height: DEFAULT_BUTTON_SIZE / 2)
+                    .position(getPos(pos: .init(scaledPos: CGPoint(x: 0.05, y: 0.9)), geomSize: geometry.size))
+                    .accessibilityIdentifier("StartMacroRecordingButton")
+                    
+                    // Button to stop recording
+                    Button(action: {
+                        macroManager.stopRecording()
+                        // TODO: Trigger popup
+                        macroManager.saveCurrentMacro(as: "My Macro")
+                    }) {
+                        Image(systemName: "stop.circle")
+                            .resizable()
+                            .scaledToFit() // make sure it does not stretch
+                    }
+                    .frame(width: DEFAULT_BUTTON_SIZE / 2, height: DEFAULT_BUTTON_SIZE / 2)
+                    .position(getPos(pos: .init(scaledPos: CGPoint(x: 0.1, y: 0.9)), geomSize: geometry.size))
+                    .accessibilityIdentifier("StopMacroRecordingButton")
+                }
+                
                 // MARK: Editor Button
                 if !selectedBtn.isEmpty {
                     ZStack {

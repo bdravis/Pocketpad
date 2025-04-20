@@ -10,7 +10,7 @@ import Foundation
 class MacroManager : ObservableObject {
     // MARK: Variables
     static let shared = MacroManager()
-    private var isRecording: Bool = false // True if 'Record' Button has been pressed
+    @Published var isRecording: Bool = false // True if 'Record' Button has been pressed
     
     // Variables to allow capturing of user inputs for macros
     private struct TimeStampedInput {
