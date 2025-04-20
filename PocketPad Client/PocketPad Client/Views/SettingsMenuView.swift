@@ -37,13 +37,19 @@ struct SettingsMenuView: View {
     
     @EnvironmentObject private var alertManager: AlertManager
     
+    // deadzone view variables
     @State private var showingLeftDeadzoneView: Bool = false
     @State private var showingRightDeadzoneView: Bool = false
     @State private var leftJoystickDeadzone: Double = LayoutManager.shared.getLeftJoystickDeadzone()
     @State private var rightJoystickDeadzone: Double = LayoutManager.shared.getRightJoystickDeadzone()
     
+    // turbo view variables
     @ObservedObject private var turboManager = TurboManager.shared
     @State private var showingTurboSettings: Bool = false
+    
+    // macro view variables
+    @ObservedObject private var macroManager = MacroManager.shared
+    @State private var showingMacroSettings: Bool = false
     
     @StateObject private var bluetoothManager = BluetoothManager.shared
 
@@ -72,7 +78,7 @@ struct SettingsMenuView: View {
                     )
                 
                 // Menu Content
-                if !showingLeftDeadzoneView && !showingRightDeadzoneView && !showingTurboSettings {
+                if !showingLeftDeadzoneView && !showingRightDeadzoneView && !showingTurboSettings && !showingMacroSettings {
                     VStack(spacing: 0) {
                         headerView
                         Divider()
@@ -111,6 +117,10 @@ struct SettingsMenuView: View {
                 
                 if showingTurboSettings {
                     TurboSettingsView(isShowingTurboSettings: $showingTurboSettings)
+                }
+                
+                if showingMacroSettings {
+                    MacroSettingsView(isShowingMacroSettings: $showingMacroSettings)
                 }
             }
             // Center the menu on the screen
@@ -317,6 +327,25 @@ struct SettingsMenuView: View {
                     .foregroundStyle(Color(uiColor: .secondaryLabel))
             }
             
+            // MARK: - Macro Settings
+            Section {
+                HStack {
+                    Text("Manage Macros")
+                    Spacer()
+                    Button(action: {
+                        showingMacroSettings = true
+                    }) {
+                        Text("Edit")
+                            .foregroundColor(.blue)
+                    }
+                    .accessibilityIdentifier("ViewMacrosButton")
+                }
+            } header: {
+                Text("Macro Settings")
+                    .font(.footnote)
+                    .foregroundStyle(Color(uiColor: .secondaryLabel))
+            }
+            
             // MARK: Add toggle for motion control
             HStack {
                 Text("Enable Motion Control")
@@ -451,6 +480,7 @@ struct SettingsMenuView: View {
         showingLeftDeadzoneView = false
         showingRightDeadzoneView = false
         showingTurboSettings = false
+        showingMacroSettings = false
     }
 }
 

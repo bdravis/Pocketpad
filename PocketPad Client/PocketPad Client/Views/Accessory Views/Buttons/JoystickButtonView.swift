@@ -15,7 +15,7 @@ struct JoystickButtonView: View {
     @Environment(\.colorScheme) var colorScheme
     
     @StateObject private var bluetoothManager = BluetoothManager.shared
-    @StateObject private var turboManager = TurboManager.shared
+    @ObservedObject private var turboManager = TurboManager.shared
     
     var config: JoystickConfig
     var isInMacroEditor: Bool = false

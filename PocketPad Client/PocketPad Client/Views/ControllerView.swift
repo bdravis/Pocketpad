@@ -177,7 +177,7 @@ struct ControllerView: View {
                         macroManager.startRecording()
                     }) {
                         Image(systemName: (macroManager.isRecording ? "record.circle.fill" : "record.circle"))
-                            .foregroundColor(Color.red)
+                            .foregroundColor(.red)
                     }
                     .scaleEffect(CGFloat(2))
                     .position(getPos(pos: .init(scaledPos: (isPortait ? CGPoint(x: 0.10, y: 0.95) : CGPoint(x: 0.05, y: 0.95))), geomSize: geometry.size))
@@ -188,7 +188,7 @@ struct ControllerView: View {
                         macroManager.stopRecording()
                     }) {
                         Image(systemName: "stop.circle")
-                            .foregroundColor(Color.gray)
+                            .foregroundColor(.gray)
                     }
                     .scaleEffect(CGFloat(2))
                     .position(getPos(pos: .init(scaledPos: (isPortait ? CGPoint(x: 0.22, y: 0.95) : CGPoint(x: 0.12, y: 0.95))), geomSize: geometry.size))

@@ -11,7 +11,7 @@ import SwiftUI
 
 struct TriggerButtonView: View {
     @StateObject private var bluetoothManager = BluetoothManager.shared
-    @StateObject private var turboManager = TurboManager.shared
+    @ObservedObject private var turboManager = TurboManager.shared
     
     var config: TriggerConfig
     var isInMacroEditor: Bool = false

@@ -72,7 +72,7 @@ struct DPadButtonView: View {
 // Style for the directional arrow on the D-Pad
 struct DirectionalArrow: View {
     @StateObject private var bluetoothManager = BluetoothManager.shared
-    @StateObject private var turboManager = TurboManager.shared
+    @ObservedObject private var turboManager = TurboManager.shared
     @State private var longPressed = false
     
     var split: Bool
