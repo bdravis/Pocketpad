@@ -64,6 +64,8 @@ struct ControllerView: View {
     @State private var deleting: Bool = false
     @State private var showRenameAlert: Bool = false
     @State private var newName: String = ""
+    @State private var makingNewMacro: Bool = false
+    @State private var newMacroName: String = ""
     
     var body: some View {
         GeometryReader { geometry in
@@ -175,26 +177,41 @@ struct ControllerView: View {
                         macroManager.startRecording()
                     }) {
                         Image(systemName: (macroManager.isRecording ? "record.circle.fill" : "record.circle"))
-                            .resizable()
-                            .scaledToFit() // make sure it does not stretch
                     }
-                    .frame(width: DEFAULT_BUTTON_SIZE / 2, height: DEFAULT_BUTTON_SIZE / 2)
                     .position(getPos(pos: .init(scaledPos: CGPoint(x: 0.05, y: 0.9)), geomSize: geometry.size))
                     .accessibilityIdentifier("StartMacroRecordingButton")
                     
                     // Button to stop recording
                     Button(action: {
                         macroManager.stopRecording()
-                        // TODO: Trigger popup
-                        macroManager.saveCurrentMacro(as: "My Macro")
+                        
+                        newMacroName = ""
+                        makingNewMacro.toggle()
                     }) {
                         Image(systemName: "stop.circle")
-                            .resizable()
-                            .scaledToFit() // make sure it does not stretch
                     }
-                    .frame(width: DEFAULT_BUTTON_SIZE / 2, height: DEFAULT_BUTTON_SIZE / 2)
                     .position(getPos(pos: .init(scaledPos: CGPoint(x: 0.1, y: 0.9)), geomSize: geometry.size))
                     .accessibilityIdentifier("StopMacroRecordingButton")
+                    .alert("New Macro", isPresented: $makingNewMacro) { // for naming and saving macro
+                        TextField("Macro Name", text: $newMacroName)
+                            .accessibilityIdentifier("MacroNameTextField")
+                        
+                        Button("OK", action: {
+                            if newMacroName == "" {
+                                UIApplication.shared.alert(body: "Please name your macro.")
+                            } else {
+                                // try saving the macro
+                                if !macroManager.saveCurrentMacro(as: newMacroName) {
+                                    UIApplication.shared.alert(body: "A macro with that name already exists.")
+                                }
+                            }
+                        })
+                        .accessibilityIdentifier("MacroNameOKButton")
+                        
+                        Button("Cancel", role: .cancel) { }
+                    } message: {
+                        Text("What will the name of the macro be?")
+                    }
                 }
                 
                 // MARK: Editor Button
