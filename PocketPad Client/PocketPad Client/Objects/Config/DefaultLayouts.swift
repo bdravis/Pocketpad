@@ -256,6 +256,12 @@ class DefaultLayouts {
         RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.3, y: 0.3), offset: CGPoint(x: 0, y: 0)), scale: 1.5, inputId: 14, input: .Turbo, turbo: true),
     ])
     
+    static let MouseKeyboardLayout: LayoutConfig = .init(name: "Mouse & Keyboard", lockToOrientation: .all, buttons: [
+        JoystickConfig(position: .init(scaledPos: CGPoint(x: 0.29, y: 0.17)), scale: 3, inputId: 0, input: .Mouse),
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.59, y: 0.12)), scale: 1.3, inputId: 1, input: .MouseLeft, style: .init(shape: .Circle, iconType: .Text, icon: "Left")),
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.83, y: 0.23)), scale: 1.3, inputId: 2, input: .MouseRight, style: .init(shape: .Circle, iconType: .Text, icon: "Right"))
+    ])
+    
     
     static func getLayout(for name: ControllerType) -> LayoutConfig {
         switch name {
@@ -273,11 +279,13 @@ class DefaultLayouts {
             return DPadlessTest
         case .Turbo:
             return TurboTest
+        case .MouseKeyboard:
+            return MouseKeyboardLayout
         }
     }
     
     static func isDefaultLayout(name: String) -> Bool {
-        return (name == XboxConfig.name || name == PlayStationConfig.name || name == WiiConfig.name || name == SwitchConfig.name || name == DPadlessTest.name || name == GameCubeConfig.name || name == TurboTest.name)
+        return (name == XboxConfig.name || name == PlayStationConfig.name || name == WiiConfig.name || name == SwitchConfig.name || name == DPadlessTest.name || name == GameCubeConfig.name || name == TurboTest.name || name == MouseKeyboardLayout.name)
     }
 }
 
