@@ -27,6 +27,7 @@ final class PocketPad_EditorUITests: XCTestCase {
     @MainActor
     func testEditorFunctionality() throws {
         let app = XCUIApplication()
+        app.launchArguments = ["hide-tips", "no-tutorial", "remove-layouts"]
         app.launch()
         
         // open settings
@@ -38,10 +39,6 @@ final class PocketPad_EditorUITests: XCTestCase {
         settingsBtn.tap()
         let settingsCloseBtn = app.buttons["SettingsCloseButton"]
         guard settingsCloseBtn.waitForExistence(timeout: TIMEOUT) else { XCTFail("Settings button close not found"); return }
-        
-        // clear all layouts
-        let removeFiles = app.buttons["RemoveLayoutFiles"]
-        removeFiles.tap()
         
         // create new layout
         let createLayout = app.buttons["CreateNewLayoutButton"]
@@ -192,6 +189,7 @@ final class PocketPad_EditorUITests: XCTestCase {
                     
                     // set the icon to plus
                     let iconPicker = app.buttons["PickSymbolBtn"]
+                    editList.scrollToElement(iconTypePicker, upward: false, amt: -50)
                     XCTAssertTrue(iconPicker.waitForExistence(timeout: TIMEOUT), "The symbol picker button does not exist.")
                     iconPicker.tap()
                     let plusBtn = app.buttons["plus"]
@@ -249,7 +247,7 @@ final class PocketPad_EditorUITests: XCTestCase {
                 } else if inp == "Middle" {
                     // delete the middle trigger
                     let deleteBtn = app.buttons["DeleteButtonBtn"]
-                    editList.scrollToElement(deleteBtn, upward: false)
+                    editList.scrollToElement(deleteBtn, upward: false, amt: -400)
                     deleteBtn.tap()
                     let confirmDel = app.buttons["ConfirmDelete"]
                     XCTAssertTrue(confirmDel.waitForExistence(timeout: TIMEOUT), "The delete confirmation could not be found.")
@@ -321,12 +319,13 @@ final class PocketPad_EditorUITests: XCTestCase {
         XCTAssertTrue(controllerPicker.waitForExistence(timeout: TIMEOUT), "The controller picker does not exist.")
         XCTAssertNotEqual(controllerPicker.label, "Picker\(newName)", "Layout name was not removed from the controller picker.")
         controllerPicker.tap()
-        XCTAssertFalse(app.buttons[newName].waitForExistence(timeout: TIMEOUT), "Layout name was found in the list.")
+        XCTAssertFalse(app.buttons[newName].waitForExistence(timeout: 3), "Layout name was found in the list.")
     }
     
     @MainActor
     func testEditorOrientationOverrides() throws {
         let app = XCUIApplication()
+        app.launchArguments = ["hide-tips", "no-tutorial", "remove-layouts"]
         app.launch()
         
         // start in portrait
@@ -341,10 +340,6 @@ final class PocketPad_EditorUITests: XCTestCase {
         settingsBtn.tap()
         let settingsCloseBtn = app.buttons["SettingsCloseButton"]
         guard settingsCloseBtn.waitForExistence(timeout: TIMEOUT) else { XCTFail("Settings button close not found"); return }
-        
-        // clear all layouts
-        let removeFiles = app.buttons["RemoveLayoutFiles"]
-        removeFiles.tap()
         
         // create new layout
         let createLayout = app.buttons["CreateNewLayoutButton"]

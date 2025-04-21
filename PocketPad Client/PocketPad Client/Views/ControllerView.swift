@@ -18,7 +18,7 @@ let DEBUG_BUTTONS: [ButtonConfig] = [ // Example buttons
 //    RegularButtonConfig(position: CGPoint(x: 100, y: 300), scale: 1.0, inputId: 8, input: "Share", style: .init(shape: .Circle, iconType: .SFSymbol, icon: "square.and.arrow.up")), // SF Symbol style test
 //    RegularButtonConfig(position: CGPoint(x: 260, y: 100), scale: 1.0, inputId: 6, input: "Start", style: .init(shape: .Pill, iconType: .Text, icon: "Start")), // Pill style test
 //    RegularButtonConfig(position: CGPoint(x: 200, y: 100), scale: 1.0, inputId: 7, input: "Select", style: .init(shape: .Pill, iconType: .Text)), // No text test
-//    
+//
 //    JoystickConfig(position: CGPoint(x: 100, y: 200), scale: 1.0, inputId: 4, input: "RightJoystick"),
 //    DPadConfig(
 //        position: CGPoint(x: 100, y: 0), scale: 1.0, inputId: 5,
@@ -26,7 +26,7 @@ let DEBUG_BUTTONS: [ButtonConfig] = [ // Example buttons
 //            .up: "DPadUp", .right: "DPadRight", .down: "DPadDown", .left: "DPadLeft"
 //        ]
 //    ),
-//    
+//
 //    TriggerConfig(position: CGPoint(x: 300, y: 0), scale: 1.0, inputId: 10, input: "RT", side: .right)
 ]
 
@@ -34,11 +34,13 @@ let DEBUG_BUTTONS: [ButtonConfig] = [ // Example buttons
 struct ControllerView: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var isPortait: Bool = false
-    @State private var didLockRotation: Bool = false
+    @State private var didLockRotation: Bool = true
     @State private var ranStartLock: Bool = false
     @ObservedObject private var layoutManager = LayoutManager.shared
+    @ObservedObject private var macroManager = MacroManager.shared
     
     let isEditor: Bool
+    let isInMacroEditor: Bool
     
     // Editing Button View Values
     @State private var showAddPopup: Bool = false
@@ -62,6 +64,11 @@ struct ControllerView: View {
     @State private var deleting: Bool = false
     @State private var showRenameAlert: Bool = false
     @State private var newName: String = ""
+    @State private var makingNewMacro: Bool = false
+    @State private var newMacroName: String = ""
+    
+    // Tips
+    var orientationTip = OrientationTip()
     
     var body: some View {
         GeometryReader { geometry in
@@ -125,7 +132,8 @@ struct ControllerView: View {
                         let tapGesture = TapGesture().onEnded {
                             applySelectedButton()
                             selectedBtn.setButton(to: btn.wrappedValue)
-                            if (isPortait && selectedBtn.scaledPos.y > 0.5) || (!isPortait && selectedBtn.scaledPos.x > 0.5) {
+                            let pos = getPos(pos: selectedBtn.getPos(), geomSize: geometry.size)
+                            if (isPortait && pos.y > geometry.size.height / 2) || (!isPortait && pos.x > geometry.size.width / 2) {
                                 btnEditViewPos = 0.0
                             } else {
                                 btnEditViewPos = 1.0
@@ -135,21 +143,21 @@ struct ControllerView: View {
                             Group {
                                 switch btn.wrappedValue.type {
                                 case .regular:
-                                    RegularButtonView(config: btn.wrappedValue as! RegularButtonConfig)
+                                    RegularButtonView(config: btn.wrappedValue as! RegularButtonConfig, isInMacroEditor: isInMacroEditor)
                                         .accessibilityAddTraits(.isButton)
                                         .accessibilityIdentifier("ControllerButton")
                                 case .joystick:
-                                    JoystickButtonView(config: btn.wrappedValue as! JoystickConfig)
+                                    JoystickButtonView(config: btn.wrappedValue as! JoystickConfig, isInMacroEditor: isInMacroEditor)
                                         .accessibilityAddTraits(.isButton)
                                         .accessibilityIdentifier("ControllerButton")
                                 case .dpad:
-                                    DPadButtonView(config: btn.wrappedValue as! DPadConfig)
+                                    DPadButtonView(config: btn.wrappedValue as! DPadConfig, isInMacroEditor: isInMacroEditor)
                                 case .bumper:
-                                    BumperButtonView(config: btn.wrappedValue as! BumperConfig)
+                                    BumperButtonView(config: btn.wrappedValue as! BumperConfig, isInMacroEditor: isInMacroEditor)
                                         .accessibilityAddTraits(.isButton)
                                         .accessibilityIdentifier("ControllerButton")
                                 case .trigger:
-                                    TriggerButtonView(config: btn.wrappedValue as! TriggerConfig)
+                                    TriggerButtonView(config: btn.wrappedValue as! TriggerConfig, isInMacroEditor: isInMacroEditor)
                                         .accessibilityAddTraits(.isButton)
                                         .accessibilityIdentifier("ControllerButton")
                                 }
@@ -163,6 +171,62 @@ struct ControllerView: View {
                         .gesture(tapGesture, isEnabled: isEditor)
                         .accessibilityElement(children: .contain)
                         .accessibilityIdentifier("Button\(btn.inputId)")
+                    }
+                }
+                
+                // MARK: Macro editor - recording options
+                if isInMacroEditor {
+                    // Button to start recording
+                    Button(action: {
+                        macroManager.startRecording()
+                    }) {
+                        Image(systemName: (macroManager.isRecording ? "record.circle.fill" : "record.circle"))
+                            .foregroundColor(.red)
+                    }
+                    .scaleEffect(CGFloat(2))
+                    .position(getPos(pos: .init(scaledPos: (isPortait ? CGPoint(x: 0.10, y: 0.95) : CGPoint(x: 0.05, y: 0.95))), geomSize: geometry.size))
+                    .accessibilityIdentifier("StartMacroRecordingButton")
+                    
+                    // Button to stop recording
+                    Button(action: {
+                        macroManager.stopRecording()
+                    }) {
+                        Image(systemName: "stop.circle")
+                            .foregroundColor(.gray)
+                    }
+                    .scaleEffect(CGFloat(2))
+                    .position(getPos(pos: .init(scaledPos: (isPortait ? CGPoint(x: 0.22, y: 0.95) : CGPoint(x: 0.12, y: 0.95))), geomSize: geometry.size))
+                    .accessibilityIdentifier("StopMacroRecordingButton")
+                    
+                    // Button to save recorded macro
+                    Button(action: {
+                        newMacroName = ""
+                        makingNewMacro.toggle()
+                    }) {
+                        Image(systemName: "square.and.arrow.down")
+                    }
+                    .scaleEffect(CGFloat(2))
+                    .position(getPos(pos: .init(scaledPos: (isPortait ? CGPoint(x: 0.34, y: 0.942) : CGPoint(x: 0.19, y: 0.933))), geomSize: geometry.size))
+                    .accessibilityIdentifier("SaveMacroRecordingButton")
+                    .alert("New Macro", isPresented: $makingNewMacro) { // for naming and saving macro
+                        TextField("Macro Name", text: $newMacroName)
+                            .accessibilityIdentifier("MacroNameTextField")
+                        
+                        Button("OK", action: {
+                            if newMacroName == "" {
+                                UIApplication.shared.alert(body: "Please name your macro.")
+                            } else {
+                                // try saving the macro
+                                if !macroManager.saveCurrentMacro(as: newMacroName) {
+                                    UIApplication.shared.alert(body: "A macro with that name already exists.")
+                                }
+                            }
+                        })
+                        .accessibilityIdentifier("MacroNameOKButton")
+                        
+                        Button("Cancel", role: .cancel) { }
+                    } message: {
+                        Text("What will the name of the macro be?")
                     }
                 }
                 
@@ -318,7 +382,9 @@ struct ControllerView: View {
                             Toggle("Rotation Lock", systemImage: "lock\(didLockRotation ? ".open" : "").rotation", isOn: $didLockRotation)
                                 .buttonStyle(.borderless)
                                 .toggleStyle(.button)
+                                .popoverTip(orientationTip, arrowEdge: .top)
                                 .onChange(of: didLockRotation, initial: false) {
+                                    orientationTip.invalidate(reason: .actionPerformed)
                                     layoutManager.currentController.rotationLocked = didLockRotation
                                     if didLockRotation {
                                         lockRotation()
@@ -391,10 +457,10 @@ struct ControllerView: View {
                 }
             }
             .alert("Delete Layout", isPresented: $showDeleteAlert, actions: {
-                Button("Cancel") {
+                Button("Cancel", role: .cancel) {
                     showDeleteAlert = false
                 }
-                Button("Delete") {
+                Button("Delete", role: .destructive) {
                     do {
                         try layoutManager.deleteLayout(layoutManager.currentController.name)
                         showDeleteAlert = false
@@ -411,7 +477,7 @@ struct ControllerView: View {
             .alert("Rename Layout", isPresented: $showRenameAlert, actions: {
                 TextField("Layout Name", text: $newName)
                     .accessibilityIdentifier("LayoutNameField")
-                Button("Cancel") {
+                Button("Cancel", role: .cancel) {
                     showRenameAlert = false
                 }
                 Button("Done") {
@@ -432,6 +498,7 @@ struct ControllerView: View {
             .simultaneousGesture(magnifyGesture, isEnabled: isEditor && !selectedBtn.isEmpty)
             .simultaneousGesture(rotGesture, isEnabled: isEditor && !selectedBtn.isEmpty)
         }
+        .ignoresSafeArea(.keyboard, edges: isInMacroEditor ? .all : []) // Prevent controller background view from shifting when a keyboard is used to name a macro in the macro editor
         .coordinateSpace(.named("Controller"))
         .navigationTitle("Controller")
         .navigationBarTitleDisplayMode(.inline)

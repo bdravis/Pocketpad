@@ -14,7 +14,7 @@ struct GlowEffect: View {
 
     var body: some View {
         GeometryReader { proxy in
-            RoundedRectangle(cornerRadius: 60)
+            RoundedRectangle(cornerRadius: UIScreen.main.displayCornerRadius)
                 .strokeBorder(color, lineWidth: width)
                 .frame(
                     width: proxy.size.width,

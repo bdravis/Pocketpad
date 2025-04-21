@@ -15,8 +15,11 @@ struct JoystickButtonView: View {
     @Environment(\.colorScheme) var colorScheme
     
     @StateObject private var bluetoothManager = BluetoothManager.shared
+    @ObservedObject private var turboManager = TurboManager.shared
+    
     var config: JoystickConfig
-
+    var isInMacroEditor: Bool = false
+    
     @State private var offset: CGSize = .zero
     @State private var hapticTriggered: Bool = false
     @State private var isSendingPress: Bool = false
@@ -60,7 +63,7 @@ struct JoystickButtonView: View {
                 if (clampedDistance >= deadzoneRadius) {
                     isSendingPress = true
 #if DEBUG
-                    print("SENDING, OUTSIDE DEADZONE)")
+                    print("OUTSIDE DEADZONE")
                     if !hapticTriggered && dist > 5 {
                         if UserDefaults.standard.bool(forKey: "hapticsEnabled") {
                             HapticsManager.playHaptic()
@@ -68,65 +71,80 @@ struct JoystickButtonView: View {
                       hapticTriggered = true
                     }
 #endif
-                    if let service = bluetoothManager.selectedService {
-                        let ui8_playerId: UInt8 = LayoutManager.shared.player_id
-                        let ui8_inputId : UInt8 = config.inputId
-                        let ui8_buttonType : UInt8 = config.type.rawValue
-                        let ui8_event : UInt8 = ButtonEvent.pressed.rawValue
-                        
-                        var degrees = angle * 180 / .pi
-                        while degrees < 0 {
-                            degrees += 360
-                        }
-                        while degrees > 360 {
-                            degrees -= 360
-                        }
-                        let ui8_angle: UInt8
-                        if degrees.isNaN || degrees.isInfinite {
-                            ui8_angle = 0
-                        } else {
-                            ui8_angle = UInt8(Int((degrees * 256 / 360)) & 255)
-                        }
-                        // Convert to degrees in range of 255
-                        
-                        let normalizedMagnitude = (clampedDistance - deadzoneRadius) / (DEFAULT_BUTTON_SIZE / 2 - deadzoneRadius) * 100
+                    let ui8_playerId: UInt8 = LayoutManager.shared.player_id
+                    let ui8_inputId : UInt8 = config.inputId
+                    let ui8_buttonType : UInt8 = config.type.rawValue
+                    let ui8_event : UInt8 = ButtonEvent.pressed.rawValue
+                    
+                    var degrees = angle * 180 / .pi
+                    while degrees < 0 {
+                        degrees += 360
+                    }
+                    while degrees > 360 {
+                        degrees -= 360
+                    }
+                    let ui8_angle: UInt8
+                    if degrees.isNaN || degrees.isInfinite {
+                        ui8_angle = 0
+                    } else {
+                        ui8_angle = UInt8(Int((degrees * 256 / 360)) & 255)
+                    }
+                    // Convert to degrees in range of 255
+                    
+                    let normalizedMagnitude = (clampedDistance - deadzoneRadius) / (DEFAULT_BUTTON_SIZE / 2 - deadzoneRadius) * 100
 //#if DEBUG
 //                    print("Normalized magnitude: \(normalizedMagnitude)")
 //#endif
-                        let ui8_magnitude: UInt8
-                        if normalizedMagnitude.isNaN || normalizedMagnitude.isInfinite {
-                            ui8_magnitude = 0
-                        } else {
-                            ui8_magnitude = UInt8(min(max(normalizedMagnitude, 0), 255))
-                        }
-                        
-                        let now = Date()
-                        if let last_time = last_send_time, now.timeIntervalSince(last_time) < minimum_time_interval { return }
-                        
-                        if abs(Int(ui8_angle) - Int(last_sent_angle)) < Int(minimum_angle_threshold) &&
-                            abs(Int(ui8_magnitude) - Int(last_sent_magnitude)) < Int(minimum_angle_threshold) {
-                            return
-                        }
-                        
-                        last_send_time = now
-                        last_sent_angle = ui8_angle
-                        last_sent_magnitude = ui8_magnitude
-                        
-                        let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event, ui8_angle, ui8_magnitude])
-                        bluetoothManager.sendInput(data)
+                    let ui8_magnitude: UInt8
+                    if normalizedMagnitude.isNaN || normalizedMagnitude.isInfinite {
+                        ui8_magnitude = 0
+                    } else {
+                        ui8_magnitude = UInt8(min(max(normalizedMagnitude, 0), 255))
                     }
+                    
+                    // Don't send input information if it's too soon
+                    let now = Date()
+                    if let last_time = last_send_time, now.timeIntervalSince(last_time) < minimum_time_interval { return }
+                    
+                    // Don't send if joystick has not moved much from the last position
+                    if abs(Int(ui8_angle) - Int(last_sent_angle)) < Int(minimum_angle_threshold) &&
+                        abs(Int(ui8_magnitude) - Int(last_sent_magnitude)) < Int(minimum_angle_threshold) {
+                        return
+                    }
+                    
+                    last_send_time = now
+                    last_sent_angle = ui8_angle
+                    last_sent_magnitude = ui8_magnitude
+                    
+                    let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event, ui8_angle, ui8_magnitude])
+                    
+                    func sendButtonPress() { // nested function to use as callback because we need to know angle and magnitude
+#if DEBUG
+                        print("SEND JOYSTICK PRESS")
+#endif
+                        sendControllerInput(data, isInMacroEditor: isInMacroEditor)
+                    }
+                    
+                    // Handle the joystick press, e.g. send data
+                    turboManager.handleButtonPressThroughTurbo(
+                        input: config.input,
+                        isTurboButton: false,
+                        sendButtonPressFunc: sendButtonPress,
+                        sendButtonRelaseFunc: sendButtonRelease,
+                        isInMacroEditor: isInMacroEditor
+                    )
                 } else {
 #if DEBUG
-                    print("NOT SENDING, WITHIN DEADZONE)")
+                    print("INSIDE DEADZONE")
 #endif
                     if isSendingPress {
-                        sendJoystickRelease()
+                        isSendingPress = false
+                        handleButtonRelease()
                     }
                 }
             }
             .onEnded { _ in
-                
-                sendJoystickRelease()
+                handleButtonRelease()
                 
                 if UserDefaults.standard.bool(forKey: "hapticsEnabled") {
                     HapticsManager.playHaptic()
@@ -140,9 +158,15 @@ struct JoystickButtonView: View {
         
     }
     
-    func sendJoystickRelease() {
-        isSendingPress = false
-        
+    // MARK: Helper functions for input sending
+    func handleButtonRelease() {
+        turboManager.handleButtonReleaseThroughTurbo(input: config.input, isTurboButton: false, sendButtonReleaseFunc: sendButtonRelease)
+    }
+    
+    func sendButtonRelease() {
+#if DEBUG
+        print("SEND JOYSTICK RELEASE")
+#endif
         let ui8_playerId: UInt8 = LayoutManager.shared.player_id
         let ui8_inputId : UInt8 = config.inputId
         let ui8_buttonType : UInt8 = config.type.rawValue
@@ -152,7 +176,7 @@ struct JoystickButtonView: View {
         let ui8_magnitude : UInt8 = UInt8(0) // Convert to percentage
         
         let data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, ui8_event, ui8_angle, ui8_magnitude])
-        bluetoothManager.sendInput(data)
+        sendControllerInput(data, isInMacroEditor: isInMacroEditor)
     }
 
     var body: some View {
