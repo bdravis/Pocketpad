@@ -13,6 +13,20 @@
       "idiom" : "universal"
     },
     {
+      "height-class" : "compact",
+      "idiom" : "universal"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "height-class" : "compact",
+      "idiom" : "universal"
+    },
+    {
       "filename" : "Simulator Screenshot - iPhone 16 Plus - 2025-04-18 at 14.58.06.png",
       "idiom" : "iphone"
     },
@@ -27,6 +41,22 @@
       "idiom" : "iphone"
     },
     {
+      "filename" : "Simulator Screenshot - iPhone 16 Plus - 2025-04-21 at 10.03.58.png",
+      "height-class" : "compact",
+      "idiom" : "iphone"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "Simulator Screenshot - iPhone 16 Plus - 2025-04-21 at 10.04.01.png",
+      "height-class" : "compact",
+      "idiom" : "iphone"
+    },
+    {
       "filename" : "Simulator Screenshot - iPad Pro 11-inch (M4) - 2025-04-21 at 09.45.19.png",
       "idiom" : "ipad"
     },
@@ -38,6 +68,20 @@
         }
       ],
       "filename" : "Simulator Screenshot - iPad Pro 11-inch (M4) - 2025-04-21 at 09.45.22.png",
+      "idiom" : "ipad"
+    },
+    {
+      "height-class" : "compact",
+      "idiom" : "ipad"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "height-class" : "compact",
       "idiom" : "ipad"
     }
   ],
