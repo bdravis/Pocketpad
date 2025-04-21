@@ -246,7 +246,7 @@ final class PocketPad_EditorUITests: XCTestCase {
                 } else if inp == "Middle" {
                     // delete the middle trigger
                     let deleteBtn = app.buttons["DeleteButtonBtn"]
-                    editList.scrollToElement(deleteBtn, upward: false)
+                    editList.scrollToElement(deleteBtn, upward: false, amt: -400)
                     deleteBtn.tap()
                     let confirmDel = app.buttons["ConfirmDelete"]
                     XCTAssertTrue(confirmDel.waitForExistence(timeout: TIMEOUT), "The delete confirmation could not be found.")
