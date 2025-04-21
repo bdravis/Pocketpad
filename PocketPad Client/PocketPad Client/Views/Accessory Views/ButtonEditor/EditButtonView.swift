@@ -26,6 +26,8 @@ struct EditButtonView: View {
     @State private var macroExpanded: Bool = true
     
     
+    var overrideTip = OverrideTip()
+    
     private var numberFormatter: NumberFormatter {
         let nf = NumberFormatter()
         nf.numberStyle = .decimal
@@ -38,7 +40,9 @@ struct EditButtonView: View {
                 // MARK: Override for orientation
                 Toggle("Override for \((button.overriding && !button.defaultIsPortrait) || isPortait ? "Portrait" : "Landscape")", isOn: $button.overriding)
                     .accessibilityIdentifier("OverrideOrientation")
+                    .popoverTip(overrideTip)
                     .onChange(of: button.overriding, initial: false) {
+                        overrideTip.invalidate(reason: .actionPerformed)
                         if button.overriding {
                             button.overrideScaledPos = button.scaledPos
                             button.overrideOffset = button.offset
