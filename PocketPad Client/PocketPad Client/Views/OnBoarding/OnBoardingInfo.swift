@@ -42,7 +42,7 @@ let onBoardingCards: [OnBoardingPage] = [
     .init(
         title: "Connecting to the Server",
         description: "To start playing, connect to any computer running the PocketPad server application.",
-        image: "Logo" // TODO: Get screenshots
+        image: "TutorialConnection"
     ),
     .init(
         title: "Start Playing!",
