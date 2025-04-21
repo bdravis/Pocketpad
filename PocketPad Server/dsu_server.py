@@ -19,6 +19,9 @@ class DSU_Server:
 
     class Controller_State:
         def __init__(self, is_null: bool):
+
+            self.addr = ("127.0.0.1", 0)
+
             self.is_null = is_null
             self.connected = False
             self.sending = False
@@ -216,8 +219,10 @@ class DSU_Server:
 
     def _handle_controller_data(self, data, addr):
 
+        """
         print("data req at: ",addr)
         print("packet: ", struct.unpack("<IHHIIIBB6B", data))
+        """
 
         actions_requested = int.from_bytes(struct.unpack("<B", data[20:21]))
 
@@ -227,6 +232,7 @@ class DSU_Server:
             slot_requested = int.from_bytes(struct.unpack("<B", data[21:22]))
             print(f"data requested from slot {slot_requested}")
             state_requested = self.controller_states[slot_requested]
+            self.controller_states[slot_requested].addr = addr
 
             if (state_requested.is_null):
                 print("invalid state requested")
@@ -279,6 +285,7 @@ class DSU_Server:
                 
                 # use for testing bad crc
                 randmac = random.randint(0,255)
+
 
                 input_packet_no_crc_packed = struct.pack(
                         "<IHHIIIBBBB6BBBIBBBBBBBBBBBBBBBBBBBBHHHHHHQIIIIII",
@@ -454,7 +461,8 @@ class DSU_Server:
                 print("Raw bytes:", input_packet.hex(' '))
                 print(self.addr)
                 """
-                self.sock.sendto(input_packet, self.addr)
+
+                self.sock.sendto(input_packet, self.controller_states[index].addr)
 
 
 
@@ -467,8 +475,8 @@ class DSU_Server:
         # If event type is JOYSTICK, value is [Sticks int, angle, magnitude]
         # if event type is MOTION, value is [pitch, yaw, roll]
 
-        """
         print(f"updating state: {player_num}, {event_type}, {value}")
+        """
         print(f"current buttons: {self.controller_states[player_num].button_mask}")
         print(f"current dpad: {self.controller_states[player_num].dpad_mask}")
         print(f"current connected: {self.controller_states[player_num].connected}")
@@ -603,8 +611,10 @@ class DSU_Server:
                 adjusted_x = min(math.floor(((raw_x / 100) * 128) + 128), 255)
                 adjusted_y = min(math.floor(((raw_y / 100) * 128) + 128), 255)
 
+                """
                 print("dx: ", adjusted_x)
                 print("dy: ", adjusted_y)
+                """
 
                 self.controller_states[player_num].left_stick_x = adjusted_x
                 self.controller_states[player_num].left_stick_y = adjusted_y
@@ -619,8 +629,10 @@ class DSU_Server:
                 adjusted_x = min(math.floor(((raw_x / 100) * 128) + 128), 255)
                 adjusted_y = min(math.floor(((raw_y / 100) * 128) + 128), 255)
 
+                """
                 print("dx: ", adjusted_x)
                 print("dy: ", adjusted_y)
+                """
 
                 self.controller_states[player_num].right_stick_x = adjusted_x
                 self.controller_states[player_num].right_stick_y = adjusted_y
