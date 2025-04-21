@@ -162,7 +162,7 @@ final class PocketPad_EditorUITests: XCTestCase {
                     // turn it into a pill, set to plus symbol, and rotate 40º
                     let shapePicker = app.buttons["ButtonShapePicker"]
                     // first do slanted pill
-                    editList.scrollToElement(shapePicker, upward: false, amt: -100)
+                    editList.scrollToElement(shapePicker, upward: false, amt: 100)
                     XCTAssertTrue(shapePicker.exists, "The button shape picker does not exist.")
                     shapePicker.tap()
                     let slantedPillShape = app.buttons["Slanted Pill"]
@@ -180,7 +180,7 @@ final class PocketPad_EditorUITests: XCTestCase {
                     
                     // set icon type to sf symbol
                     let iconTypePicker = app.buttons["IconTypePicker"]
-                    editList.scrollToElement(iconTypePicker, upward: false, amt: -100)
+                    editList.scrollToElement(iconTypePicker, upward: false, amt: 100)
                     iconTypePicker.tap()
                     let sfBtn = app.buttons["SF Symbol"]
                     XCTAssertTrue(sfBtn.waitForExistence(timeout: TIMEOUT), "The SF Symbol button does not exist.")
@@ -189,7 +189,7 @@ final class PocketPad_EditorUITests: XCTestCase {
                     
                     // set the icon to plus
                     let iconPicker = app.buttons["PickSymbolBtn"]
-                    editList.scrollToElement(iconTypePicker, upward: false, amt: -50)
+                    editList.scrollToElement(iconTypePicker, upward: false, amt: 50)
                     XCTAssertTrue(iconPicker.waitForExistence(timeout: TIMEOUT), "The symbol picker button does not exist.")
                     iconPicker.tap()
                     let plusBtn = app.buttons["plus"]
@@ -200,7 +200,7 @@ final class PocketPad_EditorUITests: XCTestCase {
                     
                     // set rotation
                     let rotBtn = app.buttons["EditorRotationBtn"]
-                    editList.scrollToElement(rotBtn, upward: true, amt: -100)
+                    editList.scrollToElement(rotBtn, upward: true, amt: 100)
                     XCTAssertTrue(rotBtn.waitForExistence(timeout: TIMEOUT), "Rotation edit button was not found.")
                     rotBtn.tap()
                     let rotField = app.textFields["0"]
@@ -228,7 +228,7 @@ final class PocketPad_EditorUITests: XCTestCase {
                 } else if inp == "A" {
                     // set border thickness and text label
                     let iconField = app.textFields["Icon"]
-                    editList.scrollToElement(iconField, upward: false, amt: -100)
+                    editList.scrollToElement(iconField, upward: false, amt: 100)
                     iconField.tap()
                     let endCoord = iconField.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5))
                     endCoord.tap()
@@ -247,7 +247,7 @@ final class PocketPad_EditorUITests: XCTestCase {
                 } else if inp == "Middle" {
                     // delete the middle trigger
                     let deleteBtn = app.buttons["DeleteButtonBtn"]
-                    editList.scrollToElement(deleteBtn, upward: false, amt: -400)
+                    editList.scrollToElement(deleteBtn, upward: false, amt: 400)
                     deleteBtn.tap()
                     let confirmDel = app.buttons["ConfirmDelete"]
                     XCTAssertTrue(confirmDel.waitForExistence(timeout: TIMEOUT), "The delete confirmation could not be found.")
