@@ -12,9 +12,8 @@ from struct import unpack, pack
 from functools import cached_property
 from enums import AllButtons, ControllerUpdateTypes
 from shared_definitions import input_server, inputId_to_inputs
-from server_constants import (POCKETPAD_SERVICE, LATENCY_CHARACTERISTIC, 
-                        CONNECTION_CHARACTERISTIC, CONTROLLER_TYPE_CHARACTERISTIC,
-                        INPUT_CHARACTERISTIC, LAYOUT_REQUEST_CHARACTERISTIC, ConnectionMessage)
+from server_constants import *
+from utils import Paircode
 
 from bless import (  # type: ignore
     BlessServer,
@@ -133,7 +132,17 @@ gatt: Dict = {
                 | GATTAttributePermissions.writeable
             ),
             "Value": None,
-        }
+        },
+        
+        PAIRCODE_CHARACTERISTIC: {
+            "Properties": (
+                GATTCharacteristicProperties.read
+            ),
+            "Permissions": (
+                GATTAttributePermissions.readable
+            ),
+            "Value": None,
+        },
     },
 }
 
@@ -329,7 +338,7 @@ def process_connection_characteristic(characteristic):
 
         if signal == ConnectionMessage.disconnecting.value:
             # TODO change server to indicate who is leaving
-            #print(f"player {player_id} disconnected")
+            # print(f"player {player_id} disconnected")
             input_server.update_controller_state(player_id, ControllerUpdateTypes.CONNECTION.value, [ConnectionMessage.disconnecting.value])
 
             response_data = [0, ConnectionMessage.received.value]
@@ -527,6 +536,7 @@ class QBlessServer(QObject):
         logger.debug("Starting server")
         
         await self.server.add_gatt(gatt)
+        self.server.get_characteristic(PAIRCODE_CHARACTERISTIC).value = str(Paircode.reset().code).encode()
         await self.server.start(prioritize_local_name=True)
         logger.debug("Advertising")
     
