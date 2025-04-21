@@ -168,93 +168,6 @@ def request_game_data(game: str):
     global current_game
     current_game = game
     game_function(game)
-    print("Requesting game data")
-
-MTU = 20
-ATT_HEADER = 3
-PAYLOAD_SIZE = MTU - ATT_HEADER
-def send_game_data(characteristic):
-    global current_game, BLESS_SERVER
-
-    server = BLESS_SERVER
-
-    print("\n\nHello World\n\n")
-
-    current_game = "pie"
-
-    data_length_in_bytes = len(characteristic.value)
-    format_str = "B" * data_length_in_bytes
-    connection_information = unpack(format_str, characteristic.value)
-
-    player_id = connection_information[0]
-    logger.debug(f"{player_id} requested the current game's saved layout")
-    
-    # response_data = [0, ConnectionMessage.transmitting_layout.value]
-    # response = bytearray(response_data)
-    # characteristic.value = response
-
-    char = server.get_characteristic(CONTROLLER_TYPE_CHARACTERISTIC)
-
-    print(f"\n\nCurrent Game: {current_game}\n\n")
-    if current_game != None:
-        layout_json = gdb.get_controller_layout(current_game)
-        data = layout_json.encode('utf-8')
-        # signal start
-
-        char.value = bytearray([ConnectionMessage.transmitting_layout.value, 255])
-        # server.update_value(POCKETPAD_SERVICE, CONTROLLER_TYPE_CHARACTERISTIC)
-        print("\nFIRST EVENT\n")
-
-        # Send each chunk with flow control
-        for i in range(0, len(data), PAYLOAD_SIZE):
-            print("\nMID EVENT\n")
-            chunk = data[i : i + PAYLOAD_SIZE]
-            pkt = pack(f"<BB{len(chunk)}s",
-                    ConnectionMessage.transmitting_layout.value,
-                    len(chunk),
-                    chunk)
-
-            # Clear previous ACK and send indication
-            ack_event.clear()                                  # :contentReference[oaicite:5]{index=5}
-            char.value = bytearray(pkt)
-            # server.update_value(POCKETPAD_SERVICE, CONTROLLER_TYPE_CHARACTERISTIC)
-
-            # Wait (up to 2 s) for client ACK before next chunk
-            if not ack_event.wait(timeout=2.0):
-                logger.warning("Timeout waiting for ACK; aborting send")
-                return
-
-    # Signal end with 0 length
-    ack_event.clear()
-    char.value = bytearray([ConnectionMessage.transmitting_layout.value, 0])
-    # server.update_value(POCKETPAD_SERVICE, CONTROLLER_TYPE_CHARACTERISTIC)
-    print("\nLAST EVENT\n")
-    
-    #     char.value = bytearray([ConnectionMessage.transmitting_layout.value, 255])
-    #     print(char.value)
-    #     #server.update_value(POCKETPAD_SERVICE, CONTROLLER_TYPE_CHARACTERISTIC)
-    #     print("\n\nINIT CHUNK\n\n")
-    #     # send chunks
-
-    #     data = layout_json.encode('utf-8')
-
-    #     for i in range(0, len(data), MTU):
-    #         print("\n\nMID CHUNK\n\n")
-    #         chunk = data[i:i+MTU]
-    #         pkt = pack(f"<BB{len(chunk)}s>",
-    #                    ConnectionMessage.transmitting_layout.value,
-    #                    len(chunk),
-    #                    chunk)
-    #         char.value = bytearray(pkt)
-    #         # server.update_value(POCKETPAD_SERVICE, CONTROLLER_TYPE_CHARACTERISTIC)
-    # # signal end
-    # char.value = bytearray([ConnectionMessage.transmitting_layout.value, 0])
-    # #server.update_value(POCKETPAD_SERVICE, CONTROLLER_TYPE_CHARACTERISTIC)
-    # print("\n\nLAST CHUNK\n\n")
-
-    # char.value = bytearray([ConnectionMessage.transmitting_layout.value, 0])
-    # #server.update_value(POCKETPAD_SERVICE, CONTROLLER_TYPE_CHARACTERISTIC)
-    # print("\n\nLASTest CHUNK\n\n")
 
 def reconstruct_timestamp(sent_ms):
     """Reconstruct possible timestamps based on the last 5 digits."""
@@ -533,7 +446,7 @@ def process_controller_characteristic(characteristic):
     characteristic.value = response
 
 def process_write_request(characteristic: BlessGATTCharacteristic, value):
-    global executor
+    global executor, BLESS_SERVER
 
     upper_uuid = characteristic.uuid.upper()
     if (upper_uuid == LATENCY_CHARACTERISTIC):
@@ -545,17 +458,30 @@ def process_write_request(characteristic: BlessGATTCharacteristic, value):
     elif (upper_uuid == CONTROLLER_TYPE_CHARACTERISTIC):
         process_controller_characteristic(characteristic)
     elif upper_uuid == LAYOUT_REQUEST_CHARACTERISTIC:
-        current_game = "pie"
-        if current_game != None:
-            layout = gdb.get_controller_layout(current_game)
-            print(f"Len Layout = {len(layout)}")
-            layout_bytes = layout.encode('utf-8')
-            for index in range(0, len(layout_bytes), 240):
-                chunk = layout_bytes[index:index+240]
-                response = bytearray([len(layout_bytes)]) + chunk
+        data = characteristic.value
+        start_index, stop_index = unpack('<II', data[:8])
+
+        if (start_index == 0 and stop_index == 0):
+            if current_game == None:
+                response = pack('<I', 0)
                 characteristic.value = response
+                return
+            layout = gdb.get_controller_layout(current_game)
+            if layout == None:
+                response = pack('<I', 0)
+                characteristic.value = response
+                return
+            layout_bytes = layout.encode('utf-8')
+            response = pack('<I', len(layout_bytes))
+            characteristic.value = response
             return
-        # send_game_data(characteristic)
+        else:
+            layout = gdb.get_controller_layout(current_game)
+            layout_segment = layout[start_index:stop_index]
+            layout_segment_bytes = layout_segment.encode('utf-8')
+            response = bytearray([len(layout_segment_bytes)]) + layout_segment_bytes
+            characteristic.value = response
+            return
     else:
         logger.error("ERROR: Unrecognized Write Request")
 
