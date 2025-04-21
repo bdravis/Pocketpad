@@ -34,7 +34,7 @@ let DEBUG_BUTTONS: [ButtonConfig] = [ // Example buttons
 struct ControllerView: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var isPortait: Bool = false
-    @State private var didLockRotation: Bool = false
+    @State private var didLockRotation: Bool = true
     @State private var ranStartLock: Bool = false
     @ObservedObject private var layoutManager = LayoutManager.shared
     
@@ -62,6 +62,9 @@ struct ControllerView: View {
     @State private var deleting: Bool = false
     @State private var showRenameAlert: Bool = false
     @State private var newName: String = ""
+    
+    // Tips
+    var orientationTip = OrientationTip()
     
     var body: some View {
         GeometryReader { geometry in
@@ -318,7 +321,9 @@ struct ControllerView: View {
                             Toggle("Rotation Lock", systemImage: "lock\(didLockRotation ? ".open" : "").rotation", isOn: $didLockRotation)
                                 .buttonStyle(.borderless)
                                 .toggleStyle(.button)
+                                .popoverTip(orientationTip, arrowEdge: .top)
                                 .onChange(of: didLockRotation, initial: false) {
+                                    orientationTip.invalidate(reason: .actionPerformed)
                                     layoutManager.currentController.rotationLocked = didLockRotation
                                     if didLockRotation {
                                         lockRotation()
