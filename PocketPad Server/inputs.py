@@ -105,14 +105,6 @@ def parse_input(raw_data):
             logger.error("Invalid DPad direction")
             return (-1, -1, None)
         
-        # # Find the input corresponding to the specified DPad direction
-        # dpad_inputs: dict[DPadDirection, str] = button.inputs
-        # try:
-        #     dpad_input = dpad_inputs[direction]
-        # except:
-        #     logger.error("No input found for DPad direction")
-        #     return input_error_tuple
-        
         # Temporary map for parsing direction
         direction_map: dict[DPadDirection, str] = {
             DPadDirection.UP: "UP",
