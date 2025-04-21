@@ -180,7 +180,7 @@ final class PocketPad_EditorUITests: XCTestCase {
                     
                     // set icon type to sf symbol
                     let iconTypePicker = app.buttons["IconTypePicker"]
-                    editList.scrollToElement(iconTypePicker, upward: false, amt: 100)
+                    editList.scrollToElement(iconTypePicker, upward: false, amt: 50)
                     iconTypePicker.tap()
                     let sfBtn = app.buttons["SF Symbol"]
                     XCTAssertTrue(sfBtn.waitForExistence(timeout: TIMEOUT), "The SF Symbol button does not exist.")
@@ -189,7 +189,9 @@ final class PocketPad_EditorUITests: XCTestCase {
                     
                     // set the icon to plus
                     let iconPicker = app.buttons["PickSymbolBtn"]
-                    editList.scrollToElement(iconTypePicker, upward: false, amt: 50)
+                    if !iconPicker.exists || !iconPicker.isHittable {
+                        editList.scrollToElement(iconTypePicker, upward: false, amt: 50)
+                    }
                     XCTAssertTrue(iconPicker.waitForExistence(timeout: TIMEOUT), "The symbol picker button does not exist.")
                     iconPicker.tap()
                     let plusBtn = app.buttons["plus"]
