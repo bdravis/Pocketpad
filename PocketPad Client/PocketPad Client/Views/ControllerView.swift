@@ -132,7 +132,8 @@ struct ControllerView: View {
                         let tapGesture = TapGesture().onEnded {
                             applySelectedButton()
                             selectedBtn.setButton(to: btn.wrappedValue)
-                            if (isPortait && selectedBtn.scaledPos.y > 0.5) || (!isPortait && selectedBtn.scaledPos.x > 0.5) {
+                            let pos = getPos(pos: selectedBtn.getPos(), geomSize: geometry.size)
+                            if (isPortait && pos.y > geometry.size.height / 2) || (!isPortait && pos.x > geometry.size.width / 2) {
                                 btnEditViewPos = 0.0
                             } else {
                                 btnEditViewPos = 1.0
@@ -456,10 +457,10 @@ struct ControllerView: View {
                 }
             }
             .alert("Delete Layout", isPresented: $showDeleteAlert, actions: {
-                Button("Cancel") {
+                Button("Cancel", role: .cancel) {
                     showDeleteAlert = false
                 }
-                Button("Delete") {
+                Button("Delete", role: .destructive) {
                     do {
                         try layoutManager.deleteLayout(layoutManager.currentController.name)
                         showDeleteAlert = false
@@ -476,7 +477,7 @@ struct ControllerView: View {
             .alert("Rename Layout", isPresented: $showRenameAlert, actions: {
                 TextField("Layout Name", text: $newName)
                     .accessibilityIdentifier("LayoutNameField")
-                Button("Cancel") {
+                Button("Cancel", role: .cancel) {
                     showRenameAlert = false
                 }
                 Button("Done") {

@@ -83,7 +83,9 @@ struct OnBoardingCardView: View {
     var info: OnBoardingPage
     var pageCount: Int
     @Binding var idx: Int
+    
     @State private var isAnimating: Bool = false
+    @State private var imgCornerRadius: CGFloat = 0.0
     
     var body: some View {
         VStack(spacing: 20) {
@@ -91,9 +93,19 @@ struct OnBoardingCardView: View {
             Image(info.image)
                 .resizable()
                 .scaledToFit()
-                .clipShape(RoundedRectangle(cornerRadius: 24))
+                .clipShape(RoundedRectangle(cornerRadius: imgCornerRadius))
                 .shadow(color: Color(red: 0, green: 0, blue: 0, opacity: 0.15), radius: 8, x: 6, y: 8)
                 .scaleEffect(isAnimating ? 1.0 : 0.6)
+                .background {
+                    GeometryReader { geom in
+                        Color.clear
+                            .onChange(of: geom.size.height, initial: true) {
+                                // get an adaptive corner radius
+                                let div = geom.size.height / UIScreen.main.bounds.height
+                                imgCornerRadius = UIScreen.main.displayCornerRadius * div
+                            }
+                    }
+                }
             
             // Title
             Text(info.title)
