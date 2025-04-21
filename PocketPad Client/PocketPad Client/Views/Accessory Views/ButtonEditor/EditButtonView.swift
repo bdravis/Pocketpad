@@ -249,10 +249,10 @@ struct EditButtonView: View {
                 .frame(maxWidth: .infinity)
             }
             .alert("Delete Button", isPresented: $showDeleteAlert, actions: {
-                Button("Cancel") {
+                Button("Cancel", role: .cancel) {
                     showDeleteAlert = false
                 }
-                Button("Delete") {
+                Button("Delete", role: .destructive) {
                     LayoutManager.shared.deleteButton(inputId: button.inputId)
                     showDeleteAlert = false
                     button.clear()
@@ -304,7 +304,7 @@ struct EditorSlider<V>: View where V : BinaryFloatingPoint, V.Stride : BinaryFlo
                     TextField(title, value: $enteringValue, formatter: formatter)
                         .keyboardType(keyboardType)
                         .accessibilityIdentifier("EditorValueField")
-                    Button("Cancel") {
+                    Button("Cancel", role: .cancel) {
                         enterAlert = false
                     }
                     Button("Done") {

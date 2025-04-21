@@ -457,10 +457,10 @@ struct ControllerView: View {
                 }
             }
             .alert("Delete Layout", isPresented: $showDeleteAlert, actions: {
-                Button("Cancel") {
+                Button("Cancel", role: .cancel) {
                     showDeleteAlert = false
                 }
-                Button("Delete") {
+                Button("Delete", role: .destructive) {
                     do {
                         try layoutManager.deleteLayout(layoutManager.currentController.name)
                         showDeleteAlert = false
@@ -477,7 +477,7 @@ struct ControllerView: View {
             .alert("Rename Layout", isPresented: $showRenameAlert, actions: {
                 TextField("Layout Name", text: $newName)
                     .accessibilityIdentifier("LayoutNameField")
-                Button("Cancel") {
+                Button("Cancel", role: .cancel) {
                     showRenameAlert = false
                 }
                 Button("Done") {

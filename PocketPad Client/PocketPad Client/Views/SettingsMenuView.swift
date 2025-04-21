@@ -33,6 +33,7 @@ struct SettingsMenuView: View {
     @State private var playerName: String = LayoutManager.shared.player_id_string
     @State private var showDPadStyle: Bool = false
     @State private var saveAsMalformed: Bool = false
+    @State private var showDeletingAllDataAlert: Bool = false
     @State private var makingNewLayout: Bool = false
     @State private var newLayoutName: String = ""
     
@@ -384,6 +385,39 @@ struct SettingsMenuView: View {
                 Text("View Tutorial")
             }
             .accessibilityIdentifier("ViewTutorial")
+            
+            // MARK: Removing All Data
+            Button(action: {
+                showDeletingAllDataAlert.toggle()
+            }) {
+                Text("Delete App Data")
+            }
+            .foregroundStyle(.red)
+            .accessibilityIdentifier("RemoveAllData")
+            .alert("Delete App Data", isPresented: $showDeletingAllDataAlert, actions: {
+                Button("Cancel", role: .cancel) {
+                    showDeletingAllDataAlert = false
+                }
+                Button("Delete", role: .destructive) {
+                    do {
+                        try layoutManager.deleteAllLayouts()
+                    } catch {
+                        UIApplication.shared.alert(body: error.localizedDescription)
+                        return
+                    }
+                    if let bundleID = Bundle.main.bundleIdentifier {
+                        UserDefaults.standard.removePersistentDomain(forName: bundleID)
+                    }
+                    // close the app
+                    UIApplication.shared.perform(#selector(NSXPCConnection.suspend))
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        exit(0)
+                    }
+                }
+                .accessibilityIdentifier("ConfirmDelete")
+            }, message: {
+                Text("Are you sure you want to delete all app data? This cannot be undone.")
+            })
             
             // MARK: Saving layouts (debug)
             #if DEBUG
