@@ -8,6 +8,7 @@ import bluetooth_server
 from pathlib import Path
 import game_database as gdb
 from bluetooth_server import QBlessServer
+from utils import Paircode
 
 
 from PySide6.QtWidgets import (QApplication, QMainWindow, QListWidgetItem, QMessageBox, QCheckBox, QVBoxLayout,
@@ -1000,7 +1001,11 @@ class MainWindow(QMainWindow):
             self.ui.view_code_button.setIcon(QIcon(colored_pixmap))
             self.ui.view_code_button.setIconSize(icon_size)
 
-            self.ui.pair_code_label.setText("123 456")
+            code = Paircode.get()
+            if code:
+                self.ui.pair_code_label.setText(str(code))
+            else:
+                self.ui.pair_code_label.setText("--- ---")
 
     def get_icon_from_svg(self, svg_path, color):
         """

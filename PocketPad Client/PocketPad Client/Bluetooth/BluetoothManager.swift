@@ -45,6 +45,11 @@ class BluetoothManager: NSObject, ObservableObject {
     @Published var writeStatus: String = ""
     @Published var isConnecting = false
     
+    @Published var paircodeNeeded = false
+    @Published var fullyConnected = false
+    
+    var paircode: String?
+    
     @Published var connectionError: String?
     
     @State private var showingIDTakenAlert = false
@@ -258,7 +263,9 @@ extension BluetoothManager: CBCentralManagerDelegate {
             self.lastMessage = ""
             self.writeStatus = ""
             self.peripheral = nil
-            self.connectionError = "Connection lost"
+            if self.connectionError == nil {
+                self.connectionError = "Connection lost"
+            }
         }
     }
 }
@@ -365,6 +372,10 @@ extension BluetoothManager: CBPeripheralDelegate {
             return
         }
         switch characteristic.uuid {
+        case PAIRCODE_CHARACTERISTIC:
+            paircode = String(data: data, encoding: .utf8)
+            print("PAIRCODE \(paircode)")
+            paircodeNeeded = true
         case CONNECTION_CHARACTERISTIC:
             handleConnectionMessage(data, from: peripheral, characteristic: characteristic)
         case LAYOUT_REQUEST_CHARACTERISTIC:
@@ -507,6 +518,8 @@ extension BluetoothManager: CBPeripheralDelegate {
             selectedService = nil
             isConnecting = false
             connectedDevice = nil
+            fullyConnected = false
+            paircodeNeeded = false
         
         case ConnectionMessage.requesting_id.rawValue:
             print("Server acknowledged connection")
@@ -529,7 +542,11 @@ extension BluetoothManager: CBPeripheralDelegate {
                 
                 peripheral.writeValue(Data(response_data), for: characteristic, type: .withResponse)
                 peripheral.readValue(for: characteristic)
+                // get paircode characteristic
                 
+                if let pairchar = discoveredCharacteristics.first(where: { $0.uuid == PAIRCODE_CHARACTERISTIC }) {
+                    peripheral.readValue(for: pairchar)
+                }
                 
             } else {
                 //Display to user that ID is taken

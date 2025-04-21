@@ -12,6 +12,8 @@ struct ContentView: View {
     @State private var isShowingSettings = false
     @State private var exitAllMenusCallback: (() -> Void)? = nil
     @State private var showModifyBtn = false
+    
+    @State private var paircode = ""
 
     @StateObject private var bluetoothManager = BluetoothManager.shared
         
@@ -104,7 +106,7 @@ struct ContentView: View {
                     }
                     
                     // NavigationLink to ControllerView for Debugging
-                    NavigationLink(destination: ControllerView(isEditor: false)) {
+                    NavigationLink(destination: ControllerView(isEditor: false, isInMacroEditor: false)) {
                         Text("Open Controller")
                             .font(.system(size: 18))
                             .padding(.horizontal, 15)
@@ -121,10 +123,12 @@ struct ContentView: View {
                     .accessibilityIdentifier("OpenControllerView")
                     .padding(.horizontal)
                     .padding(.top, 15)
+                    .disabled(!bluetoothManager.paircodeNeeded && bluetoothManager.connectedDevice != nil)
+                    
                     
                     // TODO: Move to settings page (was greyed out so had to add here)
                     if showModifyBtn {
-                        NavigationLink(destination: ControllerView(isEditor: true), label: {
+                        NavigationLink(destination: ControllerView(isEditor: true, isInMacroEditor: false), label: {
                             Text("Modify Controller")
                                 .font(.system(size: 18))
                                 .padding(.horizontal, 10)
@@ -138,8 +142,28 @@ struct ContentView: View {
                         .background(Color.blue)
                         .cornerRadius(25)
                         .frame(minWidth: 250)
+                        .disabled(!bluetoothManager.paircodeNeeded && bluetoothManager.connectedDevice != nil)
                         .accessibilityIdentifier("ModifyLayoutView")
                     }
+                    
+                    // MARK: NavigationLink to macro recorder view
+                    NavigationLink(destination: ControllerView(isEditor: false, isInMacroEditor: true)) {
+                        Text("Record Macro")
+                            .font(.system(size: 18))
+                            .padding(.horizontal, 23)
+                            .padding(.vertical, 5)
+                            .foregroundColor(.white)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 25)
+                                    .stroke(Color.white, lineWidth: 4)
+                            )
+                    }
+                    .background(Color.blue)
+                    .cornerRadius(25)
+                    .frame(minWidth: 250)
+                    .accessibilityIdentifier("RecordMacroView")
+                    .padding(.horizontal)
+                    .disabled(!bluetoothManager.paircodeNeeded && bluetoothManager.connectedDevice != nil)
                     
                     Spacer()
                 }
@@ -193,6 +217,21 @@ struct ContentView: View {
                 }
             }
         )
+        .alert("Pair Code", isPresented: $bluetoothManager.paircodeNeeded) {
+            TextField("Pair Code", text: $paircode)
+                .keyboardType(.numberPad)
+            Button("OK", action: {
+                if bluetoothManager.paircode != paircode {
+                    bluetoothManager.disconnect()
+                    bluetoothManager.connectionError = "Incorrect paircode"
+                }
+                bluetoothManager.paircodeNeeded = false
+            })
+            .disabled(paircode.isEmpty || paircode.count != 6)
+            Button("Cancel", role: .cancel) {
+                bluetoothManager.disconnect()
+            }
+        }
         // Bluetooth Manager updates (from first version)
         .onChange(of: bluetoothManager.connectedDevice) { device in
             if device != nil {
