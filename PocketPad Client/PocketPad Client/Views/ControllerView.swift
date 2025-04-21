@@ -152,6 +152,7 @@ struct ControllerView: View {
                                     TriggerButtonView(config: btn.wrappedValue as! TriggerConfig)
                                         .accessibilityAddTraits(.isButton)
                                         .accessibilityIdentifier("ControllerButton")
+                                    
                                 }
                             }
                         }

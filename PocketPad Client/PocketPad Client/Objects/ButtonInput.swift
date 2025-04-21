@@ -34,6 +34,8 @@ enum ButtonInput: String, Codable {
     case MouseLeft = "MouseLeft"
     case MouseRight = "MouseRight"
     
+    case Keyboard = "Keyboard"
+    
     case DPadUp = "DPadUp"
     case DPadDown = "DPadDown"
     case DPadRight = "DPadRight"
@@ -45,7 +47,7 @@ enum ButtonInput: String, Codable {
 func getButtonInputs(for type: ButtonType) -> [ButtonInput] {
     switch type {
     case .regular:
-        return [.A, .B, .X, .Y, .Z, .One, .Two, .Start, .Select, .Home, .Share, .Turbo, .MouseLeft, .MouseRight]
+        return [.A, .B, .X, .Y, .Z, .One, .Two, .Start, .Select, .Home, .Share, .Turbo, .MouseLeft, .MouseRight, .Keyboard]
     case .joystick:
         return [.RightJoystick, .LeftJoystick, .Mouse]
     case .dpad:

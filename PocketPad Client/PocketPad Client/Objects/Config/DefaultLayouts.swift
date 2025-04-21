@@ -259,7 +259,9 @@ class DefaultLayouts {
     static let MouseKeyboardLayout: LayoutConfig = .init(name: "Mouse & Keyboard", lockToOrientation: .all, buttons: [
         JoystickConfig(position: .init(scaledPos: CGPoint(x: 0.29, y: 0.17)), scale: 3, inputId: 0, input: .Mouse),
         RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.59, y: 0.12)), scale: 1.3, inputId: 1, input: .MouseLeft, style: .init(shape: .Circle, iconType: .Text, icon: "Left")),
-        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.83, y: 0.23)), scale: 1.3, inputId: 2, input: .MouseRight, style: .init(shape: .Circle, iconType: .Text, icon: "Right"))
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.83, y: 0.23)), scale: 1.3, inputId: 2, input: .MouseRight, style: .init(shape: .Circle, iconType: .Text, icon: "Right")),
+        
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.2, y: 0.5)), scale: 1, inputId: 3, input: .Keyboard)
     ])
     
     
