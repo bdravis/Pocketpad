@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 class MacroManager : ObservableObject {
     // MARK: Variables
@@ -22,7 +23,6 @@ class MacroManager : ObservableObject {
     // A macro is essentially an array of timestamped inputs (TimeStampedInput)
     @Published private var macrosByName: [String : [TimeStampedInput]] = [:] // Device database of macros (id: name), persistent across controllers
     @Published private var macroNamesByButton: [ButtonInput : String] = [:] // Macro-assigned buttons for current controller (not persistent)
-    // TODO: Save to user settings
     
     // MARK: Functions for recording and capturing inputs
     // Allow inputs to be recorded for the new macro
