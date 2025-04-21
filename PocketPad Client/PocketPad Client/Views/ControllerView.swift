@@ -132,7 +132,8 @@ struct ControllerView: View {
                         let tapGesture = TapGesture().onEnded {
                             applySelectedButton()
                             selectedBtn.setButton(to: btn.wrappedValue)
-                            if (isPortait && selectedBtn.scaledPos.y > 0.5) || (!isPortait && selectedBtn.scaledPos.x > 0.5) {
+                            let pos = getPos(pos: selectedBtn.getPos(), geomSize: geometry.size)
+                            if (isPortait && pos.y > geometry.size.height / 2) || (!isPortait && pos.x > geometry.size.width / 2) {
                                 btnEditViewPos = 0.0
                             } else {
                                 btnEditViewPos = 1.0
