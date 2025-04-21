@@ -33,8 +33,6 @@ trigger: Union[asyncio.Event, threading.Event] = None
 thread = None
 loop = None
 
-BLESS_SERVER = None
-
 executor = concurrent.futures.ThreadPoolExecutor(max_workers=16)
 
 num_players_lock = threading.Lock()
@@ -446,8 +444,6 @@ def process_controller_characteristic(characteristic):
     characteristic.value = response
 
 def process_write_request(characteristic: BlessGATTCharacteristic, value):
-    global executor, BLESS_SERVER
-
     upper_uuid = characteristic.uuid.upper()
     if (upper_uuid == LATENCY_CHARACTERISTIC):
         process_latency_characteristic(characteristic)
@@ -500,9 +496,7 @@ class Threaded_Bless_Server(BlessServer):
 class QBlessServer(QObject):
     @cached_property
     def server(self):
-        global BLESS_SERVER
         server = Threaded_Bless_Server(name="PocketPad")
-        BLESS_SERVER = server
 
         self.loop = None 
         server.read_request_func = read_request
