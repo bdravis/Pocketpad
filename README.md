@@ -1,4 +1,3 @@
-[README](./README.md) | [FAQ](./FAQ.md) 
 # PocketPad
 
 PocketPad is a iOS app which allows you to connect your phone to your computer and emulate a range of game controllers. This repository contains both the iOS client and the python cross-platform server.
