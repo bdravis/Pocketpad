@@ -22,9 +22,7 @@ class MacroManager : ObservableObject {
     // A macro is essentially an array of timestamped inputs (TimeStampedInput)
     @Published private var macrosByName: [String : [TimeStampedInput]] = [:] // Device database of macros (id: name), persistent across controllers
     @Published private var macroNamesByButton: [ButtonInput : String] = [:] // Macro-assigned buttons for current controller (not persistent)
-    // TODO: Assign macro to buttons
     // TODO: Save to user settings
-    // TODO: Fix automated tests
     
     // MARK: Functions for recording and capturing inputs
     // Allow inputs to be recorded for the new macro
@@ -107,13 +105,15 @@ class MacroManager : ObservableObject {
         if let macroName = macroNamesByButton[buttonInput] { // Check if macro exists
             if willExecute {
                 // Actually execute the macro
-                if macrosByName[macroName] == nil {
+                if macrosByName[macroName] == nil { // Error checking to not crash the app, theoretically should never be true
 #if DEBUG
                     print("Macro \(macroName) not found. This error should not have occured.")
 #endif
                     return false
                 }
-                executeMacro(macro: macrosByName[macroName]!, isInMacroEditor: isInMacroEditor)
+                Task {
+                    await executeMacro(macro: macrosByName[macroName]!, isInMacroEditor: isInMacroEditor)
+                }
             }
             return true
         }
@@ -121,13 +121,35 @@ class MacroManager : ObservableObject {
     }
     
     // Takes a macro (known to exist) and executes it
-    private func executeMacro(macro: [TimeStampedInput], isInMacroEditor: Bool) {
+    private func executeMacro(macro: [TimeStampedInput], isInMacroEditor: Bool) async {
 #if DEBUG
-        print("TBD Executing Macro")
+        print("Executing Macro")
 #endif
-        // TODO: Execute this macro
-        // For each timestamped input in the array, call sendControllerInput on it
-        // Need to know whether to send it to the macro recorder (i.e. nested macros) or to Bluetooth
+        if macro.isEmpty {
+            return
+        }
+        
+        let macro = macro.sorted { $0.timestamp < $1.timestamp }
+        
+        // Evaluate first input
+        Task { sendControllerInput(macro[0].input, isInMacroEditor: isInMacroEditor) }
+        
+        let numInputs: Int = macro.count
+        for i in 0..<(numInputs - 1) {
+            let currentTSInput: TimeStampedInput = macro[i]
+            let nextTSInput: TimeStampedInput = macro[i + 1]
+            let timeToNextInput: TimeInterval = max(0, nextTSInput.timestamp.timeIntervalSince(currentTSInput.timestamp))
+            
+            do {
+                try await Task.sleep(for: .seconds(timeToNextInput)) // wait until the next timestamp
+                Task { sendControllerInput(nextTSInput.input, isInMacroEditor: isInMacroEditor) } // evaluate this next input
+            } catch {
+#if DEBUG
+                print("Task interrupted")
+#endif
+                return
+            }
+        }
     }
     
     // MARK: Functions to filter inputs through macro
