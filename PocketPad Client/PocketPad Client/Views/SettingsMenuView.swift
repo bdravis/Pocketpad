@@ -29,6 +29,12 @@ struct SettingsMenuView: View {
     @AppStorage("motionControlEnabled") var motionControlEnabled: Bool = false
 
     @EnvironmentObject var motionManager: MotionManager
+    
+    // MARK: - Add Help & FAQs Properties
+    @Environment(\.openURL) private var openURL  // Environment key to open URLs
+    private let helpFAQURL = Bundle.main
+        .object(forInfoDictionaryKey: "HelpFAQURL") as? String
+        ?? "https://docs.google.com/document/d/1VsSVCmji7lz9CRxUKt2FdRm9Vd-MRM4ke3S1Zd5uDqQ/edit?usp=sharing"
 
     @State private var playerName: String = LayoutManager.shared.player_id_string
     @State private var showDPadStyle: Bool = false
@@ -157,6 +163,21 @@ struct SettingsMenuView: View {
     // MARK: - Main Settings Content
     private var settingsContent: some View {
         VStack(alignment: .leading, spacing: 14) {
+            Section("Support") {
+                Button {
+                    guard let url = URL(string: helpFAQURL) else { return }
+                        openURL(url)
+                    } label: {
+                        HStack {
+                            Text("Help & FAQs")
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                            .foregroundColor(.secondary)
+                        }
+                    }
+                    .accessibilityIdentifier("HelpFAQsButton")
+                    .padding(.vertical, 8)
+                }
             // Controller Type Picker
             HStack {
                 Text("Current Layout")
