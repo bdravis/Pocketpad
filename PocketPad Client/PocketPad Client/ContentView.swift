@@ -167,32 +167,32 @@ struct ContentView: View {
             }
             .navigationTitle("Controller")
             .navigationBarTitleDisplayMode(.inline)
-        }
-        // Overlay the SettingsMenuView when isShowingSettings is true
-        .overlay(
-            GeometryReader { geometry in
-                ZStack {
-                    Rectangle()
-                        .foregroundStyle(.black)
-                        .opacity(isShowingSettings ? 0.6 : 0.0)
-                        .animation(.easeOut, value: isShowingSettings)
-                        .ignoresSafeArea()
-                        .onTapGesture {
-                            exitAllMenusCallback?()
-                            isShowingSettings = false
-                        }
-                    
-                    SettingsMenuView(
-                        isShowingSettings: $isShowingSettings,
-                        exitAllMenusCallback: $exitAllMenusCallback,
-                        isCustomLayout: $showModifyBtn
-                    )
-                        .offset(y: isShowingSettings ? 0 : -geometry.size.height)
-                        .transition(.move(edge: .top))
-                        .animation(.bouncy, value: isShowingSettings)
+            // Overlay the SettingsMenuView when isShowingSettings is true
+            .overlay(
+                GeometryReader { geometry in
+                    ZStack {
+                        Rectangle()
+                            .foregroundStyle(.black)
+                            .opacity(isShowingSettings ? 0.6 : 0.0)
+                            .animation(.easeOut, value: isShowingSettings)
+                            .ignoresSafeArea()
+                            .onTapGesture {
+                                exitAllMenusCallback?()
+                                isShowingSettings = false
+                            }
+                        
+                        SettingsMenuView(
+                            isShowingSettings: $isShowingSettings,
+                            exitAllMenusCallback: $exitAllMenusCallback,
+                            isCustomLayout: $showModifyBtn
+                        )
+                            .offset(y: isShowingSettings ? 0 : -geometry.size.height)
+                            .transition(.move(edge: .top))
+                            .animation(.bouncy, value: isShowingSettings)
+                    }
                 }
-            }
-        )
+            )
+        }
         // Bluetooth Manager updates (from first version)
         .onChange(of: bluetoothManager.connectedDevice) { device in
             if device != nil {
