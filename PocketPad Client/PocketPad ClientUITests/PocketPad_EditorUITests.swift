@@ -189,6 +189,7 @@ final class PocketPad_EditorUITests: XCTestCase {
                     
                     // set the icon to plus
                     let iconPicker = app.buttons["PickSymbolBtn"]
+                    editList.scrollToElement(iconTypePicker, upward: false, amt: -50)
                     XCTAssertTrue(iconPicker.waitForExistence(timeout: TIMEOUT), "The symbol picker button does not exist.")
                     iconPicker.tap()
                     let plusBtn = app.buttons["plus"]
