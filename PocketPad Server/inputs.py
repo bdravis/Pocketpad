@@ -82,19 +82,13 @@ def parse_input(raw_data):
             raw_angle = unpacked_data[NUM_COMMON_FIELDS]
             raw_magnitude = unpacked_data[NUM_COMMON_FIELDS + 1]
 
-            print(player_id)
-            print(ControllerUpdateTypes.JOYSTICK.value)
-            print(inputId_to_inputs[input_id].value)
-            print(raw_angle)
-            print(raw_magnitude)
-            print(f"updating: {player_id} {ControllerUpdateTypes.JOYSTICK.value} {inputId_to_inputs[input_id].value} {raw_angle} {raw_magnitude}")
+            # logger.debug(f"Updating Joystick: {player_id} -- {ControllerUpdateTypes.JOYSTICK.value} -- {inputId_to_inputs[input_id].value} -- {raw_angle} -- {raw_magnitude}")
             input_server.update_controller_state(player_id, ControllerUpdateTypes.JOYSTICK.value, [inputId_to_inputs[input_id].value, raw_angle, raw_magnitude])
         except:
             logger.error("Joystick input format missing fields")
             return (-1, -1, None)
         
-        # logger.debug(f"Received input from joystick {input_id} from player"
-        # f" {player_id} with angle {raw_angle} and magnitude {raw_magnitude}")
+        # logger.debug(f"Received input from joystick {input_id} from player" f" {player_id} with angle {raw_angle} and magnitude {raw_magnitude}")
 
     elif button_type == ButtonType.DPAD:
         # Check if the data contains a value for the DPad direction
