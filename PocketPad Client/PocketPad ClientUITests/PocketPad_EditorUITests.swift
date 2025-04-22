@@ -86,6 +86,9 @@ final class PocketPad_EditorUITests: XCTestCase {
         app.launchArguments = ["hide-tips", "no-tutorial", "remove-layouts", "add-debug-layout-no-buttons"]
         app.launch()
         
+        // default to portrait mode
+        XCUIDevice.shared.orientation = .portrait
+        
         // open up the editor
         let modifyLayoutView = app.buttons["ModifyLayoutView"]
         XCTAssertTrue(modifyLayoutView.waitForExistence(timeout: TIMEOUT), "No modify button was found.")
