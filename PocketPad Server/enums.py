@@ -51,6 +51,8 @@ class AllButtons(Enum):
     left_trigger = 10
     right_trigger = 11
     options = 12
+    left_stick = 13
+    right_stick = 14
 
 class Sticks(Enum):
     left = 0
