@@ -1,6 +1,8 @@
+import sys
 import json
 import time
 import enums
+import psutil
 import logging
 import asyncio
 import threading
@@ -49,7 +51,6 @@ layout_jsons = []
 player_id_str_arr = []
 
 current_game = None
-ack_event = threading.Event()
 
 latency_function = None
 send_latency = None
@@ -145,6 +146,35 @@ gatt: Dict = {
         },
     },
 }
+
+
+# 1) Cross‑platform game‑name extraction from window title (reuse from earlier)
+if sys.platform == 'win32':
+    import pywinctl
+    def get_current_dolphin_game() -> str | None:
+        wins = pywinctl.getWindowsWithTitle('Dolphin')
+        if not wins:
+            return None
+        parts = wins[0].title.split('|')
+        return parts[-1].strip() if len(parts) >= 2 else None
+elif sys.platform == 'darwin':
+    from AppKit import NSWorkspace
+    from Quartz import CGWindowListCopyWindowInfo, kCGWindowListOptionOnScreenOnly, kCGNullWindowID
+    def get_current_dolphin_game() -> str | None:
+        front = NSWorkspace.sharedWorkspace().frontmostApplication().localizedName()
+        wins = CGWindowListCopyWindowInfo(kCGWindowListOptionOnScreenOnly, kCGNullWindowID)
+        for w in wins:
+            if w.get('kCGWindowOwnerName') == front and 'Dolphin' in w.get('kCGWindowName',''):
+                parts = w['kCGWindowName'].split('|')
+                return parts[-1].strip() if len(parts)>=2 else None
+        return None
+else:
+    def get_current_dolphin_game() -> str | None:
+        return None
+
+def dolphin_is_running() -> bool:
+    name = 'dolphin.exe' if sys.platform=='win32' else 'dolphin-emu'
+    return any(p.name().lower() == name for p in psutil.process_iter(['name']))
 
 def set_latency_callback(send_latency_callback, latency_function_callback):
     global latency_function, send_latency
@@ -507,7 +537,6 @@ class QBlessServer(QObject):
     def server(self):
         server = Threaded_Bless_Server(name="PocketPad")
 
-      
         self.loop = None 
         server.read_request_func = read_request
         server.write_request_func = self.write_request
@@ -519,6 +548,8 @@ class QBlessServer(QObject):
         self._bg_loop = asyncio.new_event_loop()
         self._bg_thread = threading.Thread(target=self._start_bg_loop, daemon=True)
         self._bg_thread.start()
+
+        asyncio.run_coroutine_threadsafe(self._dolphin_monitor(), self._bg_loop)
 
     def _start_bg_loop(self):
         asyncio.set_event_loop(self._bg_loop)
@@ -549,6 +580,20 @@ class QBlessServer(QObject):
         
         await asyncio.sleep(0.5) # small buffer
         await self.server.stop()
+
+    async def _dolphin_monitor(self):
+        last_game = None
+        while True:
+            while not dolphin_is_running():
+                await asyncio.sleep(5)
+            while dolphin_is_running():
+                game = get_current_dolphin_game()
+                if game != last_game:
+                    last_game = game
+                    request_game_data(game)
+                await asyncio.sleep(30)
+            last_game = None
+            request_game_data(None)
 
 def read_request(characteristic: BlessGATTCharacteristic, **kwargs) -> bytearray:
     logger.debug(f"Reading {characteristic.uuid} - {characteristic.value}")
