@@ -208,9 +208,9 @@ final class PocketPad_EditorUITests: XCTestCase {
                     }
                     XCTAssertTrue(iconPicker.waitForExistence(timeout: TIMEOUT), "The symbol picker button does not exist.")
                     iconPicker.tap()
-                    let plusBtn = app.buttons["plus"]
-                    XCTAssertTrue(plusBtn.waitForExistence(timeout: TIMEOUT), "The plus button does not exist.")
-                    plusBtn.tap()
+                    let sfChoiceBtn = app.buttons["line.3.horizontal"]
+                    XCTAssertTrue(sfChoiceBtn.waitForExistence(timeout: TIMEOUT), "The horizontal line button does not exist.")
+                    sfChoiceBtn.tap()
                     XCTAssertTrue(iconPicker.waitForExistence(timeout: TIMEOUT), "The icon picker did not appear.")
                     
                     // set rotation

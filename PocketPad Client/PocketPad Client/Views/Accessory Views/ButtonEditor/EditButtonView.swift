@@ -142,6 +142,7 @@ struct EditButtonView: View {
                                             Section {
                                                 ForEach(symCat.symbols) { sym in
                                                     Label(sym.title, systemImage: sym.systemName).tag(sym.systemName)
+                                                        .accessibilityIdentifier(sym.systemName)
                                                 }
                                             } header: {
                                                 if let title = symCat.title {
