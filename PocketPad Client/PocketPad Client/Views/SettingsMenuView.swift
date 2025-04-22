@@ -401,6 +401,7 @@ struct SettingsMenuView: View {
             // MARK: Resetting Tutorial
             Button(action: {
                 UserDefaults.standard.set(false, forKey: "finishedTutorial")
+                UserDefaults.standard.set(true, forKey: "resetTips")
             }) {
                 Text("View Tutorial")
             }
@@ -428,6 +429,8 @@ struct SettingsMenuView: View {
                     if let bundleID = Bundle.main.bundleIdentifier {
                         UserDefaults.standard.removePersistentDomain(forName: bundleID)
                     }
+                    // set to clear tips
+                    UserDefaults.standard.set(true, forKey: "resetTips")
                     // close the app
                     UIApplication.shared.perform(#selector(NSXPCConnection.suspend))
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
