@@ -3,3 +3,6 @@ git+https://github.com/12944qwerty/bless.git@descriptors
 pytest
 pytest-qt
 pytest-mock
+psutil
+pywinctl; sys_platform == "win32"
+pyobjc; sys_platform == "darwin"

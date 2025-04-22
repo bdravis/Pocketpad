@@ -12,6 +12,8 @@ struct ContentView: View {
     @State private var isShowingSettings = false
     @State private var exitAllMenusCallback: (() -> Void)? = nil
     @State private var showModifyBtn = false
+    
+    @State private var paircode = ""
 
     @StateObject private var bluetoothManager = BluetoothManager.shared
         
@@ -121,6 +123,7 @@ struct ContentView: View {
                     .accessibilityIdentifier("OpenControllerView")
                     .padding(.horizontal)
                     .padding(.top, 15)
+                    .disabled(!bluetoothManager.paircodeNeeded && bluetoothManager.connectedDevice != nil)
                     
                     
                     // TODO: Move to settings page (was greyed out so had to add here)
@@ -139,6 +142,7 @@ struct ContentView: View {
                         .background(Color.blue)
                         .cornerRadius(25)
                         .frame(minWidth: 250)
+                        .disabled(!bluetoothManager.paircodeNeeded && bluetoothManager.connectedDevice != nil)
                         .accessibilityIdentifier("ModifyLayoutView")
                     }
                     
@@ -159,6 +163,7 @@ struct ContentView: View {
                     .frame(minWidth: 250)
                     .accessibilityIdentifier("RecordMacroView")
                     .padding(.horizontal)
+                    .disabled(!bluetoothManager.paircodeNeeded && bluetoothManager.connectedDevice != nil)
                     
                     Spacer()
                 }
@@ -212,6 +217,21 @@ struct ContentView: View {
                 }
             }
         )
+        .alert("Pair Code", isPresented: $bluetoothManager.paircodeNeeded) {
+            TextField("Pair Code", text: $paircode)
+                .keyboardType(.numberPad)
+            Button("OK", action: {
+                if bluetoothManager.paircode != paircode {
+                    bluetoothManager.disconnect()
+                    bluetoothManager.connectionError = "Incorrect paircode"
+                }
+                bluetoothManager.paircodeNeeded = false
+            })
+            .disabled(paircode.isEmpty || paircode.count != 6)
+            Button("Cancel", role: .cancel) {
+                bluetoothManager.disconnect()
+            }
+        }
         // Bluetooth Manager updates (from first version)
         .onChange(of: bluetoothManager.connectedDevice) { device in
             if device != nil {

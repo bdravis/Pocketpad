@@ -4,6 +4,8 @@
 //
 //  Created by Bautista Tedin on 2/21/25.
 //
+//  Edited by Benjamin Dravis on 4/19/25
+//
 
 import SwiftUI
 import TipKit
@@ -36,6 +38,7 @@ struct SettingsMenuView: View {
     @State private var showDeletingAllDataAlert: Bool = false
     @State private var makingNewLayout: Bool = false
     @State private var newLayoutName: String = ""
+    @State private var requestGameLayout: Bool = false
     
     @EnvironmentObject private var alertManager: AlertManager
     
@@ -244,6 +247,23 @@ struct SettingsMenuView: View {
                     .accessibilityAddTraits(.isButton)
                     .accessibilityIdentifier("DPadStyle")
                 }
+            }
+            
+            Button(action: {
+                requestGameLayout.toggle()
+            }) {
+                Text("Request Game Layout")
+            }
+            .padding(.horizontal, 16)
+            .accessibilityIdentifier("RequestGameLayoutButton")
+            .alert("Request Layout", isPresented: $requestGameLayout) {
+                Button("OK", action: {
+                    bluetoothManager.requestGameData()
+                })
+                .accessibilityIdentifier("requestLayoutOK")
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text("Are you sure you would like to request the layout on file for your current game?")
             }
             
             // Controller Color Section
