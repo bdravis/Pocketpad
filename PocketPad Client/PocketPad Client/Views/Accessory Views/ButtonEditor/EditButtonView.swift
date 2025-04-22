@@ -122,7 +122,7 @@ struct EditButtonView: View {
                                 .onChange(of: button.iconType, initial: false) {
                                     if button.iconType == .SFSymbol && UIImage(systemName: button.icon) == nil {
                                         // default to plus
-                                        button.icon = AvailableSymbols.first!.systemName
+                                        button.icon = AvailableSymbols.first!.symbols.first!.systemName
                                     }
                                 }
                             }
@@ -138,8 +138,16 @@ struct EditButtonView: View {
                                         .accessibilityIdentifier("Icon")
                                 case .SFSymbol:
                                     Picker("Icon", selection: $button.icon) {
-                                        ForEach(AvailableSymbols) { sym in
-                                            Label(sym.title, systemImage: sym.systemName).tag(sym.systemName)
+                                        ForEach(AvailableSymbols) { symCat in
+                                            Section {
+                                                ForEach(symCat.symbols) { sym in
+                                                    Label(sym.title, systemImage: sym.systemName).tag(sym.systemName)
+                                                }
+                                            } header: {
+                                                if let title = symCat.title {
+                                                    Text(title)
+                                                }
+                                            }
                                         }
                                     }
                                     .pickerStyle(.menu)
