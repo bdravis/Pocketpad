@@ -13,7 +13,6 @@ struct EditButtonView: View {
     @ObservedObject var button: EditingButtonVM
     @ObservedObject private var macroManager = MacroManager.shared
     
-    @Binding var showSymbolPicker: Bool
     @Binding var isPortait: Bool
     @State private var showDeleteAlert: Bool = false
     @State private var nameOfMacroAssigned: String = ""
@@ -120,23 +119,39 @@ struct EditButtonView: View {
                                 }
                                 .pickerStyle(.menu)
                                 .accessibilityIdentifier("IconTypePicker")
+                                .onChange(of: button.iconType, initial: false) {
+                                    if button.iconType == .SFSymbol && UIImage(systemName: button.icon) == nil {
+                                        // default to plus
+                                        button.icon = AvailableSymbols.first!.symbols.first!.systemName
+                                    }
+                                }
                             }
                             HStack {
-                                Text("Icon")
-                                Spacer()
                                 switch button.iconType {
                                 case .Text:
+                                    Text("Icon")
+                                    Spacer()
                                     TextField("Icon", text: $button.icon)
                                         .textFieldStyle(RoundedBorderTextFieldStyle())
                                         .multilineTextAlignment(.trailing)
                                         .autocorrectionDisabled(true)
                                         .accessibilityIdentifier("Icon")
                                 case .SFSymbol:
-                                    Button(action: {
-                                        showSymbolPicker.toggle()
-                                    }) {
-                                        Label(button.icon, systemImage: button.icon)
+                                    Picker("Icon", selection: $button.icon) {
+                                        ForEach(AvailableSymbols) { symCat in
+                                            Section {
+                                                ForEach(symCat.symbols) { sym in
+                                                    Label(sym.title, systemImage: sym.systemName).tag(sym.systemName)
+                                                        .accessibilityIdentifier(sym.systemName)
+                                                }
+                                            } header: {
+                                                if let title = symCat.title {
+                                                    Text(title)
+                                                }
+                                            }
+                                        }
                                     }
+                                    .pickerStyle(.menu)
                                     .accessibilityIdentifier("PickSymbolBtn")
                                 }
                             }

@@ -23,12 +23,6 @@ struct OrientationTip: Tip {
     var id: String {
         "orientation-1"
     }
-    
-    var options: [any TipOption] {
-        [
-            Tip.MaxDisplayCount(3)
-        ]
-    }
 }
 
 struct OverrideTip: Tip {
@@ -46,11 +40,5 @@ struct OverrideTip: Tip {
     
     var id: String {
         "override-1"
-    }
-    
-    var options: [any TipOption] {
-        [
-            Tip.MaxDisplayCount(3)
-        ]
     }
 }
