@@ -60,6 +60,8 @@ class BluetoothManager: NSObject, ObservableObject {
     private var layoutBuffer = ""
     private var expectedLayoutLength: Int?
     private var expectedLayoutLengthHandler: ((Int) -> Void)?
+    @ObservedObject private var layoutManager = LayoutManager.shared
+    @AppStorage("selectedController") var selectedController: String = ControllerType.getDefaultName()
     
     private override init() {
         super.init()
@@ -393,7 +395,23 @@ extension BluetoothManager: CBPeripheralDelegate {
                 if let chunkString = String(data: chunkData, encoding: .utf8) {
                     layoutBuffer += chunkString
                     if layoutBuffer.utf8.count >= expectedLayoutLength! {
-                        print("FULL LAYOUT\n\n\(layoutBuffer)")
+                        guard let layout_encoded = layoutBuffer.data(using: .utf8) else {
+                            fatalError("Failed to convert string to Data")
+                        }
+                        let decoder = JSONDecoder()
+                        do {
+                            let layout = try decoder.decode(LayoutConfig.self, from: layout_encoded)
+                            do {
+                                try saveLayoutIfNeeded(layout)
+                                try layoutManager.loadLayouts(includeControllerTypes: true)
+                                try layoutManager.setCurrentLayout(to: layout.name)
+                                selectedController = layout.name
+                            } catch {
+                                UIApplication.shared.alert(body: error.localizedDescription)
+                            }
+                        } catch {
+                            print("Decoding failed:", error)
+                        }
                     }
                 }
             }
@@ -587,6 +605,14 @@ extension BluetoothManager: CBPeripheralDelegate {
             }
         }
     }
+    
+    func saveLayoutIfNeeded(_ layout: LayoutConfig) throws {
+        guard !layoutManager.layoutExists(for: layout.name) else {
+            // No-op for duplicates
+            return
+        }
+        try layoutManager.saveLayout(layout)
+    }
 }
 
 extension BluetoothManager {
@@ -595,7 +621,7 @@ extension BluetoothManager {
     //  - pitch: The pitch value (Float).
     //   - roll: The roll value (Float).
     //  - yaw: The yaw value (Float).
-    func sendMotionData(playerId: UInt8, pitch: Float, roll: Float, yaw: Float) {
+    func sendMotionData(playerId: UInt8, pitch: Float, roll: Float, yaw: Float, xAcceleration: Float, yAcceleration: Float, zAcceleration: Float) {
         guard let _ = selectedService else { return }
         
         // Convert the Float values to raw bytes (4 bytes each, little endian)
@@ -603,6 +629,9 @@ extension BluetoothManager {
         let pitchBytes = withUnsafeBytes(of: pitch.bitPattern.littleEndian) { Data($0) }
         let rollBytes  = withUnsafeBytes(of: roll.bitPattern.littleEndian)  { Data($0) }
         let yawBytes   = withUnsafeBytes(of: yaw.bitPattern.littleEndian)   { Data($0) }
+        let xBytes = withUnsafeBytes(of: xAcceleration.bitPattern.littleEndian) { Data($0) }
+        let yBytes  = withUnsafeBytes(of: yAcceleration.bitPattern.littleEndian)  { Data($0) }
+        let zBytes   = withUnsafeBytes(of: zAcceleration.bitPattern.littleEndian)   { Data($0) }
         
         // Define a unique event code for motion data (e.g., 99)
         let motionEvent: UInt8 = 99
@@ -613,6 +642,9 @@ extension BluetoothManager {
         packet.append(pitchBytes)
         packet.append(rollBytes)
         packet.append(yawBytes)
+        packet.append(xBytes)
+        packet.append(yBytes)
+        packet.append(zBytes)
         
         // Send the packet using the existing sendInput method
         sendInput(packet)
