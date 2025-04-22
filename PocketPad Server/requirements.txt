@@ -6,3 +6,5 @@ imageio
 nuitka
 zstandard
 qasync
+psutil
+

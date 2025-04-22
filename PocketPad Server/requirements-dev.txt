@@ -3,3 +3,4 @@ git+https://github.com/12944qwerty/bless.git@descriptors
 pytest
 pytest-qt
 pytest-mock
+psutil
