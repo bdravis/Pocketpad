@@ -20,7 +20,7 @@ extension XCUIElement {
         var swipeCount: Int = 0
         while !element.isVisible() && swipeCount < maxSwipes {
             let startCoord = self.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
-            let endCoord = startCoord.withOffset(CGVector(dx: 0.0, dy: amt * (upward ? -1 : 1)))
+            let endCoord = startCoord.withOffset(CGVector(dx: 0.0, dy: amt * (upward ? 1 : -1)))
             startCoord.press(forDuration: 0.01, thenDragTo: endCoord)
             swipeCount += 1
         }
