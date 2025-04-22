@@ -272,12 +272,10 @@ def process_latency_characteristic(characteristic):
 
     latency = reconstruct_timestamp(int(recieved_time))
 
-    logger.debug(f"Estimated Latency for player {player_id}: {latency} ms")
+    # logger.debug(f"Estimated Latency for player {player_id}: {latency} ms")
         
     characteristic.value = str(latency).encode()
-        
-    if send_latency:
-        latency_function(player_id_str_arr[player_id], latency)
+    latency_function(player_id_str_arr[player_id], latency)
 
 def process_input_characteristic(characteristic):
     input_result = parse_input(characteristic.value)
@@ -314,7 +312,7 @@ def process_connection_characteristic(characteristic):
 
             player_id_str_arr[player_id] = requested_id
 
-            logger.debug(f"Connection request approved for: {player_id}")
+            # logger.debug(f"Connection request approved for: {player_id}")
             response_data = pack("<BB", player_id, ConnectionMessage.requesting_id.value)
             characteristic.value = bytearray(response_data)
 
@@ -485,7 +483,8 @@ def process_controller_characteristic(characteristic):
 def process_write_request(characteristic: BlessGATTCharacteristic, value):
     upper_uuid = characteristic.uuid.upper()
     if (upper_uuid == LATENCY_CHARACTERISTIC):
-        process_latency_characteristic(characteristic)
+        if send_latency:
+            process_latency_characteristic(characteristic)
     elif (upper_uuid == INPUT_CHARACTERISTIC):
         process_input_characteristic(characteristic)
     elif (upper_uuid == CONNECTION_CHARACTERISTIC):
@@ -528,7 +527,7 @@ async def async_write_request(characteristic: BlessGATTCharacteristic, value):
 
 class Threaded_Bless_Server(BlessServer):
     async def add_new_descriptor(self, service_uuid, char_uuid, desc_uuid, properties, value, permissions):
-        logger.debug(f"Adding descriptor {desc_uuid} to {char_uuid} in {service_uuid}")
+        # logger.debug(f"Adding descriptor {desc_uuid} to {char_uuid} in {service_uuid}")
         return await super().add_new_descriptor(service_uuid, char_uuid, desc_uuid, properties, value, permissions)
 
 @dataclass
@@ -596,7 +595,7 @@ class QBlessServer(QObject):
             request_game_data(None)
 
 def read_request(characteristic: BlessGATTCharacteristic, **kwargs) -> bytearray:
-    logger.debug(f"Reading {characteristic.uuid} - {characteristic.value}")
+    # logger.debug(f"Reading {characteristic.uuid} - {characteristic.value}")
     return characteristic.value
 
 # Main function to start the bluetooth server for testing purposes

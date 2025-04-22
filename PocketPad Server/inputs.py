@@ -35,7 +35,7 @@ def parse_input(raw_data):
         roll  = unpack_from('<f', raw_data, offset=6)[0]
         yaw   = unpack_from('<f', raw_data, offset=10)[0]
         
-        logger.debug(f"Motion Data Received from player {player_id}: pitch = {pitch:.2f}, roll = {roll:.2f}, yaw = {yaw:.2f}")
+        # logger.debug(f"Motion Data Received from player {player_id}: pitch = {pitch:.2f}, roll = {roll:.2f}, yaw = {yaw:.2f}")
         input_server.update_controller_state(player_id, ControllerUpdateTypes.MOTION.value, [pitch, yaw, roll])
         return
     else:
@@ -65,15 +65,15 @@ def parse_input(raw_data):
     
     # Find the input string based on the button type
     if button_type == ButtonType.REGULAR:
-        logger.debug(f"Received input from button {input_id} from player {player_id}")
+        # logger.debug(f"Received input from button {input_id} from player {player_id}")
         input_server.update_controller_state(player_id, ControllerUpdateTypes.BUTTON.value, [inputId_to_inputs[input_id].value, raw_event])
 
     elif button_type == ButtonType.BUMPER:
-        logger.debug(f"Received input from bumper {input_id} from player {player_id}")
+        # logger.debug(f"Received input from bumper {input_id} from player {player_id}")
         input_server.update_controller_state(player_id, ControllerUpdateTypes.BUTTON.value, [inputId_to_inputs[input_id].value, raw_event])
 
     elif button_type == ButtonType.TRIGGER:
-        logger.debug(f"Received input from trigger {input_id} from player {player_id}")
+        # logger.debug(f"Received input from trigger {input_id} from player {player_id}")
         input_server.update_controller_state(player_id, ControllerUpdateTypes.BUTTON.value, [inputId_to_inputs[input_id].value, raw_event])
 
     elif button_type == ButtonType.JOYSTICK:
@@ -87,7 +87,7 @@ def parse_input(raw_data):
             logger.error("Joystick input format missing fields")
             return (-1, -1, None)
         
-        logger.debug(f"Received input from joystick {input_id} from player"
+        # logger.debug(f"Received input from joystick {input_id} from player"
         f" {player_id} with angle {raw_angle} and magnitude {raw_magnitude}")
 
     elif button_type == ButtonType.DPAD:
@@ -114,7 +114,7 @@ def parse_input(raw_data):
         }
         dpad_input = direction_map[direction]
 
-        logger.debug(f"Received DPad input {dpad_input} from DPad {input_id} from player {player_id}")
+        # logger.debug(f"Received DPad input {dpad_input} from DPad {input_id} from player {player_id}")
     else:
         logger.error("Button type not handled")
         return (-1, -1, None)
