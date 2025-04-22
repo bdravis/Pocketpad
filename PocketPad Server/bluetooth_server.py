@@ -262,6 +262,12 @@ def map_inputID_to_inputs(json):
             inputId_to_inputs[input_id] = AllButtons.right_trigger
         elif input_val in ('Start', 'Select', 'Share'):
             inputId_to_inputs[input_id] = AllButtons.options
+        elif input_val == 'RT':
+            inputId_to_inputs[input_id] = AllButtons.right_trigger
+        elif input_val == 'LeftJoystick':
+            inputId_to_inputs[input_id] = AllButtons.left_stick
+        elif input_val == 'RightJoystick':
+            inputId_to_inputs[input_id] = AllButtons.right_stick
 
 def process_latency_characteristic(characteristic):
     # data comes as little endian {Byte, quadword}
