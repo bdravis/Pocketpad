@@ -98,17 +98,23 @@ struct PocketPad_ClientApp: App {
             try? LayoutManager.shared.deleteAllLayouts()
         }
         if CommandLine.arguments.contains("add-debug-layout-no-buttons") {
-            try? LayoutManager.shared.saveLayout(LayoutConfig(name: "Debug Layout", buttons: []))
+            try? LayoutManager.shared.saveLayout(LayoutConfig(name: "Debug Layout", lockToOrientation: .all, buttons: []))
             UserDefaults.standard.set("Debug Layout", forKey: "selectedController")
 //            try? LayoutManager.shared.setCurrentLayout(to: "Debug Layout")
         } else if CommandLine.arguments.contains("add-debug-layout-regular-button") {
-            try? LayoutManager.shared.saveLayout(LayoutConfig(name: "Debug Layout", buttons: [
+            try? LayoutManager.shared.saveLayout(LayoutConfig(name: "Debug Layout", lockToOrientation: .all, buttons: [
                 RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.3, y: 0.3)), scale: 1.0, inputId: 0, input: .A)
             ]))
             UserDefaults.standard.set("Debug Layout", forKey: "selectedController")
 //            try? LayoutManager.shared.setCurrentLayout(to: "Debug Layout")
         }
         #endif
+        
+        // remove tips if needed
+        if UserDefaults.standard.bool(forKey: "resetTips") {
+            try? Tips.resetDatastore()
+            UserDefaults.standard.removeObject(forKey: "resetTips")
+        }
         
         // Load and configure the state of all the tips of the app
         try? Tips.configure([.displayFrequency(.immediate), .datastoreLocation(.applicationDefault)])

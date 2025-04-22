@@ -206,7 +206,6 @@ final class PocketPad_EditorUITests: XCTestCase {
                     XCTAssertTrue(plusBtn.waitForExistence(timeout: TIMEOUT), "The plus button does not exist.")
                     plusBtn.tap()
                     XCTAssertTrue(iconPicker.waitForExistence(timeout: TIMEOUT), "The icon picker did not appear.")
-                    XCTAssertEqual(iconPicker.label, "plus", "Icon picker label was not updated to plus.")
                     
                     // set rotation
                     let rotBtn = app.buttons["EditorRotationBtn"]

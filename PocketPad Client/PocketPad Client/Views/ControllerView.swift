@@ -418,9 +418,6 @@ struct ControllerView: View {
                     })
                 }
             }
-            .sheet(isPresented: $showSymbolPicker, content: {
-                SFPickerView(button: selectedBtn)
-            })
             .sheet(isPresented: $showAddPopup) {
                 AddButtonView(selectedBtn: selectedBtn)
             }
@@ -438,7 +435,7 @@ struct ControllerView: View {
             }
             .overlay {
                 if !selectedBtn.isEmpty {
-                    EditButtonView(button: selectedBtn, showSymbolPicker: $showSymbolPicker, isPortait: $isPortait)
+                    EditButtonView(button: selectedBtn, isPortait: $isPortait)
                         .frame(
                             width: !isPortait ? geometry.size.width * 0.4 : geometry.size.width,
                             height: isPortait ? geometry.size.height * 0.4 : geometry.size.height
