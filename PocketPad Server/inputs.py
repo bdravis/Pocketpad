@@ -9,7 +9,7 @@ from struct import unpack, unpack_from
 from shared_definitions import inputId_to_inputs, input_server
 
 # Same logging setup as bluetooth.py
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(name=__name__)
 
 # Parses raw input data bytes
@@ -34,8 +34,11 @@ def parse_input(raw_data):
         pitch = unpack_from('<f', raw_data, offset=2)[0]
         roll  = unpack_from('<f', raw_data, offset=6)[0]
         yaw   = unpack_from('<f', raw_data, offset=10)[0]
+        x_acceleration = unpack_from('<f', raw_data, offset=14)[0]
+        y_acceleration  = unpack_from('<f', raw_data, offset=18)[0]
+        z_acceleration   = unpack_from('<f', raw_data, offset=22)[0]
         
-        # logger.debug(f"Motion Data Received from player {player_id}: pitch = {pitch:.2f}, roll = {roll:.2f}, yaw = {yaw:.2f}")
+        logger.debug(f"Motion Data Received from player {player_id}: pitch = {pitch:.2f}, roll = {roll:.2f}, yaw = {yaw:.2f}\n xAcceleration = {x_acceleration:.2f}, yAcceleration = {y_acceleration:.2f}, zAcceleration = {z_acceleration:.2f}")
         input_server.update_controller_state(player_id, ControllerUpdateTypes.MOTION.value, [pitch, yaw, roll])
         return
     else:
@@ -82,13 +85,13 @@ def parse_input(raw_data):
             raw_angle = unpacked_data[NUM_COMMON_FIELDS]
             raw_magnitude = unpacked_data[NUM_COMMON_FIELDS + 1]
 
-            # logger.debug(f"Updating Joystick: {player_id} -- {ControllerUpdateTypes.JOYSTICK.value} -- {inputId_to_inputs[input_id].value} -- {raw_angle} -- {raw_magnitude}")
+            logger.debug(f"Updating Joystick: {player_id} -- {ControllerUpdateTypes.JOYSTICK.value} -- {inputId_to_inputs[input_id].value} -- {raw_angle} -- {raw_magnitude}")
             input_server.update_controller_state(player_id, ControllerUpdateTypes.JOYSTICK.value, [inputId_to_inputs[input_id].value, raw_angle, raw_magnitude])
         except:
             logger.error("Joystick input format missing fields")
             return (-1, -1, None)
         
-        # logger.debug(f"Received input from joystick {input_id} from player" f" {player_id} with angle {raw_angle} and magnitude {raw_magnitude}")
+        logger.debug(f"Received input from joystick {input_id} from player" f" {player_id} with angle {raw_angle} and magnitude {raw_magnitude}")
 
     elif button_type == ButtonType.DPAD:
         # Check if the data contains a value for the DPad direction

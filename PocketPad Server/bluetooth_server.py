@@ -28,7 +28,9 @@ from PySide6.QtCore import QObject
 from dataclasses import dataclass
 
 logger = logging.getLogger(name=__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
+logging.getLogger("bless.backends.winrt.server").setLevel(logging.WARNING)
+logging.getLogger("asyncio").setLevel(logging.WARNING)
 
 trigger: Union[asyncio.Event, threading.Event] = None
 thread = None
@@ -262,8 +264,6 @@ def map_inputID_to_inputs(json):
             inputId_to_inputs[input_id] = AllButtons.right_trigger
         elif input_val in ('Start', 'Select', 'Share'):
             inputId_to_inputs[input_id] = AllButtons.options
-        elif input_val == 'RT':
-            inputId_to_inputs[input_id] = AllButtons.right_trigger
         elif input_val == 'LeftJoystick':
             inputId_to_inputs[input_id] = AllButtons.left_stick
         elif input_val == 'RightJoystick':
@@ -278,7 +278,7 @@ def process_latency_characteristic(characteristic):
 
     latency = reconstruct_timestamp(int(recieved_time))
 
-    # logger.debug(f"Estimated Latency for player {player_id}: {latency} ms")
+    logger.debug(f"Estimated Latency for player {player_id}: {latency} ms")
         
     characteristic.value = str(latency).encode()
     latency_function(player_id_str_arr[player_id], latency)
@@ -318,7 +318,7 @@ def process_connection_characteristic(characteristic):
 
             player_id_str_arr[player_id] = requested_id
 
-            # logger.debug(f"Connection request approved for: {player_id}")
+            logger.debug(f"Connection request approved for: {player_id}")
             response_data = pack("<BB", player_id, ConnectionMessage.requesting_id.value)
             characteristic.value = bytearray(response_data)
 
@@ -351,7 +351,7 @@ def process_connection_characteristic(characteristic):
             print(player_id, ControllerUpdateTypes.CONNECTION.value, [ConnectionMessage.connecting.value])
             input_server.update_controller_state(player_id, ControllerUpdateTypes.CONNECTION.value, [ConnectionMessage.connecting.value])
 
-            print("I am in here\n")
+            logger.debug("I am in here\n")
 
             next_id = len(player_id_str_arr)
 
@@ -372,7 +372,6 @@ def process_connection_characteristic(characteristic):
 
         if signal == ConnectionMessage.disconnecting.value:
             # TODO change server to indicate who is leaving
-            # print(f"player {player_id} disconnected")
             input_server.update_controller_state(player_id, ControllerUpdateTypes.CONNECTION.value, [ConnectionMessage.disconnecting.value])
 
             response_data = [0, ConnectionMessage.received.value]
@@ -533,7 +532,7 @@ async def async_write_request(characteristic: BlessGATTCharacteristic, value):
 
 class Threaded_Bless_Server(BlessServer):
     async def add_new_descriptor(self, service_uuid, char_uuid, desc_uuid, properties, value, permissions):
-        # logger.debug(f"Adding descriptor {desc_uuid} to {char_uuid} in {service_uuid}")
+        logger.debug(f"Adding descriptor {desc_uuid} to {char_uuid} in {service_uuid}")
         return await super().add_new_descriptor(service_uuid, char_uuid, desc_uuid, properties, value, permissions)
 
 @dataclass
@@ -570,15 +569,15 @@ class QBlessServer(QObject):
     
     async def start(self):
         logger = logging.getLogger(name=__name__)
-        logger.debug("Starting server")
+        logger.info("Starting server")
         
         await self.server.add_gatt(gatt)
         self.server.get_characteristic(PAIRCODE_CHARACTERISTIC).value = str(Paircode.reset().code).encode()
         await self.server.start(prioritize_local_name=True)
-        logger.debug("Advertising")
+        logger.info("Advertising")
     
     async def stop(self):
-        logger.debug("Stopping server")
+        logger.info("Stopping server")
         char = self.server.get_characteristic(CONNECTION_CHARACTERISTIC)
         char.value = bytearray([0, 0])
         self.server.update_value(POCKETPAD_SERVICE, CONNECTION_CHARACTERISTIC)
@@ -601,7 +600,7 @@ class QBlessServer(QObject):
             request_game_data(None)
 
 def read_request(characteristic: BlessGATTCharacteristic, **kwargs) -> bytearray:
-    # logger.debug(f"Reading {characteristic.uuid} - {characteristic.value}")
+    logger.debug(f"Reading {characteristic.uuid} - {characteristic.value}")
     return characteristic.value
 
 # Main function to start the bluetooth server for testing purposes
