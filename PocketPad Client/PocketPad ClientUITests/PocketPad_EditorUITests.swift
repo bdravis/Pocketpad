@@ -189,6 +189,7 @@ final class PocketPad_EditorUITests: XCTestCase {
                     
                     // set the icon to plus
                     let iconPicker = app.buttons["PickSymbolBtn"]
+                    editList.scrollToElement(iconTypePicker, upward: false, amt: -50)
                     XCTAssertTrue(iconPicker.waitForExistence(timeout: TIMEOUT), "The symbol picker button does not exist.")
                     iconPicker.tap()
                     let plusBtn = app.buttons["plus"]
@@ -246,7 +247,7 @@ final class PocketPad_EditorUITests: XCTestCase {
                 } else if inp == "Middle" {
                     // delete the middle trigger
                     let deleteBtn = app.buttons["DeleteButtonBtn"]
-                    editList.scrollToElement(deleteBtn, upward: false)
+                    editList.scrollToElement(deleteBtn, upward: false, amt: -400)
                     deleteBtn.tap()
                     let confirmDel = app.buttons["ConfirmDelete"]
                     XCTAssertTrue(confirmDel.waitForExistence(timeout: TIMEOUT), "The delete confirmation could not be found.")
