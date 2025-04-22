@@ -22,6 +22,12 @@ final class PocketPad_EditorUITests: XCTestCase {
     
     override func tearDownWithError() throws {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
+        if let failureCount = testRun?.failureCount, failureCount > 0 {
+            // screenshot in order to show failure point
+            let screenshot = XCUIScreen.main.screenshot()
+            let attach = XCTAttachment(screenshot: screenshot)
+            add(attach)
+        }
     }
     
     @MainActor
