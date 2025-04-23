@@ -9,13 +9,13 @@ import threading
 import concurrent.futures
 import game_database as gdb
 from typing import Dict, Union
-from inputs import parse_input
+from inputs import parse_input, map_inputID_to_inputs
 from struct import unpack, pack
 from functools import cached_property
-from enums import AllButtons, ControllerUpdateTypes
-from shared_definitions import input_server, inputId_to_inputs
+from enums import ControllerUpdateTypes
 from server_constants import *
 from utils import Paircode
+from dsu_server import DSU_Server
 
 from bless import (  # type: ignore
     BlessServer,
@@ -221,53 +221,6 @@ def reconstruct_timestamp(sent_ms):
     
     return abs(latency)
 
-def map_inputID_to_inputs(json):
-    for item in json['wrappedButtons']:
-        if not isinstance(item, dict) or 'base' not in item or 'payload' not in item:
-            continue
-            
-        payload = item['payload']
-        input_id = payload.get('inputId')
-        input_val = payload.get('input')
-        
-        if input_id is None:
-            continue
-            
-        # Handle D-Pad (special case - maps to all 4 directions)
-        if item['base'] == 'dPadConfig':
-            inputId_to_inputs[input_id] = {
-                AllButtons.up_dpad,
-                AllButtons.down_dpad,
-                AllButtons.left_dpad,
-                AllButtons.right_dpad
-            }
-            continue
-            
-        # Handle diamond buttons
-        if input_val == 'X':
-            inputId_to_inputs[input_id] = AllButtons.top_diamond
-        elif input_val == 'B':
-            inputId_to_inputs[input_id] = AllButtons.bottom_diamond
-        elif input_val == 'Y':
-            inputId_to_inputs[input_id] = AllButtons.left_diamond
-        elif input_val == 'A':
-            inputId_to_inputs[input_id] = AllButtons.right_diamond
-            
-        # Handle other buttons
-        elif input_val == 'LB':
-            inputId_to_inputs[input_id] = AllButtons.left_bumper
-        elif input_val == 'RB':
-            inputId_to_inputs[input_id] = AllButtons.right_bumper
-        elif input_val == 'LT':
-            inputId_to_inputs[input_id] = AllButtons.left_trigger
-        elif input_val == 'RT':
-            inputId_to_inputs[input_id] = AllButtons.right_trigger
-        elif input_val in ('Start', 'Select', 'Share'):
-            inputId_to_inputs[input_id] = AllButtons.options
-        elif input_val == 'LeftJoystick':
-            inputId_to_inputs[input_id] = AllButtons.left_stick
-        elif input_val == 'RightJoystick':
-            inputId_to_inputs[input_id] = AllButtons.right_stick
 
 def process_latency_characteristic(characteristic):
     # data comes as little endian {Byte, quadword}
@@ -347,9 +300,8 @@ def process_connection_characteristic(characteristic):
             characteristic.value = bytearray(response_data)
 
         if signal == ConnectionMessage.connecting.value:
-
-            print(player_id, ControllerUpdateTypes.CONNECTION.value, [ConnectionMessage.connecting.value])
-            input_server.update_controller_state(player_id, ControllerUpdateTypes.CONNECTION.value, [ConnectionMessage.connecting.value])
+            # print(player_id, ControllerUpdateTypes.CONNECTION.value, [ConnectionMessage.connecting.value])
+            DSU_Server.instance().update_controller_state(player_id, ControllerUpdateTypes.CONNECTION.value, [ConnectionMessage.connecting.value])
 
             logger.debug("I am in here\n")
 
@@ -372,7 +324,7 @@ def process_connection_characteristic(characteristic):
 
         if signal == ConnectionMessage.disconnecting.value:
             # TODO change server to indicate who is leaving
-            input_server.update_controller_state(player_id, ControllerUpdateTypes.CONNECTION.value, [ConnectionMessage.disconnecting.value])
+            DSU_Server.instance().update_controller_state(player_id, ControllerUpdateTypes.CONNECTION.value, [ConnectionMessage.disconnecting.value])
 
             response_data = [0, ConnectionMessage.received.value]
             response = bytearray(response_data)
@@ -578,12 +530,15 @@ class QBlessServer(QObject):
     
     async def stop(self):
         logger.info("Stopping server")
-        char = self.server.get_characteristic(CONNECTION_CHARACTERISTIC)
-        char.value = bytearray([0, 0])
-        self.server.update_value(POCKETPAD_SERVICE, CONNECTION_CHARACTERISTIC)
-        
-        await asyncio.sleep(0.5) # small buffer
-        await self.server.stop()
+        try:
+            char = self.server.get_characteristic(CONNECTION_CHARACTERISTIC)
+            char.value = bytearray([0, 0])
+            self.server.update_value(POCKETPAD_SERVICE, CONNECTION_CHARACTERISTIC)
+            
+            await asyncio.sleep(0.5) # small buffer
+            await self.server.stop()
+        except Exception as e:
+            pass # Server was never started in the first place
 
     async def _dolphin_monitor(self):
         last_game = None

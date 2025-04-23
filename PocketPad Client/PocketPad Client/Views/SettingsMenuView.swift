@@ -29,6 +29,8 @@ struct SettingsMenuView: View {
     @AppStorage("controllerColor") var controllerColor: Color = .blue
 
     @AppStorage("motionControlEnabled") var motionControlEnabled: Bool = false
+    
+    @AppStorage("connectionType") private var serverType: Int = 0
 
     @EnvironmentObject var motionManager: MotionManager
     
@@ -182,6 +184,19 @@ struct SettingsMenuView: View {
                     .accessibilityIdentifier("HelpFAQsButton")
                     .padding(.vertical, 8)
                 }
+            // Bluetooth VS Network
+            HStack {
+                Text("Connection Type")
+                    .foregroundColor(.primary)
+                Spacer()
+                Picker("Connection Type", selection: $serverType) {
+                    Text("Network").tag(0)
+                    Text("Bluetooth").tag(1)
+                }
+                .pickerStyle(.menu)
+                .accessibilityIdentifier("ConnectionTypePicker")
+            }
+            .disabled(BluetoothManager.shared.connectedDevice != nil || NetworkManager.shared.isConnected)
             // Controller Type Picker
             HStack {
                 Text("Current Layout")
@@ -209,7 +224,11 @@ struct SettingsMenuView: View {
                         macroManager.clearMacrosForController()
                         
                         isCustomLayout = !DefaultLayouts.isDefaultLayout(name: selectedController)
-                        bluetoothManager.updateControllerConfiguration()
+                        if serverType == 1 {
+                            bluetoothManager.updateControllerConfiguration()
+                        } else {
+                            NetworkManager.shared.sendLayout(true)
+                        }
                     } catch {
                         UIApplication.shared.alert(title: "Failed to load layout", body: error.localizedDescription)
                         selectedController = ControllerType.getDefaultName()
