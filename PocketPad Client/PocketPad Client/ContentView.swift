@@ -123,7 +123,7 @@ struct ContentView: View {
                     .accessibilityIdentifier("OpenControllerView")
                     .padding(.horizontal)
                     .padding(.top, 15)
-                    .disabled(!bluetoothManager.paircodeNeeded && bluetoothManager.connectedDevice != nil)
+                    .disabled(bluetoothManager.paircodeNeeded && bluetoothManager.connectedDevice != nil)
                     
                     
                     // TODO: Move to settings page (was greyed out so had to add here)

@@ -39,7 +39,7 @@ def parse_input(raw_data):
         z_acceleration   = unpack_from('<f', raw_data, offset=22)[0]
         
         logger.debug(f"Motion Data Received from player {player_id}: pitch = {pitch:.2f}, roll = {roll:.2f}, yaw = {yaw:.2f}\n xAcceleration = {x_acceleration:.2f}, yAcceleration = {y_acceleration:.2f}, zAcceleration = {z_acceleration:.2f}")
-        input_server.update_controller_state(player_id, ControllerUpdateTypes.MOTION.value, [pitch, yaw, roll])
+        input_server.update_controller_state(player_id, ControllerUpdateTypes.MOTION.value, [pitch, yaw, roll, x_acceleration, y_acceleration, z_acceleration])
         return
     else:
         # Check that common fields exist

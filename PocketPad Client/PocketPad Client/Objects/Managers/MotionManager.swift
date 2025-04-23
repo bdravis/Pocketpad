@@ -37,9 +37,14 @@ class MotionManager: ObservableObject {
             }
             
             if let data = motionData {  // Parse motion data if received successfully
+                /*
+                let pitchVal = data.rotationRate.x
+                let rollVal  = data.rotationRate.y
+                let yawVal   = data.rotationRate.z
+                */
                 let pitchVal = data.attitude.pitch
-                let rollVal  = data.attitude.roll
-                let yawVal   = data.attitude.yaw
+                let rollVal  = data.attitude.yaw
+                let yawVal   = data.attitude.roll
                 let xVal = data.userAcceleration.x
                 let yVal = data.userAcceleration.y
                 let zVal = data.userAcceleration.z

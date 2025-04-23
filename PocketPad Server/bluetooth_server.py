@@ -252,6 +252,8 @@ def map_inputID_to_inputs(json):
             inputId_to_inputs[input_id] = AllButtons.left_diamond
         elif input_val == 'A':
             inputId_to_inputs[input_id] = AllButtons.right_diamond
+        elif input_val == 'Z':
+            inputId_to_inputs[input_id] = AllButtons.z
             
         # Handle other buttons
         elif input_val == 'LB':
@@ -268,6 +270,12 @@ def map_inputID_to_inputs(json):
             inputId_to_inputs[input_id] = AllButtons.left_stick
         elif input_val == 'RightJoystick':
             inputId_to_inputs[input_id] = AllButtons.right_stick
+        elif input_val == 'Home':
+            inputId_to_inputs[input_id] = AllButtons.home
+        elif input_val == '1':
+            inputId_to_inputs[input_id] = AllButtons.one
+        elif input_val == '2':
+            inputId_to_inputs[input_id] = AllButtons.two
 
 def process_latency_characteristic(characteristic):
     # data comes as little endian {Byte, quadword}

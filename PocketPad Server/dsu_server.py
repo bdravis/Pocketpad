@@ -54,6 +54,10 @@ class DSU_Server:
             self.yaw = 0
             self.roll = 0
 
+            self.x_acceleration = 0
+            self.y_acceleration = 0
+            self.z_acceleration = 0
+
             self.last_request_time = 0
 
     def __init__(self, port=26760):
@@ -183,8 +187,8 @@ class DSU_Server:
                     0x100001, # Event type
                     slot_number_to_report, # slot number
                     slot_state, # Slot state
-                    #gyro, # Device model / gyro
-                    1, # TEMP NO GYRO
+                    gyro, # Device model / gyro
+                    #1, # TEMP NO GYRO
                     connection_type, # Connection type
                     0,0,0,0,0,0, # MAC address
                     battery, # Battery status
@@ -204,8 +208,8 @@ class DSU_Server:
                     0x100001, # Event type
                     slot_number_to_report, # slot number
                     slot_state, # Slot state
-                    #gyro, # Device model / gyro
-                    1, # TEMP NO GYRO
+                    gyro, # Device model / gyro
+                    #1, # TEMP NO GYRO
                     connection_type, # Connection type
                     0,0,0,0,0,0, # MAC address
                     battery, # Battery status
@@ -288,7 +292,7 @@ class DSU_Server:
 
 
                 input_packet_no_crc_packed = struct.pack(
-                        "<IHHIIIBBBB6BBBIBBBBBBBBBBBBBBBBBBBBHHHHHHQIIIIII",
+                        "<IHHIIIBBBB6BBBIBBBBBBBBBBBBBBBBBBBBHHHHHHQffffff",
                         0x53555344,
                         1001, # Protocol version
                         84, # Len without header
@@ -330,16 +334,13 @@ class DSU_Server:
                         0, # Touch 2
                         0, # Touch 2
                         0, # Touch 2
-                        #state.motion_timestamp,
-                        0, #TEMP NO MOTION
-                        #0, # Accel x
-                        #0, # Accel y
-                        #0, # Accel z
-                        0, 0, 0, #TEMP NO MOTION
-                        # state.pitch,
-                        # state.yaw,
-                        # state.roll
-                        0, 0, 0, #TEMP NO MOTION
+                        state.motion_timestamp,
+                        state.x_acceleration, # Accel x
+                        state.y_acceleration, # Accel y
+                        state.z_acceleration, # Accel z
+                        state.pitch,
+                        state.yaw,
+                        state.roll
                         )
 
                 crc = zlib.crc32(input_packet_no_crc_packed)
@@ -399,9 +400,9 @@ class DSU_Server:
                         )
 
                 """
-                input_packet_no_crc = struct.unpack("<IHHIIIBBBB6BBBIBBBBBBBBBBBBBBBBBBBBHHHHHHQIIIIII", input_packet_no_crc_packed)
+                input_packet_no_crc = struct.unpack("<IHHIIIBBBB6BBBIBBBBBBBBBBBBBBBBBBBBHHHHHHQffffff", input_packet_no_crc_packed)
                 input_packet = struct.pack(
-                        "<IHHIIIBBBB6BBBIBBBBBBBBBBBBBBBBBBBBHHHHHHQIIIIII",
+                        "<IHHIIIBBBB6BBBIBBBBBBBBBBBBBBBBBBBBHHHHHHQffffff",
                         input_packet_no_crc[0],
                         input_packet_no_crc[1],
                         input_packet_no_crc[2],
@@ -521,6 +522,22 @@ class DSU_Server:
                     self.controller_states[player_num].button_mask &= ~(1 << 7)
                     self.controller_states[player_num].sq = 0
 
+            elif value[0] == AllButtons.one.value:
+                if value[1] == ButtonEvent.PRESSED.value:
+                    self.controller_states[player_num].button_mask |= 1 << 7
+                    self.controller_states[player_num].sq = 255
+                if value[1] == ButtonEvent.RELEASED.value:
+                    self.controller_states[player_num].button_mask &= ~(1 << 7)
+                    self.controller_states[player_num].sq = 0
+
+            elif value[0] == AllButtons.two.value:
+                if value[1] == ButtonEvent.PRESSED.value:
+                    self.controller_states[player_num].button_mask |= 1 << 7
+                    self.controller_states[player_num].tr = 255
+                if value[1] == ButtonEvent.RELEASED.value:
+                    self.controller_states[player_num].button_mask &= ~(1 << 7)
+                    self.controller_states[player_num].tr = 0
+
             elif value[0] == AllButtons.right_diamond.value:
                 if value[1] == ButtonEvent.PRESSED.value:
                     self.controller_states[player_num].button_mask |= 1 << 5
@@ -577,6 +594,14 @@ class DSU_Server:
                     self.controller_states[player_num].button_mask &= ~(1 << 3)
                     self.controller_states[player_num].r1 = 0
 
+            elif value[0] == AllButtons.z.value:
+                if value[1] == ButtonEvent.PRESSED.value:
+                    self.controller_states[player_num].button_mask |= 1 << 3
+                    self.controller_states[player_num].r1 = 255
+                if value[1] == ButtonEvent.RELEASED.value:
+                    self.controller_states[player_num].button_mask &= ~(1 << 3)
+                    self.controller_states[player_num].r1 = 0
+
             elif value[0] == AllButtons.left_trigger.value:
                 if value[1] == ButtonEvent.PRESSED.value:
                     self.controller_states[player_num].button_mask |= 1 << 0
@@ -598,6 +623,12 @@ class DSU_Server:
                     self.controller_states[player_num].dpad_mask |= 1 << 3
                 if value[1] == ButtonEvent.RELEASED.value:
                     self.controller_states[player_num].dpad_mask &= ~(1 << 3)
+
+            elif value[0] == AllButtons.home.value:
+                if value[1] == ButtonEvent.PRESSED.value:
+                    self.controller_states[player_num].home = 1
+                if value[1] == ButtonEvent.RELEASED.value:
+                    self.controller_states[player_num].home = 0
 
 
         if event_type == ControllerUpdateTypes.JOYSTICK.value:
@@ -639,9 +670,18 @@ class DSU_Server:
 
         if event_type == ControllerUpdateTypes.MOTION.value:
             self.controller_states[player_num].motion_timestamp = int(time.time() * 1_000_000)
-            self.controller_states[player_num].pitch = value[1]
-            self.controller_states[player_num].yaw = value[2]
-            self.controller_states[player_num].roll = value[3]
+
+
+
+            self.controller_states[player_num].pitch = (180 * value[0]) / math.pi
+            self.controller_states[player_num].yaw = (180 * value[1]) / math.pi
+            self.controller_states[player_num].roll = (180 * value[2]) / math.pi
+
+
+
+            self.controller_states[player_num].x_acceleration = value[3]
+            self.controller_states[player_num].y_acceleration = value[4]
+            self.controller_states[player_num].z_acceleration = value[5]
 
 
         """
