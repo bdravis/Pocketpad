@@ -163,13 +163,27 @@ elif sys.platform == 'darwin':
     from AppKit import NSWorkspace
     from Quartz import CGWindowListCopyWindowInfo, kCGWindowListOptionOnScreenOnly, kCGNullWindowID
     def get_current_dolphin_game() -> str | None:
-        front = NSWorkspace.sharedWorkspace().frontmostApplication().localizedName()
         wins = CGWindowListCopyWindowInfo(kCGWindowListOptionOnScreenOnly, kCGNullWindowID)
         for w in wins:
-            if w.get('kCGWindowOwnerName') == front and 'Dolphin' in w.get('kCGWindowName',''):
-                parts = w['kCGWindowName'].split('|')
-                return parts[-1].strip() if len(parts)>=2 else None
+            owner = w.get('kCGWindowOwnerName')
+            title = w.get('kCGWindowName','')
+            if owner == 'Dolphin' and title:
+                # try pipe or dash separator
+                m = re.search(r'(?:\||–)\s*(.+)$', title)
+                if m:
+                    return m.group(1).strip()
+                # fallback: if title isn’t just “Dolphin”, return it anyway
+                if title.lower() != 'dolphin':
+                    return title
         return None
+    # def get_current_dolphin_game() -> str | None:
+    #     front = NSWorkspace.sharedWorkspace().frontmostApplication().localizedName()
+    #     wins = CGWindowListCopyWindowInfo(kCGWindowListOptionOnScreenOnly, kCGNullWindowID)
+    #     for w in wins:
+    #         if w.get('kCGWindowOwnerName') == front and 'Dolphin' in w.get('kCGWindowName',''):
+    #             parts = w['kCGWindowName'].split('|')
+    #             return parts[-1].strip() if len(parts)>=2 else None
+    #     return None
 else:
     def get_current_dolphin_game() -> str | None:
         return None
@@ -553,7 +567,7 @@ class QBlessServer(QObject):
         self._bg_thread = threading.Thread(target=self._start_bg_loop, daemon=True)
         self._bg_thread.start()
 
-        asyncio.run_coroutine_threadsafe(self._dolphin_monitor(), self._bg_loop)
+        asyncio.run_coroutine_threadsafe(self.dolphin_monitor(), self._bg_loop)
 
     def _start_bg_loop(self):
         asyncio.set_event_loop(self._bg_loop)
@@ -585,12 +599,15 @@ class QBlessServer(QObject):
         await asyncio.sleep(0.5) # small buffer
         await self.server.stop()
 
-    async def _dolphin_monitor(self):
+    async def dolphin_monitor(self):
         last_game = None
         while True:
+            print("Checking Dolpin")
             while not dolphin_is_running():
+                print("Dolphin is not running")
                 await asyncio.sleep(5)
             while dolphin_is_running():
+                print("Dolphin is running")
                 game = get_current_dolphin_game()
                 if game != last_game:
                     last_game = game
