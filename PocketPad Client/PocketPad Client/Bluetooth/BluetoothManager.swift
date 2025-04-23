@@ -546,8 +546,7 @@ extension BluetoothManager: CBPeripheralDelegate {
             let int_player_id = data.withUnsafeBytes { $0.load(as: UInt8.self) }
             
             if int_player_id != 255 {
-                // If requested Id is available,continue with connection
-                
+                // If requested Id is available,continue with connection                
                 LayoutManager.shared.player_id = int_player_id
                 
                 let selectedController = UserDefaults.standard.string(forKey: "selectedController") ?? "Xbox"
