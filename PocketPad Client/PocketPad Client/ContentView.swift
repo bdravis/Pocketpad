@@ -123,7 +123,7 @@ struct ContentView: View {
                     .accessibilityIdentifier("OpenControllerView")
                     .padding(.horizontal)
                     .padding(.top, 15)
-                    .disabled(!bluetoothManager.paircodeNeeded && bluetoothManager.connectedDevice != nil)
+                    .disabled(bluetoothManager.paircodeNeeded && bluetoothManager.connectedDevice != nil)
                     
                     
                     // TODO: Move to settings page (was greyed out so had to add here)
@@ -142,7 +142,7 @@ struct ContentView: View {
                         .background(Color.blue)
                         .cornerRadius(25)
                         .frame(minWidth: 250)
-                        .disabled(!bluetoothManager.paircodeNeeded && bluetoothManager.connectedDevice != nil)
+                        .disabled(bluetoothManager.paircodeNeeded && bluetoothManager.connectedDevice != nil)
                         .accessibilityIdentifier("ModifyLayoutView")
                     }
                     
@@ -163,7 +163,7 @@ struct ContentView: View {
                     .frame(minWidth: 250)
                     .accessibilityIdentifier("RecordMacroView")
                     .padding(.horizontal)
-                    .disabled(!bluetoothManager.paircodeNeeded && bluetoothManager.connectedDevice != nil)
+                    .disabled(bluetoothManager.paircodeNeeded && bluetoothManager.connectedDevice != nil)
                     
                     Spacer()
                 }
