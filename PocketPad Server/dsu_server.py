@@ -230,7 +230,7 @@ class DSU_Server:
 
         if actions_requested == 1:
             slot_requested = int.from_bytes(struct.unpack("<B", data[21:22]))
-            print(f"data requested from slot {slot_requested}")
+            # print(f"data requested from slot {slot_requested}")
             state_requested = self.controller_states[slot_requested]
             self.controller_states[slot_requested].addr = addr
 
@@ -475,7 +475,7 @@ class DSU_Server:
         # If event type is JOYSTICK, value is [Sticks int, angle, magnitude]
         # if event type is MOTION, value is [pitch, yaw, roll]
 
-        print(f"updating state: {player_num}, {event_type}, {value}")
+        # print(f"updating state: {player_num}, {event_type}, {value}")
         """
         print(f"current buttons: {self.controller_states[player_num].button_mask}")
         print(f"current dpad: {self.controller_states[player_num].dpad_mask}")
