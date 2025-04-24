@@ -16,6 +16,7 @@ struct PocketPad_ClientApp: App {
     @State private var isShowingSplash = true
     @State private var openedAsImport: Bool = false
     @StateObject private var motionManager = MotionManager()
+    @Environment(\.scenePhase) private var scenePhase
     
     var body: some Scene {
         WindowGroup {
@@ -75,6 +76,12 @@ struct PocketPad_ClientApp: App {
                         }
                     }
                 })
+                .onChange(of: scenePhase) { oldPhase, newPhase in
+                    if oldPhase == .active
+                    && (newPhase == .inactive || newPhase == .background) {
+                        BluetoothManager.shared.disconnect()
+                    }
+                }
         }
     }
     
