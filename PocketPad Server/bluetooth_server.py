@@ -154,11 +154,19 @@ gatt: Dict = {
 if sys.platform == 'win32':
     import pywinctl
     def get_current_dolphin_game() -> str | None:
-        wins = pywinctl.getWindowsWithTitle('Dolphin')
+        wins = [
+            w for w in pywinctl.getAllWindows()
+            if "dolphin" in w.title.lower()
+        ]
+
         if not wins:
+            print("No Dolphin window found")
             return None
-        parts = wins[0].title.split('|')
-        return parts[-1].strip() if len(parts) >= 2 else None
+
+        for w in wins:
+            if "|" in w.title:
+                parts = w.title.split("|")
+                return parts[-1].strip()
 elif sys.platform == 'darwin':
     from AppKit import NSWorkspace
     from Quartz import CGWindowListCopyWindowInfo, kCGWindowListOptionOnScreenOnly, kCGNullWindowID
@@ -189,7 +197,7 @@ else:
         return None
 
 def dolphin_is_running() -> bool:
-    name = 'dolphin.exe' if sys.platform=='win32' else 'dolphin-emu'
+    name = 'dolphin.exe' if sys.platform=='win32' else 'dolphin'
     return any(p.name().lower() == name for p in psutil.process_iter(['name']))
 
 def set_latency_callback(send_latency_callback, latency_function_callback):
@@ -589,6 +597,8 @@ class QBlessServer(QObject):
         self.server.get_characteristic(PAIRCODE_CHARACTERISTIC).value = str(Paircode.reset().code).encode()
         await self.server.start(prioritize_local_name=True)
         logger.info("Advertising")
+
+        input_server.start()
     
     async def stop(self):
         logger.info("Stopping server")
@@ -596,18 +606,16 @@ class QBlessServer(QObject):
         char.value = bytearray([0, 0])
         self.server.update_value(POCKETPAD_SERVICE, CONNECTION_CHARACTERISTIC)
         
+        # input_server.stop()
         await asyncio.sleep(0.5) # small buffer
         await self.server.stop()
 
     async def dolphin_monitor(self):
         last_game = None
         while True:
-            print("Checking Dolpin")
             while not dolphin_is_running():
-                print("Dolphin is not running")
                 await asyncio.sleep(5)
             while dolphin_is_running():
-                print("Dolphin is running")
                 game = get_current_dolphin_game()
                 if game != last_game:
                     last_game = game
