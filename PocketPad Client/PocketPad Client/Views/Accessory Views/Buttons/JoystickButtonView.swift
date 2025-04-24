@@ -16,6 +16,7 @@ struct JoystickButtonView: View {
     
     @StateObject private var bluetoothManager = BluetoothManager.shared
     @ObservedObject private var turboManager = TurboManager.shared
+    @AppStorage("joystickSensitivity") private var joystickSensitivity: Double = 1.0
     
     var config: JoystickConfig
     var isInMacroEditor: Bool = false
@@ -92,14 +93,16 @@ struct JoystickButtonView: View {
                     // Convert to degrees in range of 255
                     
                     let normalizedMagnitude = (clampedDistance - deadzoneRadius) / (DEFAULT_BUTTON_SIZE / 2 - deadzoneRadius) * 100
+                    // Apply sensitivity multiplier
+                    let adjustedMagnitude = normalizedMagnitude * joystickSensitivity
 //#if DEBUG
 //                    print("Normalized magnitude: \(normalizedMagnitude)")
 //#endif
                     let ui8_magnitude: UInt8
-                    if normalizedMagnitude.isNaN || normalizedMagnitude.isInfinite {
+                    if adjustedMagnitude.isNaN || adjustedMagnitude.isInfinite {
                         ui8_magnitude = 0
                     } else {
-                        ui8_magnitude = UInt8(min(max(normalizedMagnitude, 0), 255))
+                        ui8_magnitude = UInt8(min(max(adjustedMagnitude, 0), 255))
                     }
                     
                     // Don't send input information if it's too soon
