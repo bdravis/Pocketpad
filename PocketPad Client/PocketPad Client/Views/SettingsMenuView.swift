@@ -29,6 +29,7 @@ struct SettingsMenuView: View {
     @AppStorage("controllerColor") var controllerColor: Color = .blue
 
     @AppStorage("motionControlEnabled") var motionControlEnabled: Bool = false
+    @AppStorage("joystickSensitivity") var joystickSensitivity: Double = 1.0
 
     @EnvironmentObject var motionManager: MotionManager
     
@@ -346,6 +347,17 @@ struct SettingsMenuView: View {
                             .foregroundColor(.blue)
                     }
                     .accessibilityIdentifier("RightDeadzoneButton")
+                }
+                // Joystick Sensitivity Picker
+                HStack {
+                    Text("Joystick Sensitivity")
+                    Spacer()
+                    Picker("", selection: $joystickSensitivity) {
+                        Text("Low").tag(0.5)
+                        Text("Normal").tag(1.0)
+                        Text("High").tag(1.5)
+                    }
+                    .pickerStyle(.segmented)
                 }
             } header: {
                 Text("Joystick Settings")
