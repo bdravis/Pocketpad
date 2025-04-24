@@ -502,6 +502,7 @@ struct ControllerView: View {
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("MainControllerScreen")
         .navigationBarBackButtonHidden()
+        .defersSystemGestures(on: .all)
     }
     
     func isSafe(geometry: GeometryProxy) -> Bool {
