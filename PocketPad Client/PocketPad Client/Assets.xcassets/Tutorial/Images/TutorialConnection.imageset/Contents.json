@@ -1,0 +1,92 @@
+{
+  "images" : [
+    {
+      "idiom" : "universal"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "idiom" : "universal"
+    },
+    {
+      "height-class" : "compact",
+      "idiom" : "universal"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "height-class" : "compact",
+      "idiom" : "universal"
+    },
+    {
+      "filename" : "Portrait Bluetooth - iPhone 16 Plus.png",
+      "idiom" : "iphone"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "Dark Portrait Bluetooth - iPhone 16 Plus.png",
+      "idiom" : "iphone"
+    },
+    {
+      "filename" : "Landscape Bluetooth - iPhone 16 Plus.png",
+      "height-class" : "compact",
+      "idiom" : "iphone"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "Dark Landscape Bluetooth - iPhone 16 Plus.png",
+      "height-class" : "compact",
+      "idiom" : "iphone"
+    },
+    {
+      "filename" : "Bluetooth - iPad Pro 11-inch (M4).png",
+      "idiom" : "ipad"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "Dark Bluetooth - iPad Pro 11-inch (M4).png",
+      "idiom" : "ipad"
+    },
+    {
+      "height-class" : "compact",
+      "idiom" : "ipad"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "height-class" : "compact",
+      "idiom" : "ipad"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

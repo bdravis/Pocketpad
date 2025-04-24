@@ -1,21 +1,21 @@
-from functools import cached_property
 import sys
-import logging
-import asyncio
-import concurrent.futures
 import json
-import threading
 import time
 import enums
-from enums import AllButtons, ControllerUpdateTypes
-from struct import unpack, pack
-from typing import Any, Dict, Union
-from server_constants import (POCKETPAD_SERVICE, LATENCY_CHARACTERISTIC, 
-                        CONNECTION_CHARACTERISTIC, CONTROLLER_TYPE_CHARACTERISTIC,
-                        INPUT_CHARACTERISTIC, ConnectionMessage)
+import psutil
+import logging
+import asyncio
+import threading
+import concurrent.futures
+import game_database as gdb
+from typing import Dict, Union
 from inputs import parse_input
+from struct import unpack, pack
+from functools import cached_property
+from enums import AllButtons, ControllerUpdateTypes
 from shared_definitions import input_server, inputId_to_inputs
-from ctypes import c_uint8
+from server_constants import *
+from utils import Paircode
 
 from bless import (  # type: ignore
     BlessServer,
@@ -28,14 +28,15 @@ from PySide6.QtCore import QObject
 from dataclasses import dataclass
 
 logger = logging.getLogger(name=__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
+logging.getLogger("bless.backends.winrt.server").setLevel(logging.WARNING)
+logging.getLogger("asyncio").setLevel(logging.WARNING)
 
 trigger: Union[asyncio.Event, threading.Event] = None
 thread = None
 loop = None
 
-
-executor = concurrent.futures.ThreadPoolExecutor(max_workers=8)
+executor = concurrent.futures.ThreadPoolExecutor(max_workers=16)
 
 num_players_lock = threading.Lock()
 next_id_lock = threading.Lock()
@@ -51,11 +52,14 @@ layout_jsons = []
 
 player_id_str_arr = []
 
+current_game = None
+
 latency_function = None
 send_latency = None
 connection_function = None
 controller_function = None
 input_function = None
+game_function = None
 
 gatt: Dict = {
     POCKETPAD_SERVICE: {
@@ -96,7 +100,7 @@ gatt: Dict = {
         CONTROLLER_TYPE_CHARACTERISTIC: {
             "Properties": (
                 GATTCharacteristicProperties.read
-                | GATTCharacteristicProperties.write_without_response
+                | GATTCharacteristicProperties.write
                 | GATTCharacteristicProperties.indicate
             ),
             "Permissions": (
@@ -119,9 +123,82 @@ gatt: Dict = {
                 | GATTAttributePermissions.writeable
             ),
             "Value": None,
-        }
+        }, 
+
+        LAYOUT_REQUEST_CHARACTERISTIC: {
+            "Properties": (
+                GATTCharacteristicProperties.read
+                | GATTCharacteristicProperties.write
+            ),
+            "Permissions": (
+                GATTAttributePermissions.readable
+                | GATTAttributePermissions.writeable
+            ),
+            "Value": None,
+        },
+        
+        PAIRCODE_CHARACTERISTIC: {
+            "Properties": (
+                GATTCharacteristicProperties.read
+            ),
+            "Permissions": (
+                GATTAttributePermissions.readable
+            ),
+            "Value": None,
+        },
     },
 }
+
+
+# 1) Cross‑platform game‑name extraction from window title (reuse from earlier)
+if sys.platform == 'win32':
+    import pywinctl
+    def get_current_dolphin_game() -> str | None:
+        wins = [
+            w for w in pywinctl.getAllWindows()
+            if "dolphin" in w.title.lower()
+        ]
+
+        if not wins:
+            print("No Dolphin window found")
+            return None
+
+        for w in wins:
+            if "|" in w.title:
+                parts = w.title.split("|")
+                return parts[-1].strip()
+elif sys.platform == 'darwin':
+    from AppKit import NSWorkspace
+    from Quartz import CGWindowListCopyWindowInfo, kCGWindowListOptionOnScreenOnly, kCGNullWindowID
+    def get_current_dolphin_game() -> str | None:
+        wins = CGWindowListCopyWindowInfo(kCGWindowListOptionOnScreenOnly, kCGNullWindowID)
+        for w in wins:
+            owner = w.get('kCGWindowOwnerName')
+            title = w.get('kCGWindowName','')
+            if owner == 'Dolphin' and title:
+                # try pipe or dash separator
+                m = re.search(r'(?:\||–)\s*(.+)$', title)
+                if m:
+                    return m.group(1).strip()
+                # fallback: if title isn’t just “Dolphin”, return it anyway
+                if title.lower() != 'dolphin':
+                    return title
+        return None
+    # def get_current_dolphin_game() -> str | None:
+    #     front = NSWorkspace.sharedWorkspace().frontmostApplication().localizedName()
+    #     wins = CGWindowListCopyWindowInfo(kCGWindowListOptionOnScreenOnly, kCGNullWindowID)
+    #     for w in wins:
+    #         if w.get('kCGWindowOwnerName') == front and 'Dolphin' in w.get('kCGWindowName',''):
+    #             parts = w['kCGWindowName'].split('|')
+    #             return parts[-1].strip() if len(parts)>=2 else None
+    #     return None
+else:
+    def get_current_dolphin_game() -> str | None:
+        return None
+
+def dolphin_is_running() -> bool:
+    name = 'dolphin.exe' if sys.platform=='win32' else 'dolphin'
+    return any(p.name().lower() == name for p in psutil.process_iter(['name']))
 
 def set_latency_callback(send_latency_callback, latency_function_callback):
     global latency_function, send_latency
@@ -139,6 +216,19 @@ def set_controller_callback(controller_function_callback):
 def set_input_callback(input_function_callback):
     global input_function
     input_function = input_function_callback
+
+def set_game_callback(game_function_callback):
+    global game_function
+    game_function = game_function_callback
+
+def save_layout(game_name, player_id):
+    layout_to_save = layout_jsons[player_id_str_arr.index(player_id)]
+    gdb.add_to_database(game_name, layout_to_save)
+
+def request_game_data(game: str):
+    global current_game
+    current_game = game
+    game_function(game)
 
 def reconstruct_timestamp(sent_ms):
     """Reconstruct possible timestamps based on the last 5 digits."""
@@ -196,6 +286,10 @@ def map_inputID_to_inputs(json):
             inputId_to_inputs[input_id] = AllButtons.right_trigger
         elif input_val in ('Start', 'Select', 'Share'):
             inputId_to_inputs[input_id] = AllButtons.options
+        elif input_val == 'LeftJoystick':
+            inputId_to_inputs[input_id] = AllButtons.left_stick
+        elif input_val == 'RightJoystick':
+            inputId_to_inputs[input_id] = AllButtons.right_stick
 
 def process_latency_characteristic(characteristic):
     # data comes as little endian {Byte, quadword}
@@ -209,9 +303,7 @@ def process_latency_characteristic(characteristic):
     logger.debug(f"Estimated Latency for player {player_id}: {latency} ms")
         
     characteristic.value = str(latency).encode()
-        
-    if send_latency:
-        latency_function(player_id_str_arr[player_id], latency)
+    latency_function(player_id_str_arr[player_id], latency)
 
 def process_input_characteristic(characteristic):
     input_result = parse_input(characteristic.value)
@@ -281,7 +373,7 @@ def process_connection_characteristic(characteristic):
             print(player_id, ControllerUpdateTypes.CONNECTION.value, [ConnectionMessage.connecting.value])
             input_server.update_controller_state(player_id, ControllerUpdateTypes.CONNECTION.value, [ConnectionMessage.connecting.value])
 
-            print("I am in here\n")
+            logger.debug("I am in here\n")
 
             next_id = len(player_id_str_arr)
 
@@ -302,7 +394,6 @@ def process_connection_characteristic(characteristic):
 
         if signal == ConnectionMessage.disconnecting.value:
             # TODO change server to indicate who is leaving
-            #print(f"player {player_id} disconnected")
             input_server.update_controller_state(player_id, ControllerUpdateTypes.CONNECTION.value, [ConnectionMessage.disconnecting.value])
 
             response_data = [0, ConnectionMessage.received.value]
@@ -419,13 +510,39 @@ def process_controller_characteristic(characteristic):
 def process_write_request(characteristic: BlessGATTCharacteristic, value):
     upper_uuid = characteristic.uuid.upper()
     if (upper_uuid == LATENCY_CHARACTERISTIC):
-        process_latency_characteristic(characteristic)
+        if send_latency:
+            process_latency_characteristic(characteristic)
     elif (upper_uuid == INPUT_CHARACTERISTIC):
         process_input_characteristic(characteristic)
     elif (upper_uuid == CONNECTION_CHARACTERISTIC):
         process_connection_characteristic(characteristic)
     elif (upper_uuid == CONTROLLER_TYPE_CHARACTERISTIC):
         process_controller_characteristic(characteristic)
+    elif upper_uuid == LAYOUT_REQUEST_CHARACTERISTIC:
+        data = characteristic.value
+        start_index, stop_index = unpack('<II', data[:8])
+
+        if (start_index == 0 and stop_index == 0):
+            if current_game == None:
+                response = pack('<I', 0)
+                characteristic.value = response
+                return
+            layout = gdb.get_controller_layout(current_game)
+            if layout == None:
+                response = pack('<I', 0)
+                characteristic.value = response
+                return
+            layout_bytes = layout.encode('utf-8')
+            response = pack('<I', len(layout_bytes))
+            characteristic.value = response
+            return
+        else:
+            layout = gdb.get_controller_layout(current_game)
+            layout_segment = layout[start_index:stop_index]
+            layout_segment_bytes = layout_segment.encode('utf-8')
+            response = bytearray([len(layout_segment_bytes)]) + layout_segment_bytes
+            characteristic.value = response
+            return
     else:
         logger.error("ERROR: Unrecognized Write Request")
 
@@ -458,6 +575,8 @@ class QBlessServer(QObject):
         self._bg_thread = threading.Thread(target=self._start_bg_loop, daemon=True)
         self._bg_thread.start()
 
+        asyncio.run_coroutine_threadsafe(self.dolphin_monitor(), self._bg_loop)
+
     def _start_bg_loop(self):
         asyncio.set_event_loop(self._bg_loop)
         self._bg_loop.run_forever()
@@ -472,20 +591,38 @@ class QBlessServer(QObject):
     
     async def start(self):
         logger = logging.getLogger(name=__name__)
-        logger.debug("Starting server")
+        logger.info("Starting server")
         
         await self.server.add_gatt(gatt)
+        self.server.get_characteristic(PAIRCODE_CHARACTERISTIC).value = str(Paircode.reset().code).encode()
         await self.server.start(prioritize_local_name=True)
-        logger.debug("Advertising")
+        logger.info("Advertising")
+
+        input_server.start()
     
     async def stop(self):
-        logger.debug("Stopping server")
+        logger.info("Stopping server")
         char = self.server.get_characteristic(CONNECTION_CHARACTERISTIC)
         char.value = bytearray([0, 0])
         self.server.update_value(POCKETPAD_SERVICE, CONNECTION_CHARACTERISTIC)
         
+        # input_server.stop()
         await asyncio.sleep(0.5) # small buffer
         await self.server.stop()
+
+    async def dolphin_monitor(self):
+        last_game = None
+        while True:
+            while not dolphin_is_running():
+                await asyncio.sleep(5)
+            while dolphin_is_running():
+                game = get_current_dolphin_game()
+                if game != last_game:
+                    last_game = game
+                    request_game_data(game)
+                await asyncio.sleep(30)
+            last_game = None
+            request_game_data(None)
 
 def read_request(characteristic: BlessGATTCharacteristic, **kwargs) -> bytearray:
     logger.debug(f"Reading {characteristic.uuid} - {characteristic.value}")

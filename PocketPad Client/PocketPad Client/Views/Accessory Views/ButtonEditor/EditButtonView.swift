@@ -11,16 +11,21 @@ struct EditButtonView: View {
     @Environment(\.colorScheme) var colorScheme
     
     @ObservedObject var button: EditingButtonVM
+    @ObservedObject private var macroManager = MacroManager.shared
     
-    @Binding var showSymbolPicker: Bool
     @Binding var isPortait: Bool
     @State private var showDeleteAlert: Bool = false
+    @State private var nameOfMacroAssigned: String = ""
     
     // Values for if the sections are expanded
     @State private var positionExpanded: Bool = true
     @State private var scaleRotExpanded: Bool = true
     @State private var iconExpanded: Bool = true
     @State private var styleExpanded: Bool = true
+    @State private var macroExpanded: Bool = true
+    
+    
+    var overrideTip = OverrideTip()
     
     private var numberFormatter: NumberFormatter {
         let nf = NumberFormatter()
@@ -34,7 +39,9 @@ struct EditButtonView: View {
                 // MARK: Override for orientation
                 Toggle("Override for \((button.overriding && !button.defaultIsPortrait) || isPortait ? "Portrait" : "Landscape")", isOn: $button.overriding)
                     .accessibilityIdentifier("OverrideOrientation")
+                    .popoverTip(overrideTip)
                     .onChange(of: button.overriding, initial: false) {
+                        overrideTip.invalidate(reason: .actionPerformed)
                         if button.overriding {
                             button.overrideScaledPos = button.scaledPos
                             button.overrideOffset = button.offset
@@ -112,23 +119,39 @@ struct EditButtonView: View {
                                 }
                                 .pickerStyle(.menu)
                                 .accessibilityIdentifier("IconTypePicker")
+                                .onChange(of: button.iconType, initial: false) {
+                                    if button.iconType == .SFSymbol && UIImage(systemName: button.icon) == nil {
+                                        // default to plus
+                                        button.icon = AvailableSymbols.first!.symbols.first!.systemName
+                                    }
+                                }
                             }
                             HStack {
-                                Text("Icon")
-                                Spacer()
                                 switch button.iconType {
                                 case .Text:
+                                    Text("Icon")
+                                    Spacer()
                                     TextField("Icon", text: $button.icon)
                                         .textFieldStyle(RoundedBorderTextFieldStyle())
                                         .multilineTextAlignment(.trailing)
                                         .autocorrectionDisabled(true)
                                         .accessibilityIdentifier("Icon")
                                 case .SFSymbol:
-                                    Button(action: {
-                                        showSymbolPicker.toggle()
-                                    }) {
-                                        Label(button.icon, systemImage: button.icon)
+                                    Picker("Icon", selection: $button.icon) {
+                                        ForEach(AvailableSymbols) { symCat in
+                                            Section {
+                                                ForEach(symCat.symbols) { sym in
+                                                    Label(sym.title, systemImage: sym.systemName).tag(sym.systemName)
+                                                        .accessibilityIdentifier(sym.systemName)
+                                                }
+                                            } header: {
+                                                if let title = symCat.title {
+                                                    Text(title)
+                                                }
+                                            }
+                                        }
                                     }
+                                    .pickerStyle(.menu)
                                     .accessibilityIdentifier("PickSymbolBtn")
                                 }
                             }
@@ -195,6 +218,41 @@ struct EditButtonView: View {
                 Text("Style")
             }
             
+            // MARK: Assign macros
+            if button.type == .regular || button.type == .bumper || button.type == .trigger {
+                Section(isExpanded: $macroExpanded) {
+                    HStack {
+                        let macroNames: [String] = macroManager.getMacroNames()
+                        
+                        Picker("Assigned", selection: $nameOfMacroAssigned) {
+                            Text("").tag("")
+                            ForEach(macroNames, id: \.self) { macroName in
+                                Text(macroName).tag(macroName)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .accessibilityIdentifier("AssignMacroPicker")
+                        .onChange(of: nameOfMacroAssigned) { oldValue, newValue in
+                            if newValue == "" {
+                                macroManager.unassignMacro(from: button.input)
+                            } else {
+                                macroManager.assignMacro(named: newValue, to: button.input)
+                            }
+                        }
+                    }
+                    .onAppear {
+                        nameOfMacroAssigned = macroManager.getNameOfMacro(for: button.input) ?? ""
+                    }
+                    .onChange(of: button.input) {
+                        nameOfMacroAssigned = macroManager.getNameOfMacro(for: button.input) ?? ""
+                    }
+                } header: {
+                    Text("Macros")
+                }
+            }
+            
+            
+            
             Section {
                 Button(action: {
                     showDeleteAlert.toggle()
@@ -206,10 +264,10 @@ struct EditButtonView: View {
                 .frame(maxWidth: .infinity)
             }
             .alert("Delete Button", isPresented: $showDeleteAlert, actions: {
-                Button("Cancel") {
+                Button("Cancel", role: .cancel) {
                     showDeleteAlert = false
                 }
-                Button("Delete") {
+                Button("Delete", role: .destructive) {
                     LayoutManager.shared.deleteButton(inputId: button.inputId)
                     showDeleteAlert = false
                     button.clear()
@@ -261,7 +319,7 @@ struct EditorSlider<V>: View where V : BinaryFloatingPoint, V.Stride : BinaryFlo
                     TextField(title, value: $enteringValue, formatter: formatter)
                         .keyboardType(keyboardType)
                         .accessibilityIdentifier("EditorValueField")
-                    Button("Cancel") {
+                    Button("Cancel", role: .cancel) {
                         enterAlert = false
                     }
                     Button("Done") {

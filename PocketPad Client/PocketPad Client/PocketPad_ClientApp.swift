@@ -6,10 +6,12 @@
 //
 
 import SwiftUI
+import TipKit
 
 @main
 struct PocketPad_ClientApp: App {
     @UIApplicationDelegateAdaptor var appDelegate: AppDelegate
+    @AppStorage("finishedTutorial") var finishedTutorial: Bool = false
     
     @State private var isShowingSplash = true
     @State private var openedAsImport: Bool = false
@@ -17,7 +19,15 @@ struct PocketPad_ClientApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            Group {
+                if finishedTutorial {
+                    ContentView()
+                } else {
+                    OnBoardingView()
+                }
+            }
+            .transition(.opacity)
+            .animation(.easeOut(duration: 0.5), value: finishedTutorial)
                 .environmentObject(motionManager)
                 .environmentObject(AlertManager.shared)
                 .overlay {
@@ -66,5 +76,47 @@ struct PocketPad_ClientApp: App {
                     }
                 })
         }
+    }
+    
+    init() {
+        // MARK: Launch Arguments
+        #if DEBUG
+        if CommandLine.arguments.contains("reset-tips") {
+            try? Tips.resetDatastore()
+        }
+        if CommandLine.arguments.contains("hide-tips") {
+            Tips.hideAllTipsForTesting()
+        } else if CommandLine.arguments.contains("show-tips") {
+            Tips.showAllTipsForTesting()
+        }
+        if CommandLine.arguments.contains("no-tutorial") {
+            finishedTutorial = true
+        } else if CommandLine.arguments.contains("show-tutorial") {
+            finishedTutorial = false
+        }
+        if CommandLine.arguments.contains("remove-layouts") {
+            try? LayoutManager.shared.deleteAllLayouts()
+        }
+        if CommandLine.arguments.contains("add-debug-layout-no-buttons") {
+            try? LayoutManager.shared.saveLayout(LayoutConfig(name: "Debug Layout", lockToOrientation: .all, buttons: []))
+            UserDefaults.standard.set("Debug Layout", forKey: "selectedController")
+//            try? LayoutManager.shared.setCurrentLayout(to: "Debug Layout")
+        } else if CommandLine.arguments.contains("add-debug-layout-regular-button") {
+            try? LayoutManager.shared.saveLayout(LayoutConfig(name: "Debug Layout", lockToOrientation: .all, buttons: [
+                RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.3, y: 0.3)), scale: 1.0, inputId: 0, input: .A)
+            ]))
+            UserDefaults.standard.set("Debug Layout", forKey: "selectedController")
+//            try? LayoutManager.shared.setCurrentLayout(to: "Debug Layout")
+        }
+        #endif
+        
+        // remove tips if needed
+        if UserDefaults.standard.bool(forKey: "resetTips") {
+            try? Tips.resetDatastore()
+            UserDefaults.standard.removeObject(forKey: "resetTips")
+        }
+        
+        // Load and configure the state of all the tips of the app
+        try? Tips.configure([.displayFrequency(.immediate), .datastoreLocation(.applicationDefault)])
     }
 }

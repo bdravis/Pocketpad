@@ -4,8 +4,11 @@
 //
 //  Created by Bautista Tedin on 2/21/25.
 //
+//  Edited by Benjamin Dravis on 4/19/25
+//
 
 import SwiftUI
+import TipKit
 
 // MARK: - Layout Constants
 private let minMenuWidth: CGFloat = 320
@@ -28,22 +31,36 @@ struct SettingsMenuView: View {
     @AppStorage("motionControlEnabled") var motionControlEnabled: Bool = false
 
     @EnvironmentObject var motionManager: MotionManager
+    
+    // MARK: - Add Help & FAQs Properties
+    @Environment(\.openURL) private var openURL  // Environment key to open URLs
+    private let helpFAQURL = Bundle.main
+        .object(forInfoDictionaryKey: "HelpFAQURL") as? String
+        ?? "https://docs.google.com/document/d/1VsSVCmji7lz9CRxUKt2FdRm9Vd-MRM4ke3S1Zd5uDqQ/edit?usp=sharing"
 
     @State private var playerName: String = LayoutManager.shared.player_id_string
     @State private var showDPadStyle: Bool = false
     @State private var saveAsMalformed: Bool = false
+    @State private var showDeletingAllDataAlert: Bool = false
     @State private var makingNewLayout: Bool = false
     @State private var newLayoutName: String = ""
+    @State private var requestGameLayout: Bool = false
     
     @EnvironmentObject private var alertManager: AlertManager
     
+    // deadzone view variables
     @State private var showingLeftDeadzoneView: Bool = false
     @State private var showingRightDeadzoneView: Bool = false
     @State private var leftJoystickDeadzone: Double = LayoutManager.shared.getLeftJoystickDeadzone()
     @State private var rightJoystickDeadzone: Double = LayoutManager.shared.getRightJoystickDeadzone()
     
+    // turbo view variables
     @ObservedObject private var turboManager = TurboManager.shared
     @State private var showingTurboSettings: Bool = false
+    
+    // macro view variables
+    @ObservedObject private var macroManager = MacroManager.shared
+    @State private var showingMacroSettings: Bool = false
     
     @StateObject private var bluetoothManager = BluetoothManager.shared
 
@@ -72,7 +89,7 @@ struct SettingsMenuView: View {
                     )
                 
                 // Menu Content
-                if !showingLeftDeadzoneView && !showingRightDeadzoneView && !showingTurboSettings {
+                if !showingLeftDeadzoneView && !showingRightDeadzoneView && !showingTurboSettings && !showingMacroSettings {
                     VStack(spacing: 0) {
                         headerView
                         Divider()
@@ -111,6 +128,10 @@ struct SettingsMenuView: View {
                 
                 if showingTurboSettings {
                     TurboSettingsView(isShowingTurboSettings: $showingTurboSettings)
+                }
+                
+                if showingMacroSettings {
+                    MacroSettingsView(isShowingMacroSettings: $showingMacroSettings)
                 }
             }
             // Center the menu on the screen
@@ -152,11 +173,12 @@ struct SettingsMenuView: View {
                     .foregroundColor(.primary)
                 Spacer()
                 Picker("Picker\(selectedController)", selection: $selectedController) {
-//                    ForEach(ControllerType.allCases, id: \.self) { type in
-//                        Label(type.stringValue, image: type.stringValue).tag(type.stringValue)
-//                    }
                     ForEach(layoutManager.availableLayouts, id: \.self) { layout in
-                        Label(layout, image: layout.lowercased()).tag(layout)
+                        if UIImage(named: layout.lowercased()) != nil {
+                            Label(layout, image: layout.lowercased()).tag(layout)
+                        } else {
+                            Label(layout, systemImage: "gamecontroller").tag(layout)
+                        }
                     }
                 }
                 .pickerStyle(.menu)
@@ -169,6 +191,7 @@ struct SettingsMenuView: View {
                         leftJoystickDeadzone = LayoutManager.shared.getLeftJoystickDeadzone()
                         rightJoystickDeadzone = LayoutManager.shared.getRightJoystickDeadzone()
                         turboManager.stopAllTurbo()
+                        macroManager.clearMacrosForController()
                         
                         isCustomLayout = !DefaultLayouts.isDefaultLayout(name: selectedController)
                         bluetoothManager.updateControllerConfiguration()
@@ -230,6 +253,23 @@ struct SettingsMenuView: View {
                     .accessibilityAddTraits(.isButton)
                     .accessibilityIdentifier("DPadStyle")
                 }
+            }
+            
+            Button(action: {
+                requestGameLayout.toggle()
+            }) {
+                Text("Request Game Layout")
+            }
+            .padding(.horizontal, 16)
+            .accessibilityIdentifier("RequestGameLayoutButton")
+            .alert("Request Layout", isPresented: $requestGameLayout) {
+                Button("OK", action: {
+                    bluetoothManager.requestGameData()
+                })
+                .accessibilityIdentifier("requestLayoutOK")
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text("Are you sure you would like to request the layout on file for your current game?")
             }
             
             // Controller Color Section
@@ -317,6 +357,25 @@ struct SettingsMenuView: View {
                     .foregroundStyle(Color(uiColor: .secondaryLabel))
             }
             
+            // MARK: - Macro Settings
+            Section {
+                HStack {
+                    Text("Manage Macros")
+                    Spacer()
+                    Button(action: {
+                        showingMacroSettings = true
+                    }) {
+                        Text("Edit")
+                            .foregroundColor(.blue)
+                    }
+                    .accessibilityIdentifier("ViewMacrosButton")
+                }
+            } header: {
+                Text("Macro Settings")
+                    .font(.footnote)
+                    .foregroundStyle(Color(uiColor: .secondaryLabel))
+            }
+            
             // MARK: Add toggle for motion control
             HStack {
                 Text("Enable Motion Control")
@@ -345,7 +404,65 @@ struct SettingsMenuView: View {
                     .accessibilityIdentifier("HapticFeedbackToggle")
             }
             
-            // MARK: Saving layouts (temporary)
+            // MARK: FAQ + Resetting Tutorial
+            Button {
+            guard let url = URL(string: helpFAQURL) else { return }
+                openURL(url)
+            } label: {
+                HStack {
+                    Text("Help & FAQs")
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                    .foregroundColor(.secondary)
+                }
+            }
+            .accessibilityIdentifier("HelpFAQsButton")
+            .padding(.vertical, 8)
+            Button(action: {
+                UserDefaults.standard.set(false, forKey: "finishedTutorial")
+                UserDefaults.standard.set(true, forKey: "resetTips")
+            }) {
+                Text("View Tutorial")
+            }
+            .accessibilityIdentifier("ViewTutorial")
+            
+            // MARK: Removing All Data
+            Button(action: {
+                showDeletingAllDataAlert.toggle()
+            }) {
+                Text("Delete App Data")
+            }
+            .foregroundStyle(.red)
+            .accessibilityIdentifier("RemoveAllData")
+            .alert("Delete App Data", isPresented: $showDeletingAllDataAlert, actions: {
+                Button("Cancel", role: .cancel) {
+                    showDeletingAllDataAlert = false
+                }
+                Button("Delete", role: .destructive) {
+                    do {
+                        try layoutManager.deleteAllLayouts()
+                    } catch {
+                        UIApplication.shared.alert(body: error.localizedDescription)
+                        return
+                    }
+                    if let bundleID = Bundle.main.bundleIdentifier {
+                        UserDefaults.standard.removePersistentDomain(forName: bundleID)
+                    }
+                    // set to clear tips
+                    UserDefaults.standard.set(true, forKey: "resetTips")
+                    // close the app
+                    UIApplication.shared.perform(#selector(NSXPCConnection.suspend))
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        exit(0)
+                    }
+                }
+                .accessibilityIdentifier("ConfirmDelete")
+            }, message: {
+                Text("Are you sure you want to delete all app data? This cannot be undone.")
+            })
+            
+            // MARK: Saving layouts (debug)
+            #if DEBUG
             Section {
                 // Toggle to save layout as malformed
                 Toggle("Save as malformed file", isOn: $saveAsMalformed)
@@ -382,7 +499,12 @@ struct SettingsMenuView: View {
                 Text("Layouts (testing)")
                     .font(.footnote)
                     .foregroundStyle(Color(uiColor: .secondaryLabel))
+            } footer: {
+                Text("DEBUG BUILD")
+                    .font(.footnote)
+                    .foregroundStyle(Color(uiColor: .secondaryLabel))
             }
+            #endif
         }
         .padding(.horizontal, 16)
     }
@@ -451,6 +573,7 @@ struct SettingsMenuView: View {
         showingLeftDeadzoneView = false
         showingRightDeadzoneView = false
         showingTurboSettings = false
+        showingMacroSettings = false
     }
 }
 
