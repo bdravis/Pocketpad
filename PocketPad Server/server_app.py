@@ -564,6 +564,10 @@ class MainWindow(QMainWindow):
         """)
         player_glow_selector.setFixedSize(30, 30)
 
+        layout_saving_selector = QPushButton("Save Layout To Database")
+        layout_saving_selector.clicked.connect(lambda: self.save_layout(player_id))
+        layout_saving_selector.setFixedSize(150, 30)
+                
         controller_latency = QLabel(f"{latency} ms")
         if not self.ui.latency_setting_box.isChecked():
             controller_latency.setVisible(False)
@@ -571,6 +575,7 @@ class MainWindow(QMainWindow):
         text_format_layout = QHBoxLayout()
         text_format_layout.addWidget(controller_name)
         text_format_layout.addWidget(player_glow_selector)
+        text_format_layout.addWidget(layout_saving_selector)
         text_format_layout.addStretch()
         text_format_layout.addWidget(controller_latency)
 

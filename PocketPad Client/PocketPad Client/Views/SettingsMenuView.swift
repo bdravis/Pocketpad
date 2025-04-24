@@ -167,21 +167,6 @@ struct SettingsMenuView: View {
     // MARK: - Main Settings Content
     private var settingsContent: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Section("Support") {
-                Button {
-                    guard let url = URL(string: helpFAQURL) else { return }
-                        openURL(url)
-                    } label: {
-                        HStack {
-                            Text("Help & FAQs")
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                            .foregroundColor(.secondary)
-                        }
-                    }
-                    .accessibilityIdentifier("HelpFAQsButton")
-                    .padding(.vertical, 8)
-                }
             // Controller Type Picker
             HStack {
                 Text("Current Layout")
@@ -419,7 +404,20 @@ struct SettingsMenuView: View {
                     .accessibilityIdentifier("HapticFeedbackToggle")
             }
             
-            // MARK: Resetting Tutorial
+            // MARK: FAQ + Resetting Tutorial
+            Button {
+            guard let url = URL(string: helpFAQURL) else { return }
+                openURL(url)
+            } label: {
+                HStack {
+                    Text("Help & FAQs")
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                    .foregroundColor(.secondary)
+                }
+            }
+            .accessibilityIdentifier("HelpFAQsButton")
+            .padding(.vertical, 8)
             Button(action: {
                 UserDefaults.standard.set(false, forKey: "finishedTutorial")
                 UserDefaults.standard.set(true, forKey: "resetTips")

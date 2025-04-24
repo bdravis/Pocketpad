@@ -154,28 +154,50 @@ gatt: Dict = {
 if sys.platform == 'win32':
     import pywinctl
     def get_current_dolphin_game() -> str | None:
-        wins = pywinctl.getWindowsWithTitle('Dolphin')
+        wins = [
+            w for w in pywinctl.getAllWindows()
+            if "dolphin" in w.title.lower()
+        ]
+
         if not wins:
+            print("No Dolphin window found")
             return None
-        parts = wins[0].title.split('|')
-        return parts[-1].strip() if len(parts) >= 2 else None
+
+        for w in wins:
+            if "|" in w.title:
+                parts = w.title.split("|")
+                return parts[-1].strip()
 elif sys.platform == 'darwin':
     from AppKit import NSWorkspace
     from Quartz import CGWindowListCopyWindowInfo, kCGWindowListOptionOnScreenOnly, kCGNullWindowID
     def get_current_dolphin_game() -> str | None:
-        front = NSWorkspace.sharedWorkspace().frontmostApplication().localizedName()
         wins = CGWindowListCopyWindowInfo(kCGWindowListOptionOnScreenOnly, kCGNullWindowID)
         for w in wins:
-            if w.get('kCGWindowOwnerName') == front and 'Dolphin' in w.get('kCGWindowName',''):
-                parts = w['kCGWindowName'].split('|')
-                return parts[-1].strip() if len(parts)>=2 else None
+            owner = w.get('kCGWindowOwnerName')
+            title = w.get('kCGWindowName','')
+            if owner == 'Dolphin' and title:
+                # try pipe or dash separator
+                m = re.search(r'(?:\||–)\s*(.+)$', title)
+                if m:
+                    return m.group(1).strip()
+                # fallback: if title isn’t just “Dolphin”, return it anyway
+                if title.lower() != 'dolphin':
+                    return title
         return None
+    # def get_current_dolphin_game() -> str | None:
+    #     front = NSWorkspace.sharedWorkspace().frontmostApplication().localizedName()
+    #     wins = CGWindowListCopyWindowInfo(kCGWindowListOptionOnScreenOnly, kCGNullWindowID)
+    #     for w in wins:
+    #         if w.get('kCGWindowOwnerName') == front and 'Dolphin' in w.get('kCGWindowName',''):
+    #             parts = w['kCGWindowName'].split('|')
+    #             return parts[-1].strip() if len(parts)>=2 else None
+    #     return None
 else:
     def get_current_dolphin_game() -> str | None:
         return None
 
 def dolphin_is_running() -> bool:
-    name = 'dolphin.exe' if sys.platform=='win32' else 'dolphin-emu'
+    name = 'dolphin.exe' if sys.platform=='win32' else 'dolphin'
     return any(p.name().lower() == name for p in psutil.process_iter(['name']))
 
 def set_latency_callback(send_latency_callback, latency_function_callback):
@@ -561,7 +583,7 @@ class QBlessServer(QObject):
         self._bg_thread = threading.Thread(target=self._start_bg_loop, daemon=True)
         self._bg_thread.start()
 
-        asyncio.run_coroutine_threadsafe(self._dolphin_monitor(), self._bg_loop)
+        asyncio.run_coroutine_threadsafe(self.dolphin_monitor(), self._bg_loop)
 
     def _start_bg_loop(self):
         asyncio.set_event_loop(self._bg_loop)
@@ -583,6 +605,8 @@ class QBlessServer(QObject):
         self.server.get_characteristic(PAIRCODE_CHARACTERISTIC).value = str(Paircode.reset().code).encode()
         await self.server.start(prioritize_local_name=True)
         logger.info("Advertising")
+
+        input_server.start()
     
     async def stop(self):
         logger.info("Stopping server")
@@ -590,10 +614,11 @@ class QBlessServer(QObject):
         char.value = bytearray([0, 0])
         self.server.update_value(POCKETPAD_SERVICE, CONNECTION_CHARACTERISTIC)
         
+        # input_server.stop()
         await asyncio.sleep(0.5) # small buffer
         await self.server.stop()
 
-    async def _dolphin_monitor(self):
+    async def dolphin_monitor(self):
         last_game = None
         while True:
             while not dolphin_is_running():
