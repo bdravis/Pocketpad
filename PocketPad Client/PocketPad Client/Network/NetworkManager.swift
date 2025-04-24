@@ -103,6 +103,7 @@ class NetworkManager: ObservableObject {
     
     func sendMessage(_ message: String) {
         guard let connection = connection else { return }
+        print("Sending: \(message)")
         let data = message.data(using: .utf8) ?? Data()
         connection.send(content: data, completion: .contentProcessed({ error in
             if let error = error {

@@ -41,7 +41,7 @@ class QNetworkServer(QObject):
         super().__init__()
         self.server = None
         self.host = "0.0.0.0"
-        self.port = 3000
+        self.port = 12683
         self.clients = {}
         self.next_id = 0
         self.players: dict[Player] = {}
@@ -77,11 +77,10 @@ class QNetworkServer(QObject):
         all_addresses = ipv4_addresses + ipv6_addresses
         
         # If no addresses found, fall back to IPv4 and IPv6 any addresses
-        if not all_addresses:
-            all_addresses = [
-                socket.inet_pton(socket.AF_INET, "0.0.0.0"),
-                socket.inet_pton(socket.AF_INET6, "::")
-            ]
+        all_addresses += [
+            socket.inet_pton(socket.AF_INET, "0.0.0.0"),
+            socket.inet_pton(socket.AF_INET6, "::")
+        ]
             
         self.service_info = AsyncServiceInfo(
             "_http._tcp.local.",
@@ -89,9 +88,12 @@ class QNetworkServer(QObject):
             addresses=all_addresses,
             port=self.port
         )
+        logger.info(f"Registering service with info: {self.service_info}")
+        logger.info(f"Service info addresses: {self.service_info.addresses}")
         await self.zeroconf.async_register_service(self.service_info)
     
     async def start(self):
+        self.next_id = 0
         await self.register_service()
         
         self.code = Paircode.reset()
@@ -120,72 +122,78 @@ class QNetworkServer(QObject):
                 if not data:
                     break
 
-                message = json.loads(data.decode())
-                
-                logger.debug(f"Received {message} from {addr}")
-                
-                if waiting_for_pairing:
-                    if "paircode" not in message:
-                        logger.warning(f"Received invalid pairing message from {addr}: {message}")
-                        writer.write(json.dumps({ "status": "disconnect", "error": "Invalid code" }).encode())
-                        break
-                    code = message["paircode"]
-                    if Paircode(int(code)) != self.code:
-                        logger.warning(f"Pairing failed for {addr}: invalid code {code}")
-                        writer.write(json.dumps({ "status": "disconnect", "error": "Invalid code" }).encode())
-                        break
-                    logger.info(f"Pairing successful for {addr}")
+                data = data.decode()
+                queue = data[1:-1].split("}{")
+                for i in range(len(queue)):
+                    queue[i] = "{" + queue[i] + "}"
+                print(queue)
+                for msg in queue:
+                    message = json.loads(msg)
                     
-                    waiting_for_pairing = False
+                    logger.debug(f"Received {message} from {addr}")
                     
-                    writer.write(json.dumps({ "status": "pair_success" }).encode())
+                    if waiting_for_pairing:
+                        if "paircode" not in message:
+                            logger.warning(f"Received invalid pairing message from {addr}: {message}")
+                            writer.write(json.dumps({ "status": "disconnect", "error": "Invalid code" }).encode())
+                            break
+                        code = message["paircode"]
+                        if Paircode(int(code)) != self.code:
+                            logger.warning(f"Pairing failed for {addr}: invalid code {code}")
+                            writer.write(json.dumps({ "status": "disconnect", "error": "Invalid code" }).encode())
+                            break
+                        logger.info(f"Pairing successful for {addr}")
+                        
+                        waiting_for_pairing = False
+                        
+                        writer.write(json.dumps({ "status": "pair_success" }).encode())
+                        
+                        continue
                     
-                    continue
-                
-                if "request_id" in message:
-                    requested = message["request_id"]
-                    if requested in self.players:
-                        logger.warning(f"Received duplicate request from {addr}")
-                        writer.write(json.dumps({ "status": "disconnect", "error": "Player ID taken" }).encode())
-                        break
-                    
-                    if requested == "Player":
-                        requested = f"Player {self.next_id}"
-                    self.players[self.next_id] = Player(self.next_id, requested, addr)
-                    self.next_id += 1
-                    
-                    logger.info(f"Player \"{requested}\" connected from {addr} - ID: {self.next_id}")
-                    
-                    writer.write(json.dumps({ "status": "connect", "pid": self.next_id - 1 }).encode())
-                    DSU_Server.instance().update_controller_state(self.next_id - 1, enums.ControllerUpdateTypes.CONNECTION.value, [1])
-                elif "layout" in message:
-                    pid = message["pid"]
-                    controller_type = enums.ControllerType(message["controller_type"])
-                    player = self.players[pid]
-                    player.layout_json = base64.b64decode(message["layout"]).decode()
-                    
-                    map_inputID_to_inputs(json.loads(player.layout_json))
-                    
-                    self.connection_function("connect", player.name, controller_type, player.layout_json)
-                elif "new_layout" in message:
-                    pid = message["pid"]
-                    player = self.players[pid]
-                    controller_type = enums.ControllerType(message["controller_type"])
-                    player.layout_json = base64.b64decode(message["new_layout"]).decode()
-                    
-                    map_inputID_to_inputs(json.loads(player.layout_json))
-                    
-                    self.controller_function(player.name, controller_type, player.layout_json)
-                elif "input" in message:
-                    pid = message["pid"]
-                    player = self.players[pid]
-                    res = parse_input(base64.b64decode(message["input"]))
-                    if res == None:
-                        pass
-                    if res[0] == -1:
-                        logger.error("INVALID INPUT")
-                    else:
-                        self.input_function(self.players[pid].name, res[1], res[2])    
+                    if "request_id" in message:
+                        requested = message["request_id"]
+                        if requested in self.players:
+                            logger.warning(f"Received duplicate request from {addr}")
+                            writer.write(json.dumps({ "status": "disconnect", "error": "Player ID taken" }).encode())
+                            break
+                        
+                        if requested == "Player":
+                            requested = f"Player {self.next_id}"
+                        self.players[self.next_id] = Player(self.next_id, requested, addr)
+                        self.next_id += 1
+                        
+                        logger.info(f"Player \"{requested}\" connected from {addr} - ID: {self.next_id}")
+                        
+                        writer.write(json.dumps({ "status": "connect", "pid": self.next_id - 1 }).encode())
+                        DSU_Server.instance().update_controller_state(self.next_id - 1, enums.ControllerUpdateTypes.CONNECTION.value, [1])
+                    elif "layout" in message:
+                        pid = message["pid"]
+                        controller_type = enums.ControllerType(message["controller_type"])
+                        player = self.players[pid]
+                        player.layout_json = base64.b64decode(message["layout"]).decode()
+                        
+                        map_inputID_to_inputs(json.loads(player.layout_json))
+                        
+                        self.connection_function("connect", player.name, controller_type, player.layout_json)
+                    elif "new_layout" in message:
+                        pid = message["pid"]
+                        player = self.players[pid]
+                        controller_type = enums.ControllerType(message["controller_type"])
+                        player.layout_json = base64.b64decode(message["new_layout"]).decode()
+                        
+                        map_inputID_to_inputs(json.loads(player.layout_json))
+                        
+                        self.controller_function(player.name, controller_type, player.layout_json)
+                    elif "input" in message:
+                        pid = message["pid"]
+                        player = self.players[pid]
+                        res = parse_input(base64.b64decode(message["input"]))
+                        if res == None:
+                            pass
+                        if res[0] == -1:
+                            logger.error("INVALID INPUT")
+                        else:
+                            self.input_function(self.players[pid].name, res[1], res[2])    
         except asyncio.CancelledError:
             pass
         finally:
@@ -202,7 +210,10 @@ class QNetworkServer(QObject):
             
             logger.debug(f"Closing connection from {addr}")
             writer.close()
-            await writer.wait_closed()
+            try:
+                await writer.wait_closed()
+            except ConnectionResetError:
+                pass
             del self.clients[addr]
             logger.info(f"Connection closed from {addr}")
             
