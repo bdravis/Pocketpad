@@ -234,7 +234,7 @@ class DSU_Server:
 
         if actions_requested == 1:
             slot_requested = int.from_bytes(struct.unpack("<B", data[21:22]))
-            print(f"data requested from slot {slot_requested}")
+            # print(f"data requested from slot {slot_requested}")
             state_requested = self.controller_states[slot_requested]
             self.controller_states[slot_requested].addr = addr
 
@@ -262,7 +262,7 @@ class DSU_Server:
     
     def _input_loop(self):
         while True:
-            time.sleep(0.01)
+            time.sleep(0.005)
             for index, state in enumerate(self.controller_states):
 
                 if state.connected == False:
@@ -301,8 +301,7 @@ class DSU_Server:
                         0x100002, #event type
                         index, # slot
                         slot_state_int, # slot state (connected / not connected)
-                        #2, # device model (gyro)
-                        1, # TEMP NO GYRO
+                        2, # device model (gyro)
                         2, # Connection type
                         0,0,0,0,0,0, # MAC address
                         0x4, #Battery
@@ -458,9 +457,9 @@ class DSU_Server:
                         )
 
                 """
-                print(struct.unpack("<IHHIIIBBBBHHHBBIBBBBBBBBBBBBBBBBBBBBHHHHHHQIIIIII", input_packet))
-                print("Raw bytes:", input_packet.hex(' '))
-                print(self.addr)
+                print("sent motion data")
+                for i in range(46, 52):
+                    print(input_packet_no_crc[i])
                 """
 
                 self.sock.sendto(input_packet, self.controller_states[index].addr)
@@ -476,7 +475,7 @@ class DSU_Server:
         # If event type is JOYSTICK, value is [Sticks int, angle, magnitude]
         # if event type is MOTION, value is [pitch, yaw, roll]
 
-        print(f"updating state: {player_num}, {event_type}, {value}")
+        #print(f"updating state: {player_num}, {event_type}, {value}")
         """
         print(f"current buttons: {self.controller_states[player_num].button_mask}")
         print(f"current dpad: {self.controller_states[player_num].dpad_mask}")
@@ -669,19 +668,40 @@ class DSU_Server:
                 self.controller_states[player_num].right_stick_y = adjusted_y
 
         if event_type == ControllerUpdateTypes.MOTION.value:
+
             self.controller_states[player_num].motion_timestamp = int(time.time() * 1_000_000)
 
 
-
+            """
             self.controller_states[player_num].pitch = (180 * value[0]) / math.pi
             self.controller_states[player_num].yaw = (180 * value[1]) / math.pi
             self.controller_states[player_num].roll = (180 * value[2]) / math.pi
+            self.controller_states[player_num].pitch = value[0]
+            self.controller_states[player_num].yaw = value[1]
+            self.controller_states[player_num].roll = value[2]
+            """
+            self.controller_states[player_num].pitch = 1 * math.degrees(value[0])
+            self.controller_states[player_num].yaw = -1 * math.degrees(value[1])
+            self.controller_states[player_num].roll =  1 * math.degrees(value[2])
 
 
 
-            self.controller_states[player_num].x_acceleration = value[3]
-            self.controller_states[player_num].y_acceleration = value[4]
-            self.controller_states[player_num].z_acceleration = value[5]
+            # Doing weird stuff 
+            self.controller_states[player_num].x_acceleration = -1 * value[3] if abs(value[3]) > 0.02 else 0
+            self.controller_states[player_num].z_acceleration = 1 * value[4] if abs(value[4]) > 0.02 else 0
+            self.controller_states[player_num].y_acceleration =  1 * value[5] if abs(value[5]) > 0.02 else 0
+
+
+
+            """
+            print("adjusted motion data")
+            print(self.controller_states[player_num].x_acceleration)
+            print(self.controller_states[player_num].y_acceleration)
+            print(self.controller_states[player_num].z_acceleration)
+            print(self.controller_states[player_num].pitch)
+            print(self.controller_states[player_num].yaw)
+            print(self.controller_states[player_num].roll)
+            """
 
 
         """
