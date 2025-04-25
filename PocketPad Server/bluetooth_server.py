@@ -1,3 +1,5 @@
+import re
+import os
 import sys
 import json
 import time
@@ -170,28 +172,19 @@ if sys.platform == 'win32':
 elif sys.platform == 'darwin':
     from AppKit import NSWorkspace
     from Quartz import CGWindowListCopyWindowInfo, kCGWindowListOptionOnScreenOnly, kCGNullWindowID
-    def get_current_dolphin_game() -> str | None:
+    def get_current_dolphin_game():
         wins = CGWindowListCopyWindowInfo(kCGWindowListOptionOnScreenOnly, kCGNullWindowID)
         for w in wins:
-            owner = w.get('kCGWindowOwnerName')
-            title = w.get('kCGWindowName','')
-            if owner == 'Dolphin' and title:
-                # try pipe or dash separator
-                m = re.search(r'(?:\||–)\s*(.+)$', title)
-                if m:
-                    return m.group(1).strip()
-                # fallback: if title isn’t just “Dolphin”, return it anyway
-                if title.lower() != 'dolphin':
-                    return title
+            if w.get('kCGWindowOwnerName') != 'Dolphin':
+                continue
+            pid = w.get('kCGWindowOwnerPID')
+            proc = psutil.Process(pid)
+            for f in proc.open_files():
+                if is_allowed_path(f.path):
+                    game = extract_game_name_from_path(f.path)
+            if game:
+                return game
         return None
-    # def get_current_dolphin_game() -> str | None:
-    #     front = NSWorkspace.sharedWorkspace().frontmostApplication().localizedName()
-    #     wins = CGWindowListCopyWindowInfo(kCGWindowListOptionOnScreenOnly, kCGNullWindowID)
-    #     for w in wins:
-    #         if w.get('kCGWindowOwnerName') == front and 'Dolphin' in w.get('kCGWindowName',''):
-    #             parts = w['kCGWindowName'].split('|')
-    #             return parts[-1].strip() if len(parts)>=2 else None
-    #     return None
 else:
     def get_current_dolphin_game() -> str | None:
         return None
@@ -199,6 +192,19 @@ else:
 def dolphin_is_running() -> bool:
     name = 'dolphin.exe' if sys.platform=='win32' else 'dolphin'
     return any(p.name().lower() == name for p in psutil.process_iter(['name']))
+
+BLACKLIST = {'.log', '.list', '.data', '.uidchache'}
+
+def is_allowed_path(path: str) -> bool:
+    extension = os.path.splitext(path)[1].lower()
+    return extension not in BLACKLIST
+
+def extract_game_name_from_path(full_path: str) -> str:
+    core, *_ = full_path.rsplit*(" ", 1)
+    file_name = os.path.basename(core)
+    name, _ = os.path.splitext*(file_name)
+    cleaned = re.sub(r'\s*[\(\[].*?[\)\]])]\s*$', '', name).strip()
+    return cleaned
 
 def set_latency_callback(send_latency_callback, latency_function_callback):
     global latency_function, send_latency
@@ -549,8 +555,6 @@ class QBlessServer(QObject):
         self.server.get_characteristic(PAIRCODE_CHARACTERISTIC).value = str(Paircode.reset().code).encode()
         await self.server.start(prioritize_local_name=True)
         logger.info("Advertising")
-
-        input_server.start()
     
     async def stop(self):
         logger.info("Stopping server")
