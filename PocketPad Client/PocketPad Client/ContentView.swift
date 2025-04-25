@@ -184,7 +184,7 @@ struct ContentView: View {
                             }
                             .padding(.horizontal)
                         }
-                
+                        
                     }
                     
                     // NavigationLink to ControllerView for Debugging
@@ -292,13 +292,13 @@ struct ContentView: View {
                             exitAllMenusCallback: $exitAllMenusCallback,
                             isCustomLayout: $showModifyBtn
                         )
-                            .offset(y: isShowingSettings ? 0 : -geometry.size.height)
-                            .transition(.move(edge: .top))
-                            .animation(.bouncy, value: isShowingSettings)
+                        .offset(y: isShowingSettings ? 0 : -geometry.size.height)
+                        .transition(.move(edge: .top))
+                        .animation(.bouncy, value: isShowingSettings)
                     }
                 }
-            }
-        )
+            )
+        }
         .alert("Pair Code Bluetooth", isPresented: $bluetoothManager.paircodeNeeded) {
             TextField("Pair Code", text: $paircode)
                 .keyboardType(.numberPad)

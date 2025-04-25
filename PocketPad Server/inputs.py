@@ -4,9 +4,11 @@
 # Created by Jack
 
 import logging
+import math
 from enums import (ButtonType, DPadDirection, ButtonEvent, ControllerUpdateTypes, AllButtons)
 from struct import unpack, unpack_from
 from dsu_server import DSU_Server
+import pyautogui
 
 # Same logging setup as bluetooth.py
 logging.basicConfig(level=logging.INFO)
@@ -73,6 +75,15 @@ def map_inputID_to_inputs(json):
             DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.one
         elif input_val == '2':
             DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.two
+            
+        elif input_val == 'Mouse':
+            DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.mouse
+        elif input_val == 'MouseLeft':
+            DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.mouse_left
+        elif input_val == 'MouseRight':
+            DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.mouse_right
+        elif input_val == 'Keyboard':
+            DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.keyboard
 
 # Parses raw input data bytes
 # Returns player_id, input_id, event
@@ -85,6 +96,7 @@ def parse_input(raw_data):
 
     # Unpack the raw data into a tuple
     unpacked_data = unpack(format_str, raw_data)
+    print(unpacked_data)
 
     NUM_COMMON_FIELDS = 0
     player_id = unpacked_data[0]
@@ -125,13 +137,28 @@ def parse_input(raw_data):
     try:
         button_event = ButtonEvent(raw_event)
     except:
+        if DSU_Server.instance().inputId_to_inputs[input_id] == AllButtons.keyboard:
+            keypress = raw_event
+            print(f"Keyboard input received from player {player_id} with keypress {keypress}")
+            pyautogui.press(chr(keypress))
+            return None
+        
         logger.error("Invalid button event")
         return (-1, -1, None)
     
-    # Find the input string based on the button type
+    # Find the input string based on the button typeVjbcijfybekeiwjwj
     if button_type == ButtonType.REGULAR:
         # logger.debug(f"Received input from button {input_id} from player {player_id}")
-        DSU_Server.instance().update_controller_state(player_id, ControllerUpdateTypes.BUTTON.value, [DSU_Server.instance().inputId_to_inputs[input_id].value, raw_event])
+        if (m := DSU_Server.instance().inputId_to_inputs[input_id]) in [AllButtons.mouse_left, AllButtons.mouse_right]:
+            if button_event == ButtonEvent.PRESSED:
+                pyautogui.mouseDown(button='left' if m == AllButtons.mouse_left else 'right')
+            elif button_event == ButtonEvent.RELEASED:
+                pyautogui.mouseUp(button='left' if m == AllButtons.mouse_left else 'right')
+            else:
+                logger.error("Invalid button event for mouse input")
+                return (-1, -1, None)
+        else:
+            DSU_Server.instance().update_controller_state(player_id, ControllerUpdateTypes.BUTTON.value, [DSU_Server.instance().inputId_to_inputs[input_id].value, raw_event])
 
     elif button_type == ButtonType.BUMPER:
         # logger.debug(f"Received input from bumper {input_id} from player {player_id}")
@@ -146,9 +173,20 @@ def parse_input(raw_data):
         try:
             raw_angle = unpacked_data[NUM_COMMON_FIELDS]
             raw_magnitude = unpacked_data[NUM_COMMON_FIELDS + 1]
+            if DSU_Server.instance().inputId_to_inputs[input_id] == AllButtons.mouse:
+                print(f"Mouse input received from player {player_id} with angle {raw_angle} and magnitude {raw_magnitude}.")
+                radians = math.radians(raw_angle - 90)
+                magnitude = raw_magnitude / 100
 
-            logger.debug(f"Updating Joystick: {player_id} -- {ControllerUpdateTypes.JOYSTICK.value} -- {DSU_Server.instance().inputId_to_inputs[input_id].value} -- {raw_angle} -- {raw_magnitude}")
-            DSU_Server.instance().update_controller_state(player_id, ControllerUpdateTypes.JOYSTICK.value, [DSU_Server.instance().inputId_to_inputs[input_id].value, raw_angle, raw_magnitude])
+                dx = -magnitude * math.cos(radians)
+                dy = magnitude * math.sin(radians)
+                scale = pyautogui.size().height / 100 
+                dx *= scale
+                dy *= scale
+                pyautogui.moveRel(dx, dy, duration=0.1)
+            else:
+                logger.debug(f"Updating Joystick: {player_id} -- {ControllerUpdateTypes.JOYSTICK.value} -- {DSU_Server.instance().inputId_to_inputs[input_id].value} -- {raw_angle} -- {raw_magnitude}")
+                DSU_Server.instance().update_controller_state(player_id, ControllerUpdateTypes.JOYSTICK.value, [DSU_Server.instance().inputId_to_inputs[input_id].value, raw_angle, raw_magnitude])
         except:
             logger.error("Joystick input format missing fields")
             return (-1, -1, None)
