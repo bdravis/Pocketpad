@@ -244,7 +244,6 @@ final class PocketPad_ClientUITests: XCTestCase {
         
         // try to save malformed wii
         let saveMalformed = app.switches["SaveAsMalformed"]
-        app.scrollViews["SettingsScrollView"].scrollToElement(saveMalformed, upward: false)
         XCTAssertTrue(saveMalformed.waitForExistence(timeout: TIMEOUT))
         saveMalformed.tap()
         XCTAssertTrue(chooseTemplate.exists)
