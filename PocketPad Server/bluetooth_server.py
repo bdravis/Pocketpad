@@ -9,8 +9,6 @@ import psutil
 import logging
 import asyncio
 import threading
-from typing import Tuple
-import concurrent.futures
 import game_database as gdb
 from typing import Dict, Union
 from inputs import parse_input, map_inputID_to_inputs
