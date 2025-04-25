@@ -267,7 +267,6 @@ def reconstruct_timestamp(sent_ms):
     
     return abs(latency)
 
-
 def process_latency_characteristic(characteristic):
     # data comes as little endian {Byte, quadword}
     connection_information = unpack("<Bi", characteristic.value)

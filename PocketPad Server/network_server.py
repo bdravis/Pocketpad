@@ -210,7 +210,7 @@ class QNetworkServer(QObject):
                 queue = data[1:-1].split("}{")
                 for i in range(len(queue)):
                     queue[i] = "{" + queue[i] + "}"
-                print(queue)
+                #print(queue)
                 for msg in queue:
                     message = json.loads(msg)
                     
@@ -273,7 +273,7 @@ class QNetworkServer(QObject):
                         player = self.players[pid]
                         res = parse_input(base64.b64decode(message["input"]))
                         if res == None:
-                            pass
+                            continue
                         if res[0] == -1:
                             logger.error("INVALID INPUT")
                         else:
