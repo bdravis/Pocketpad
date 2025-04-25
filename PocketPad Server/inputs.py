@@ -55,8 +55,14 @@ def map_inputID_to_inputs(json):
             DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.left_trigger
         elif input_val == 'RT':
             DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.right_trigger
-        elif input_val in ('Start', 'Select', 'Share'):
+
+        elif input_val == 'Start':
             DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.options
+        elif input_val == 'Select':
+            DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.select
+        elif input_val == 'Share':
+            DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.share
+            
         elif input_val == 'LeftJoystick':
             DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.left_stick
         elif input_val == 'RightJoystick':

@@ -275,7 +275,7 @@ class DSU_Server:
     
     def _input_loop(self):
         while True:
-            time.sleep(0.005)
+            time.sleep(0.01)
             for index, state in enumerate(self.controller_states):
 
                 if state.connected == False:
@@ -510,6 +510,7 @@ class DSU_Server:
                 self.controller_states[player_num].connected = False
 
         if event_type == ControllerUpdateTypes.BUTTON.value:
+
             if value[0] == AllButtons.top_diamond.value:
                 if value[1] == ButtonEvent.PRESSED.value:
                     self.controller_states[player_num].button_mask |= 1 << 4
@@ -635,6 +636,18 @@ class DSU_Server:
                     self.controller_states[player_num].dpad_mask |= 1 << 3
                 if value[1] == ButtonEvent.RELEASED.value:
                     self.controller_states[player_num].dpad_mask &= ~(1 << 3)
+
+            elif value[0] == AllButtons.select.value:
+                if value[1] == ButtonEvent.PRESSED.value:
+                    self.controller_states[player_num].dpad_mask |= 1 << 2
+                if value[1] == ButtonEvent.RELEASED.value:
+                    self.controller_states[player_num].dpad_mask &= ~(1 << 2)
+
+            elif value[0] == AllButtons.share.value:
+                if value[1] == ButtonEvent.PRESSED.value:
+                    self.controller_states[player_num].dpad_mask |= 1 << 0
+                if value[1] == ButtonEvent.RELEASED.value:
+                    self.controller_states[player_num].dpad_mask &= ~(1 << 0)
 
             elif value[0] == AllButtons.home.value:
                 if value[1] == ButtonEvent.PRESSED.value:
