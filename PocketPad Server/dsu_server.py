@@ -13,10 +13,9 @@ import math
 import random
 from dataclasses import dataclass
 
-
-
 class DSU_Server:
-
+    _instance = None
+    
     class Controller_State:
         def __init__(self, is_null: bool):
 
@@ -59,12 +58,21 @@ class DSU_Server:
             self.z_acceleration = 0
 
             self.last_request_time = 0
+            
+    @staticmethod
+    def instance():
+        if DSU_Server._instance is None:
+            DSU_Server._instance = DSU_Server()
+        DSU_Server._instance.start()
+        return DSU_Server._instance
 
     def __init__(self, port=26760):
         self.port = port
         self.running = False
         self.server_id = 5
         self.packet_counter = 0
+        
+        self.inputId_to_inputs = {}
 
         self.addr = ("127.0.0.1",26760)
 
@@ -77,9 +85,14 @@ class DSU_Server:
         self.controller_states.append(self.Controller_State(False))
 
         self.request_timeout = 5 # Seconds after request that inputs stop sending
+        
+        self.started = False
 
     def start(self):
         """Start the UDP server in a background thread."""
+        if self.started:
+            return
+        self.started = True
         self.running = True
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind(("127.0.0.1", self.port))
@@ -301,8 +314,7 @@ class DSU_Server:
                         0x100002, #event type
                         index, # slot
                         slot_state_int, # slot state (connected / not connected)
-                        #2, # device model (gyro)
-                        1, # TEMP NO GYRO
+                        2, # device model (gyro)
                         2, # Connection type
                         0,0,0,0,0,0, # MAC address
                         0x4, #Battery
@@ -458,9 +470,9 @@ class DSU_Server:
                         )
 
                 """
-                print(struct.unpack("<IHHIIIBBBBHHHBBIBBBBBBBBBBBBBBBBBBBBHHHHHHQIIIIII", input_packet))
-                print("Raw bytes:", input_packet.hex(' '))
-                print(self.addr)
+                print("sent motion data")
+                for i in range(46, 52):
+                    print(input_packet_no_crc[i])
                 """
 
                 self.sock.sendto(input_packet, self.controller_states[index].addr)
@@ -498,6 +510,7 @@ class DSU_Server:
                 self.controller_states[player_num].connected = False
 
         if event_type == ControllerUpdateTypes.BUTTON.value:
+
             if value[0] == AllButtons.top_diamond.value:
                 if value[1] == ButtonEvent.PRESSED.value:
                     self.controller_states[player_num].button_mask |= 1 << 4
@@ -624,6 +637,18 @@ class DSU_Server:
                 if value[1] == ButtonEvent.RELEASED.value:
                     self.controller_states[player_num].dpad_mask &= ~(1 << 3)
 
+            elif value[0] == AllButtons.select.value:
+                if value[1] == ButtonEvent.PRESSED.value:
+                    self.controller_states[player_num].dpad_mask |= 1 << 2
+                if value[1] == ButtonEvent.RELEASED.value:
+                    self.controller_states[player_num].dpad_mask &= ~(1 << 2)
+
+            elif value[0] == AllButtons.share.value:
+                if value[1] == ButtonEvent.PRESSED.value:
+                    self.controller_states[player_num].dpad_mask |= 1 << 0
+                if value[1] == ButtonEvent.RELEASED.value:
+                    self.controller_states[player_num].dpad_mask &= ~(1 << 0)
+
             elif value[0] == AllButtons.home.value:
                 if value[1] == ButtonEvent.PRESSED.value:
                     self.controller_states[player_num].home = 1
@@ -669,19 +694,40 @@ class DSU_Server:
                 self.controller_states[player_num].right_stick_y = adjusted_y
 
         if event_type == ControllerUpdateTypes.MOTION.value:
+
             self.controller_states[player_num].motion_timestamp = int(time.time() * 1_000_000)
 
 
-
+            """
             self.controller_states[player_num].pitch = (180 * value[0]) / math.pi
             self.controller_states[player_num].yaw = (180 * value[1]) / math.pi
             self.controller_states[player_num].roll = (180 * value[2]) / math.pi
+            self.controller_states[player_num].pitch = value[0]
+            self.controller_states[player_num].yaw = value[1]
+            self.controller_states[player_num].roll = value[2]
+            """
+            self.controller_states[player_num].pitch = 1 * math.degrees(value[0])
+            self.controller_states[player_num].yaw = -1 * math.degrees(value[1])
+            self.controller_states[player_num].roll =  1 * math.degrees(value[2])
 
 
 
-            self.controller_states[player_num].x_acceleration = value[3]
-            self.controller_states[player_num].y_acceleration = value[4]
-            self.controller_states[player_num].z_acceleration = value[5]
+            # Doing weird stuff 
+            self.controller_states[player_num].x_acceleration = -1 * value[3] if abs(value[3]) > 0.02 else 0
+            self.controller_states[player_num].z_acceleration = 1 * value[4] if abs(value[4]) > 0.02 else 0
+            self.controller_states[player_num].y_acceleration =  1 * value[5] if abs(value[5]) > 0.02 else 0
+
+
+
+            """
+            print("adjusted motion data")
+            print(self.controller_states[player_num].x_acceleration)
+            print(self.controller_states[player_num].y_acceleration)
+            print(self.controller_states[player_num].z_acceleration)
+            print(self.controller_states[player_num].pitch)
+            print(self.controller_states[player_num].yaw)
+            print(self.controller_states[player_num].roll)
+            """
 
 
         """
@@ -693,3 +739,5 @@ class DSU_Server:
         print(f"updated sq: {self.controller_states[player_num].sq}")
         print(f"updated ci: {self.controller_states[player_num].ci}")
         """
+
+DSU_Server.instance() # init and start the server immediately

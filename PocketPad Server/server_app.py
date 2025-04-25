@@ -8,6 +8,7 @@ import bluetooth_server
 from pathlib import Path
 import game_database as gdb
 from bluetooth_server import QBlessServer
+from network_server import QNetworkServer
 from utils import Paircode
 
 
@@ -35,7 +36,8 @@ class MainWindow(QMainWindow):
         super().__init__(parent)
         
         self._bless_server = QBlessServer()
-
+        self._tcp_server = QNetworkServer.instance()
+        
         gdb.initialize_database()
 
         self.settings = QSettings("YourCompany", "PocketPad")
@@ -129,6 +131,12 @@ class MainWindow(QMainWindow):
         # Callback function for updating a given player's controller type
 
         bluetooth_server.set_game_callback(self.game_updated.emit)
+        
+        self._tcp_server.connection_function = self.connection_updated.emit
+        self._tcp_server.input_function = self.input_updated.emit
+        self._tcp_server.game_function = self.game_updated.emit
+        self._tcp_server.controller_function = self.controller_updated.emit
+        
 
         # Widget and widget layout for input checkboxes
         #
@@ -154,22 +162,24 @@ class MainWindow(QMainWindow):
         self.load_application_settings(None)
     
     # NEEDS WORK
-    def start_network_server(self):
+    @qasync.asyncSlot()
+    async def start_network_server(self):
         self.bluetooth_server_initiated=False
         if (self.network_server_initiated == False):
             self.network_server_initiated=True
-            bluetooth_server.stop_server()
+            await self._bless_server.stop()
             # Hardcode player disconnect
             #
             for player_id in self.connected_players:
                 self.update_player_connection("disconnect", player_id, enums.ControllerType.Xbox, None)
             #
+            
+            await self._tcp_server.start()
             # Hardcode player disconnect
         else:
             already_initiated = QMessageBox()
             already_initiated.setText("Network Server is already running")
             already_initiated.exec()
-    # NEEDS WORK
 
     @qasync.asyncSlot()
     async def start_bluetooth_server(self):
@@ -207,7 +217,7 @@ class MainWindow(QMainWindow):
             self.network_server_initiated=False
             # Network Function
             #
-
+            await self._tcp_server.stop()
             #
             # Network Function
         else:
@@ -364,7 +374,6 @@ class MainWindow(QMainWindow):
                 already_initiated.exec()
 
         elif (connection == "disconnect"):
-
             for player_index in range(self.ui.connection_list.count()):
                 player_connection = self.ui.connection_list.item(player_index)
 

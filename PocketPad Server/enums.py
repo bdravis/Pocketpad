@@ -57,6 +57,8 @@ class AllButtons(Enum):
     one = 16
     two = 17
     z = 18
+    select = 19
+    share = 20
 
 class Sticks(Enum):
     left = 0
