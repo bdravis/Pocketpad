@@ -63,7 +63,7 @@ jobs:
 
             - name: Run UI tests
               run: |
-                set -o pipefail && xcodebuild -scheme "PocketPad ClientUITests" -destination 'platform=iOS Simulator,name=iPhone 16 Plus,OS=18.2' -parallel-testing-worker-count 3 test -resultBundlePath ClientUITests.xcresult | xcbeautify --renderer github-actions
+                set -o pipefail && xcodebuild -scheme "PocketPad ClientUITests" -destination 'platform=iOS Simulator,name=iPhone 16 Plus,OS=18.2' -parallel-testing-worker-count 4 test -resultBundlePath ClientUITests.xcresult | xcbeautify --renderer github-actions
                 
             - name: Upload xcresults
               uses: actions/upload-artifact@v4

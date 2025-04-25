@@ -53,6 +53,12 @@ class AllButtons(Enum):
     options = 12
     left_stick = 13
     right_stick = 14
+    home = 15
+    one = 16
+    two = 17
+    z = 18
+    select = 19
+    share = 20
 
 class Sticks(Enum):
     left = 0

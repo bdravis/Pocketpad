@@ -1,12 +1,14 @@
+import re
+import os
 import sys
 import json
 import time
 import enums
+import queue
 import psutil
 import logging
 import asyncio
 import threading
-import concurrent.futures
 import game_database as gdb
 from typing import Dict, Union
 from inputs import parse_input, map_inputID_to_inputs
@@ -36,7 +38,25 @@ trigger: Union[asyncio.Event, threading.Event] = None
 thread = None
 loop = None
 
-executor = concurrent.futures.ThreadPoolExecutor(max_workers=16)
+NUM_WORKERS = 32
+request_queue: "queue.Queue[tuple[BlessGATTCharacteristic, bytes]]" = queue.Queue(maxsize=2500)
+
+def _thread_worker():
+    """Continuously pull write-requests off the queue and handle them."""
+    while True:
+        characteristic, value = request_queue.get()
+        try:
+            process_write_request(characteristic, value)
+        except Exception:
+            logger.exception("Error processing write request")
+        finally:
+            request_queue.task_done()
+
+# Start worker threads at module load
+for _ in range(NUM_WORKERS):
+    t = threading.Thread(target=_thread_worker, daemon=True)
+    t.start()
+#
 
 num_players_lock = threading.Lock()
 next_id_lock = threading.Lock()
@@ -170,28 +190,19 @@ if sys.platform == 'win32':
 elif sys.platform == 'darwin':
     from AppKit import NSWorkspace
     from Quartz import CGWindowListCopyWindowInfo, kCGWindowListOptionOnScreenOnly, kCGNullWindowID
-    def get_current_dolphin_game() -> str | None:
+    def get_current_dolphin_game():
         wins = CGWindowListCopyWindowInfo(kCGWindowListOptionOnScreenOnly, kCGNullWindowID)
         for w in wins:
-            owner = w.get('kCGWindowOwnerName')
-            title = w.get('kCGWindowName','')
-            if owner == 'Dolphin' and title:
-                # try pipe or dash separator
-                m = re.search(r'(?:\||–)\s*(.+)$', title)
-                if m:
-                    return m.group(1).strip()
-                # fallback: if title isn’t just “Dolphin”, return it anyway
-                if title.lower() != 'dolphin':
-                    return title
+            if w.get('kCGWindowOwnerName') != 'Dolphin':
+                continue
+            pid = w.get('kCGWindowOwnerPID')
+            proc = psutil.Process(pid)
+            for f in proc.open_files():
+                if is_allowed_path(f.path):
+                    game = extract_game_name_from_path(f.path)
+            if game:
+                return game
         return None
-    # def get_current_dolphin_game() -> str | None:
-    #     front = NSWorkspace.sharedWorkspace().frontmostApplication().localizedName()
-    #     wins = CGWindowListCopyWindowInfo(kCGWindowListOptionOnScreenOnly, kCGNullWindowID)
-    #     for w in wins:
-    #         if w.get('kCGWindowOwnerName') == front and 'Dolphin' in w.get('kCGWindowName',''):
-    #             parts = w['kCGWindowName'].split('|')
-    #             return parts[-1].strip() if len(parts)>=2 else None
-    #     return None
 else:
     def get_current_dolphin_game() -> str | None:
         return None
@@ -199,6 +210,19 @@ else:
 def dolphin_is_running() -> bool:
     name = 'dolphin.exe' if sys.platform=='win32' else 'dolphin'
     return any(p.name().lower() == name for p in psutil.process_iter(['name']))
+
+BLACKLIST = {'.log', '.list', '.data', '.uidchache'}
+
+def is_allowed_path(path: str) -> bool:
+    extension = os.path.splitext(path)[1].lower()
+    return extension not in BLACKLIST
+
+def extract_game_name_from_path(full_path: str) -> str:
+    core, *_ = full_path.rsplit*(" ", 1)
+    file_name = os.path.basename(core)
+    name, _ = os.path.splitext*(file_name)
+    cleaned = re.sub(r'\s*[\(\[].*?[\)\]])]\s*$', '', name).strip()
+    return cleaned
 
 def set_latency_callback(send_latency_callback, latency_function_callback):
     global latency_function, send_latency
@@ -242,7 +266,6 @@ def reconstruct_timestamp(sent_ms):
     latency = cur_ms - closest_time
     
     return abs(latency)
-
 
 def process_latency_characteristic(characteristic):
     # data comes as little endian {Byte, quadword}
@@ -498,12 +521,6 @@ def process_write_request(characteristic: BlessGATTCharacteristic, value):
     else:
         logger.error("ERROR: Unrecognized Write Request")
 
-async def async_write_request(characteristic: BlessGATTCharacteristic, value):
-    """Asynchronous wrapper that offloads the processing to a thread."""
-    loop = asyncio.get_running_loop()
-    await loop.run_in_executor(executor, process_write_request, characteristic, value)
-    return
-
 class Threaded_Bless_Server(BlessServer):
     async def add_new_descriptor(self, service_uuid, char_uuid, desc_uuid, properties, value, permissions):
         logger.debug(f"Adding descriptor {desc_uuid} to {char_uuid} in {service_uuid}")
@@ -536,11 +553,11 @@ class QBlessServer(QObject):
     def write_request(self, characteristic: BlessGATTCharacteristic, value):
         """Schedule async processing on the persistent background loop."""
         characteristic.value = value
-        asyncio.run_coroutine_threadsafe(
-            async_write_request(characteristic, value),
-            self._bg_loop
-        )
-    
+        try:
+            request_queue.put_nowait((characteristic, value))
+        except queue.Full:
+            logger.warning("Request queue full – dropping write")
+
     async def start(self):
         logger = logging.getLogger(name=__name__)
         logger.info("Starting server")
@@ -549,8 +566,6 @@ class QBlessServer(QObject):
         self.server.get_characteristic(PAIRCODE_CHARACTERISTIC).value = str(Paircode.reset().code).encode()
         await self.server.start(prioritize_local_name=True)
         logger.info("Advertising")
-
-        input_server.start()
     
     async def stop(self):
         logger.info("Stopping server")
