@@ -353,7 +353,20 @@ struct ControllerView: View {
                     }
                 }
             }
+            .onChange(of: BluetoothManager.shared.connectedDevice) {
+                if isEditor || isInMacroEditor { return }
+                if BluetoothManager.shared.connectedDevice == nil {
+                    presentationMode.wrappedValue.dismiss()
+                }
+            }
+            .onChange(of: NetworkManager.shared.isConnected) {
+                if isEditor || isInMacroEditor { return }
+                if !NetworkManager.shared.isConnected {
+                    presentationMode.wrappedValue.dismiss()
+                }
+            }
             .onChange(of: geometry.size, initial: true) {
+                UIApplication.shared.isIdleTimerDisabled = true
                 isPortait = geometry.size.height > geometry.size.width
                 // MARK: Lock Orientation
                 if !ranStartLock {
@@ -362,6 +375,7 @@ struct ControllerView: View {
                 }
             }
             .onDisappear {
+                UIApplication.shared.isIdleTimerDisabled = false
                 // MARK: Unlock Orientation
                 unlockRotation()
                 guard !deleting else { return }
@@ -523,6 +537,7 @@ struct ControllerView: View {
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("MainControllerScreen")
         .navigationBarBackButtonHidden()
+        .defersSystemGestures(on: .all)
     }
     
     func isSafe(geometry: GeometryProxy) -> Bool {

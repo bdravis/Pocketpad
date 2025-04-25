@@ -14,6 +14,8 @@ func sendControllerInput(_ data: Data, isInMacroEditor: Bool) {
         MacroManager.shared.sendInput(data, timestamp: Date())
     } else if let service = BluetoothManager.shared.selectedService { // send inputs to server over Bluetooth
         BluetoothManager.shared.sendInput(data)
+    } else if NetworkManager.shared.isConnected {
+        NetworkManager.shared.sendInput(data)
     } else {
 #if DEBUG
         print("Input received but not sent anywhere")

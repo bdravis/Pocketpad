@@ -103,7 +103,7 @@ struct DirectionalArrow: View {
                 .aspectRatio(1.0, contentMode: .fit)
         }
         .buttonStyle(DPadButtonStyle(style: config.style, split: split))
-        .onLongPressGesture(minimumDuration: 0.15, maximumDistance: 50, pressing: { isPressing in
+        .onLongPressGesture(minimumDuration: 0.1, maximumDistance: 50, pressing: { isPressing in
             if isPressing {
                 handleButtonPress()
             } else {
