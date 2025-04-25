@@ -167,7 +167,12 @@ class QNetworkServer(QObject):
         )
         logger.info(f"Registering service with info: {self.service_info}")
         logger.info(f"Service info addresses: {self.service_info.addresses}")
-        await self.zeroconf.async_register_service(self.service_info)
+        await self.zeroconf.async_register_service(
+            self.service_info,
+            allow_name_change=True,
+            cooperating_responders=False,
+            strict=True
+        )
     
     async def start(self):
         self.next_id = 0

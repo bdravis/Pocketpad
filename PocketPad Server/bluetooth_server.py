@@ -4,10 +4,12 @@ import sys
 import json
 import time
 import enums
+import queue
 import psutil
 import logging
 import asyncio
 import threading
+from typing import Tuple
 import concurrent.futures
 import game_database as gdb
 from typing import Dict, Union
@@ -38,7 +40,25 @@ trigger: Union[asyncio.Event, threading.Event] = None
 thread = None
 loop = None
 
-executor = concurrent.futures.ThreadPoolExecutor(max_workers=16)
+NUM_WORKERS = 24
+request_queue: "queue.Queue[tuple[BlessGATTCharacteristic, bytes]]" = queue.Queue(maxsize=1000)
+
+def _thread_worker():
+    """Continuously pull write-requests off the queue and handle them."""
+    while True:
+        characteristic, value = request_queue.get()
+        try:
+            process_write_request(characteristic, value)
+        except Exception:
+            logger.exception("Error processing write request")
+        finally:
+            request_queue.task_done()
+
+# Start worker threads at module load
+for _ in range(NUM_WORKERS):
+    t = threading.Thread(target=_thread_worker, daemon=True)
+    t.start()
+#
 
 num_players_lock = threading.Lock()
 next_id_lock = threading.Lock()
@@ -504,12 +524,6 @@ def process_write_request(characteristic: BlessGATTCharacteristic, value):
     else:
         logger.error("ERROR: Unrecognized Write Request")
 
-async def async_write_request(characteristic: BlessGATTCharacteristic, value):
-    """Asynchronous wrapper that offloads the processing to a thread."""
-    loop = asyncio.get_running_loop()
-    await loop.run_in_executor(executor, process_write_request, characteristic, value)
-    return
-
 class Threaded_Bless_Server(BlessServer):
     async def add_new_descriptor(self, service_uuid, char_uuid, desc_uuid, properties, value, permissions):
         logger.debug(f"Adding descriptor {desc_uuid} to {char_uuid} in {service_uuid}")
@@ -542,11 +556,11 @@ class QBlessServer(QObject):
     def write_request(self, characteristic: BlessGATTCharacteristic, value):
         """Schedule async processing on the persistent background loop."""
         characteristic.value = value
-        asyncio.run_coroutine_threadsafe(
-            async_write_request(characteristic, value),
-            self._bg_loop
-        )
-    
+        try:
+            request_queue.put_nowait((characteristic, value))
+        except queue.Full:
+            logger.warning("Request queue full – dropping write")
+
     async def start(self):
         logger = logging.getLogger(name=__name__)
         logger.info("Starting server")
