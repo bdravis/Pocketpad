@@ -36,7 +36,7 @@ struct BumperButtonView: View {
             }
         }
         .applyButtonStyle(config.style, isTurboEnabled: turboManager.isTurboEnabled(config.input))
-        .onLongPressGesture(minimumDuration: 0.5, maximumDistance: 50, pressing: { isPressing in
+        .onLongPressGesture(minimumDuration: 0.1, maximumDistance: 50, pressing: { isPressing in
             if isPressing {
                 handleButtonPress()
             }

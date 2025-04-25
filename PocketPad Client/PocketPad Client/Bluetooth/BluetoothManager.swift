@@ -63,6 +63,8 @@ class BluetoothManager: NSObject, ObservableObject {
     @ObservedObject private var layoutManager = LayoutManager.shared
     @AppStorage("selectedController") var selectedController: String = ControllerType.getDefaultName()
     
+    @AppStorage("connectionType") private var serverType: Int = 0
+    
     private override init() {
         super.init()
         centralManager = CBCentralManager(delegate: self, queue: nil)
@@ -115,9 +117,14 @@ class BluetoothManager: NSObject, ObservableObject {
     }
     
     func sendInput(_ data: Data) {
-        guard let service = selectedService else { return }
-        if let char = discoveredCharacteristics.first(where: { $0.uuid == INPUT_CHARACTERISTIC }) {
-            peripheral?.writeValue(data, for: char, type: .withoutResponse)
+        if serverType == 1 {
+            guard let service = selectedService else { return }
+            if let char = discoveredCharacteristics.first(where: { $0.uuid == INPUT_CHARACTERISTIC }) {
+                peripheral?.writeValue(data, for: char, type: .withoutResponse)
+            }
+        } else {
+            guard NetworkManager.shared.isConnected else { return }
+            NetworkManager.shared.sendMessage("{\"pid\": \(LayoutManager.shared.player_id), \"input\": \"\(data.base64EncodedString())\"}")
         }
     }
     
@@ -498,29 +505,6 @@ extension BluetoothManager: CBPeripheralDelegate {
         
     }
     
-    func RequestPlayerIdStringChange(newPlayerIdString: String) {
-        
-        guard let service = selectedService else { return }
-        guard let characteristics = service.characteristics else { return }
-        
-        let requested_player_id = newPlayerIdString.utf8
-        let requested_player_id_len: UInt8 = UInt8(newPlayerIdString.count)
-        
-        LayoutManager.shared.requested_player_id_string = newPlayerIdString
-        
-        let packet = Data([LayoutManager.shared.player_id, ConnectionMessage.requesting_id_change.rawValue, requested_player_id_len] + requested_player_id)
-       
-        for characteristic in characteristics {
-            if characteristic.uuid == CONNECTION_CHARACTERISTIC {
-                
-                service.peripheral?.writeValue(packet, for: characteristic, type: .withResponse)
-                service.peripheral?.readValue(for: characteristic)
-
-                // Rest of functionality on this path is in didUpdateValueFor with ConnectionMessage.requesting_id
-            }
-        }
-    }
-    
     private func handleConnectionMessage(_ data: Data, from peripheral: CBPeripheral, characteristic: CBCharacteristic) {
         
         let bytes = [UInt8](data)
@@ -621,7 +605,7 @@ extension BluetoothManager {
     //   - roll: The roll value (Float).
     //  - yaw: The yaw value (Float).
     func sendMotionData(playerId: UInt8, pitch: Float, roll: Float, yaw: Float, xAcceleration: Float, yAcceleration: Float, zAcceleration: Float) {
-        guard let _ = selectedService else { return }
+//        guard let _ = selectedService else { return }
         
         // Convert the Float values to raw bytes (4 bytes each, little endian)
         // We use the bitPattern property (UInt32) for consistent endianness
