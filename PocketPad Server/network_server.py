@@ -1,3 +1,5 @@
+import os
+import re
 import asyncio
 from dataclasses import dataclass
 from functools import cached_property
@@ -8,6 +10,9 @@ import struct
 import json
 import base64
 import enums
+import sys
+import psutil
+import game_database as gdb
 
 import ifaddr
 from inputs import parse_input, map_inputID_to_inputs
@@ -20,6 +25,76 @@ from zeroconf.asyncio import AsyncServiceInfo, AsyncZeroconf
 from PySide6.QtCore import QObject
 
 logger = logging.getLogger(__name__)
+
+if sys.platform == 'win32':
+    import pywinctl
+    def get_current_dolphin_game() -> str | None:
+        wins = [
+            w for w in pywinctl.getAllWindows()
+            if "dolphin" in w.title.lower()
+        ]
+
+        if not wins:
+            print("No Dolphin window found")
+            return None
+
+        for w in wins:
+            if "|" in w.title:
+                parts = w.title.split("|")
+                return parts[-1].strip()
+elif sys.platform == 'darwin':
+    from AppKit import NSWorkspace
+    from Quartz import CGWindowListCopyWindowInfo, kCGWindowListOptionOnScreenOnly, kCGNullWindowID
+    def get_current_dolphin_game():
+        wins = CGWindowListCopyWindowInfo(kCGWindowListOptionOnScreenOnly, kCGNullWindowID)
+        for w in wins:
+            if w.get('kCGWindowOwnerName') != 'Dolphin':
+                continue
+            pid = w.get('kCGWindowOwnerPID')
+            proc = psutil.Process(pid)
+            for f in proc.open_files():
+                if is_allowed_path(f.path):
+                    game = extract_game_name_from_path(f.path)
+            if game:
+                return game
+        return None
+else:
+    def get_current_dolphin_game() -> str | None:
+        return None
+
+def dolphin_is_running() -> bool:
+    name = 'dolphin.exe' if sys.platform=='win32' else 'dolphin'
+    return any(p.name().lower() == name for p in psutil.process_iter(['name']))
+
+BLACKLIST = {'.log', '.list', '.data', '.uidchache'}
+
+def is_allowed_path(path: str) -> bool:
+    extension = os.path.splitext(path)[1].lower()
+    return extension not in BLACKLIST
+
+def extract_game_name_from_path(full_path: str) -> str:
+    core, *_ = full_path.rsplit*(" ", 1)
+    file_name = os.path.basename(core)
+    name, _ = os.path.splitext*(file_name)
+    cleaned = re.sub(r'\s*[\(\[].*?[\)\]])]\s*$', '', name).strip()
+    return cleaned
+
+# async def prefixed_send(writer: asyncio.StreamWriter, payload: bytes) -> None:
+#     """
+#     Send a 4-byte big-endian length prefix followed by the payload.
+#     """
+#     prefix = struct.pack('>I', len(payload))  # big-endian unsigned int :contentReference[oaicite:4]{index=4}
+#     writer.write(prefix + payload)             # queue in StreamWriter buffer :contentReference[oaicite:5]{index=5}
+#     await writer.drain()                       # ensure it’s sent :contentReference[oaicite:6]{index=6}
+
+# async def read_message(reader: asyncio.StreamReader) -> bytes:
+#     """
+#     Read one length-prefixed message: first 4 bytes → size, then size bytes → payload.
+#     """
+#     prefix = await reader.readexactly(4)           # read 4-byte length :contentReference[oaicite:7]{index=7}
+#     size = struct.unpack('>I', prefix)[0]          # unpack big-endian uint :contentReference[oaicite:8]{index=8}
+#     data = await reader.readexactly(size)          # read the JSON frame :contentReference[oaicite:9]{index=9}
+#     return data
 
 @dataclass
 class Player:
@@ -47,6 +122,8 @@ class QNetworkServer(QObject):
         self.players: dict[Player] = {}
         
         self.layout_jsons = []
+
+        self.current_game = None
         
         self.connection_function = None
         self.input_function = None
@@ -90,7 +167,12 @@ class QNetworkServer(QObject):
         )
         logger.info(f"Registering service with info: {self.service_info}")
         logger.info(f"Service info addresses: {self.service_info.addresses}")
-        await self.zeroconf.async_register_service(self.service_info)
+        await self.zeroconf.async_register_service(
+            self.service_info,
+            allow_name_change=True,
+            cooperating_responders=False,
+            strict=True
+        )
     
     async def start(self):
         self.next_id = 0
@@ -101,6 +183,8 @@ class QNetworkServer(QObject):
         self.server = await asyncio.start_server(self.handle_client, self.host, self.port)
         addr = self.server.sockets[0].getsockname()
         logger.info(f"Server running on {addr}")
+
+        self._monitor_task = asyncio.create_task(self.dolphin_monitor())
         
         try:
             async with self.server:
@@ -193,7 +277,43 @@ class QNetworkServer(QObject):
                         if res[0] == -1:
                             logger.error("INVALID INPUT")
                         else:
-                            self.input_function(self.players[pid].name, res[1], res[2])    
+                            self.input_function(self.players[pid].name, res[1], res[2])
+                    # elif "request_layout" in message:
+                    #     layout_str = gdb.get_controller_layout(self.current_game)
+
+                        # 2) If none, send an empty header and return
+                        # if layout_str is None:
+                            # writer.write(json.dumps({ "status": "layout" }).encode())
+                            # await prefixed_send(writer, header)
+                            # return
+
+                        # 3) Base64-encode the JSON to keep it ASCII-safe
+                        # layout_b64 = base64.b64encode(layout_str.encode('utf-8'))
+                        # total_len = len(layout_b64)
+                        # chunk_size = 2048
+
+                        # # 4) Send header frame
+                        # header = json.dumps({
+                        #     "status": "layout",
+                        #     "file_size": total_len,
+                        #     "chunk_size": chunk_size
+                        # }).encode('utf-8')
+                        # await prefixed_send(writer, header)  # :contentReference[oaicite:10]{index=10}
+
+                        # # 5) Send each chunk with its offset
+                        # for offset in range(0, total_len, chunk_size):
+                        #     chunk = layout_b64[offset:offset + chunk_size]
+                        #     chunk_msg = json.dumps({
+                        #         "status": "layout_chunk",
+                        #         "offset": offset,
+                        #         "data": chunk.decode('ascii')
+                        #     }).encode('utf-8')
+                        #     await prefixed_send(writer, chunk_msg)  # :contentReference[oaicite:11]{index=11}
+
+                        # # 6) Send completion frame
+                        # complete = json.dumps({"status": "layout_complete"}).encode('utf-8')
+                        # await prefixed_send(writer, complete)
+
         except asyncio.CancelledError:
             pass
         finally:
@@ -217,11 +337,24 @@ class QNetworkServer(QObject):
             del self.clients[addr]
             logger.info(f"Connection closed from {addr}")
             
+    async def dolphin_monitor(self):
+        last_game = None
+        while True:
+            while not dolphin_is_running():
+                await asyncio.sleep(5)
+            while dolphin_is_running():
+                game = get_current_dolphin_game()
+                if game != last_game:
+                    last_game = game
+                    await self.request_game_data(game)
+                await asyncio.sleep(30)
+            last_game = None
+            self.request_game_data(None)
+    
     async def stop(self):
         if self.server:
             for client in list(self.clients.values())[:]:
                 try:
-                    
                     client.write(json.dumps({"status": "disconnect", "error": "Server shutdown"}).encode())
                     client.close()
                     await client.wait_closed()
@@ -236,5 +369,16 @@ class QNetworkServer(QObject):
             if self.zeroconf and self.service_info:
                 await self.zeroconf.async_unregister_service(self.service_info)
                 await self.zeroconf.async_close()
+
+            if hasattr(self, "_monitor_task"):
+                self._monitor_task.cancel()
+                try:
+                    await self._monitor_task
+                except asyncio.CancelledError:
+                    pass
             
             logger.info("Server stopped.")
+
+    async def request_game_data(self, game: str):
+        self.current_game = game
+        await self.game_function(game)
