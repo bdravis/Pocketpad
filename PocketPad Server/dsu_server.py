@@ -275,7 +275,7 @@ class DSU_Server:
     
     def _input_loop(self):
         while True:
-            time.sleep(0.02)
+            time.sleep(0.01)
             for index, state in enumerate(self.controller_states):
 
                 if state.connected == False:
