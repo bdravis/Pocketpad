@@ -16,6 +16,8 @@ struct RegularButtonView: View {
     var config: RegularButtonConfig
     var isInMacroEditor: Bool = false
     @Binding var showKeyboard: Bool
+    @Binding var keyboardInput: String
+    @State private var lastKeyboardState: String = ""
     
     var body: some View {
         Button(action: {
@@ -50,6 +52,30 @@ struct RegularButtonView: View {
                 }
             }
         }, perform: {})
+        .onChange(of: keyboardInput) {
+            print("New Keyboard Input: \(keyboardInput)")
+            let old = Array(lastKeyboardState)
+            let new = Array(keyboardInput)
+            if new.count > old.count {
+                let ui8_playerId: UInt8 = LayoutManager.shared.player_id
+                let ui8_inputId : UInt8 = config.inputId
+                let ui8_buttonType : UInt8 = config.type.rawValue
+                
+                var data = Data([ui8_playerId, ui8_inputId, ui8_buttonType])
+                if let lastChar = old.last?.asciiValue {
+                    data.append(lastChar)
+                }
+                sendControllerInput(data, isInMacroEditor: isInMacroEditor)
+            } else if new.count < old.count {
+                let ui8_playerId: UInt8 = LayoutManager.shared.player_id
+                let ui8_inputId : UInt8 = config.inputId
+                let ui8_buttonType : UInt8 = config.type.rawValue
+                
+                var data = Data([ui8_playerId, ui8_inputId, ui8_buttonType, 0])
+                sendControllerInput(data, isInMacroEditor: isInMacroEditor)
+            }
+            lastKeyboardState = keyboardInput
+        }
     }
     
     // MARK: Functions to handle regular button inputs

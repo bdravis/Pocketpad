@@ -163,7 +163,7 @@ struct ControllerView: View {
                             Group {
                                 switch btn.wrappedValue.type {
                                 case .regular:
-                                    RegularButtonView(config: btn.wrappedValue as! RegularButtonConfig, isInMacroEditor: isInMacroEditor, showKeyboard: $showKeyboard)
+                                    RegularButtonView(config: btn.wrappedValue as! RegularButtonConfig, isInMacroEditor: isInMacroEditor, showKeyboard: $showKeyboard, keyboardInput: $keyboardInput)
                                         .accessibilityAddTraits(.isButton)
                                         .accessibilityIdentifier("ControllerButton")
                                 case .joystick:
@@ -257,7 +257,7 @@ struct ControllerView: View {
                         Group {
                             switch selectedBtn.type {
                             case .regular:
-                                RegularButtonView(config: selectedBtn.asButtonConfig() as! RegularButtonConfig, showKeyboard: $showKeyboard)
+                                RegularButtonView(config: selectedBtn.asButtonConfig() as! RegularButtonConfig, showKeyboard: $showKeyboard, keyboardInput: $keyboardInput)
                             case .joystick:
                                 JoystickButtonView(config: selectedBtn.asButtonConfig() as! JoystickConfig)
                             case .dpad:
