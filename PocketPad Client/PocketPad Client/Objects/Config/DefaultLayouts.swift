@@ -15,32 +15,32 @@ class DefaultLayouts {
     // MARK: Switch Configuration
     static let SwitchConfig: LayoutConfig = .init(name: "Switch", buttons: [
         // Diamond of buttons
-        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.8, y: 0.6), offset: CGPoint(x: 0, y: -DEFAULT_BUTTON_SIZE)), scale: 1.0, inputId: 0, input: .X),
-        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.8, y: 0.6), offset: CGPoint(x: -DEFAULT_BUTTON_SIZE, y: 0)), scale: 1.0, inputId: 1, input: .Y),
-        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.8, y: 0.6), offset: CGPoint(x: DEFAULT_BUTTON_SIZE, y: 0)), scale: 1.0, inputId: 2, input: .A),
-        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.8, y: 0.6), offset: CGPoint(x: 0, y: DEFAULT_BUTTON_SIZE)), scale: 1.0, inputId: 3, input: .B),
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.9, y: 0.7), offset: CGPoint(x: 0, y: -DEFAULT_BUTTON_SIZE)), scale: 1.0, inputId: 0, input: .X),
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.9, y: 0.7), offset: CGPoint(x: -DEFAULT_BUTTON_SIZE, y: 0)), scale: 1.0, inputId: 1, input: .Y),
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.9, y: 0.7), offset: CGPoint(x: DEFAULT_BUTTON_SIZE, y: 0)), scale: 1.0, inputId: 2, input: .A),
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.9, y: 0.7), offset: CGPoint(x: 0, y: DEFAULT_BUTTON_SIZE)), scale: 1.0, inputId: 3, input: .B),
         
         // Right Joystick
-        JoystickConfig(position: .init(scaledPos: CGPoint(x: 0.6, y: 0.7)), scale: 1.5, inputId: 4, input: .RightJoystick),
+        JoystickConfig(position: .init(scaledPos: CGPoint(x: 0.65, y: 0.75)), scale: 2.5, inputId: 4, input: .RightJoystick),
         
         // DPad
         DPadConfig(
-            position: .init(scaledPos: CGPoint(x: 0.4, y: 0.8)), scale: 1.5, inputId: 5,
+            position: .init(scaledPos: CGPoint(x: 0.4, y: 0.8)), scale: 2.25, inputId: 5,
             inputs: [
                 .up: .DPadUp, .right: .DPadRight, .down: .DPadDown, .left: .DPadLeft
             ]
         ),
         
         // Left Joystick
-        JoystickConfig(position: .init(scaledPos: CGPoint(x: 0.2, y: 0.6)), scale: 1.5, inputId: 6, input: .LeftJoystick),
+        JoystickConfig(position: .init(scaledPos: CGPoint(x: 0.15, y: 0.75)), scale: 2.5, inputId: 6, input: .LeftJoystick),
         
         // Menu
-        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.2), offset: CGPoint(x: -DEFAULT_BUTTON_SIZE * 1.2, y: -DEFAULT_BUTTON_SIZE * 0.3)), scale: 0.6, inputId: 7, input: .Start, style: .init(shape: .Circle, iconType: .SFSymbol, icon: "plus")),
-        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.2), offset: CGPoint(x: DEFAULT_BUTTON_SIZE * 1.2, y: -DEFAULT_BUTTON_SIZE * 0.3)), scale: 0.6, inputId: 8, input: .Select, style: .init(shape: .Circle, iconType: .Text, icon: "-")),
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.2), offset: CGPoint(x: -DEFAULT_BUTTON_SIZE * 1.4, y: -DEFAULT_BUTTON_SIZE * 0.5)), scale: 0.8, inputId: 7, input: .Start, style: .init(shape: .Circle, iconType: .SFSymbol, icon: "plus")),
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.2), offset: CGPoint(x: DEFAULT_BUTTON_SIZE * 1.4, y: -DEFAULT_BUTTON_SIZE * 0.5)), scale: 0.8, inputId: 8, input: .Select, style: .init(shape: .Circle, iconType: .Text, icon: "-")),
         
         // Home/Screenshot
-        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.2), offset: CGPoint(x: -DEFAULT_BUTTON_SIZE * 0.6, y: DEFAULT_BUTTON_SIZE * 0.6)), scale: 0.6, inputId: 9, input: .Home, style: .init(shape: .Circle, iconType: .SFSymbol, icon: "house")),
-        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.2), offset: CGPoint(x: DEFAULT_BUTTON_SIZE * 0.6, y: DEFAULT_BUTTON_SIZE * 0.6)), scale: 0.6, inputId: 10, input: .Share, style: .init(shape: .Circle, iconType: .SFSymbol, icon: "square")),
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.2), offset: CGPoint(x: -DEFAULT_BUTTON_SIZE * 0.7, y: DEFAULT_BUTTON_SIZE * 0.7)), scale: 0.8, inputId: 9, input: .Home, style: .init(shape: .Circle, iconType: .SFSymbol, icon: "house")),
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.2), offset: CGPoint(x: DEFAULT_BUTTON_SIZE * 0.7, y: DEFAULT_BUTTON_SIZE * 0.7)), scale: 0.8, inputId: 10, input: .Share, style: .init(shape: .Circle, iconType: .SFSymbol, icon: "square")),
         
         // Bumpers
         BumperConfig(type: .bumper, position: .init(scaledPos: CGPoint(x: 0.1, y: 0.1), offset: CGPoint(x: DEFAULT_BUTTON_SIZE / 2, y: DEFAULT_BUTTON_SIZE * 1.5)), scale: 1.5, inputId: 10, input: .LB),
@@ -54,31 +54,31 @@ class DefaultLayouts {
     // MARK: Xbox Configuration
     static let XboxConfig: LayoutConfig = .init(name: "Xbox", buttons: [
         // Diamond of buttons
-        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.8, y: 0.6), offset: CGPoint(x: 0, y: -DEFAULT_BUTTON_SIZE)), scale: 1.0, inputId: 0, input: .Y),
-        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.8, y: 0.6), offset: CGPoint(x: -DEFAULT_BUTTON_SIZE, y: 0)), scale: 1.0, inputId: 1, input: .X),
-        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.8, y: 0.6), offset: CGPoint(x: DEFAULT_BUTTON_SIZE, y: 0)), scale: 1.0, inputId: 2, input: .B),
-        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.8, y: 0.6), offset: CGPoint(x: 0, y: DEFAULT_BUTTON_SIZE)), scale: 1.0, inputId: 3, input: .A),
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.9, y: 0.7), offset: CGPoint(x: 0, y: -DEFAULT_BUTTON_SIZE)), scale: 1.0, inputId: 0, input: .Y),
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.9, y: 0.7), offset: CGPoint(x: -DEFAULT_BUTTON_SIZE, y: 0)), scale: 1.0, inputId: 1, input: .X),
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.9, y: 0.7), offset: CGPoint(x: DEFAULT_BUTTON_SIZE, y: 0)), scale: 1.0, inputId: 2, input: .B),
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.9, y: 0.7), offset: CGPoint(x: 0, y: DEFAULT_BUTTON_SIZE)), scale: 1.0, inputId: 3, input: .A),
 
         // Right Joystick
-        JoystickConfig(position: .init(scaledPos: CGPoint(x: 0.6, y: 0.8)), scale: 1.5, inputId: 4, input: .RightJoystick),
+        JoystickConfig(position: .init(scaledPos: CGPoint(x: 0.65, y: 0.8)), scale: 2.5, inputId: 4, input: .RightJoystick),
 
         // DPad
         DPadConfig(
-            position: .init(scaledPos: CGPoint(x: 0.4, y: 0.8)), scale: 1.5, inputId: 5,
+            position: .init(scaledPos: CGPoint(x: 0.4, y: 0.8)), scale: 2.25, inputId: 5,
             inputs: [
                 .up: .DPadUp, .right: .DPadRight, .down: .DPadDown, .left: .DPadLeft
             ]
         ),
         
         // Left Joystick
-        JoystickConfig(position: .init(scaledPos: CGPoint(x: 0.2, y: 0.6)), scale: 1.5, inputId: 6, input: .LeftJoystick),
+        JoystickConfig(position: .init(scaledPos: CGPoint(x: 0.15, y: 0.75)), scale: 2.5, inputId: 6, input: .LeftJoystick),
         
         // Menu
-        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.2), offset: CGPoint(x: -DEFAULT_BUTTON_SIZE * 0.6, y: 0)), scale: 0.6, inputId: 7, input: .Start, style: .init(shape: .Circle, iconType: .SFSymbol, icon: "line.3.horizontal")),
-        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.2), offset: CGPoint(x: DEFAULT_BUTTON_SIZE * 0.6, y: 0)), scale: 0.6, inputId: 8, input: .Select, style: .init(shape: .Circle, iconType: .SFSymbol, icon: "macwindow.on.rectangle")),
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.2), offset: CGPoint(x: -DEFAULT_BUTTON_SIZE * 0.85, y: 0)), scale: 0.8, inputId: 7, input: .Start, style: .init(shape: .Circle, iconType: .SFSymbol, icon: "line.3.horizontal")),
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.2), offset: CGPoint(x: DEFAULT_BUTTON_SIZE * 0.85, y: 0)), scale: 0.8, inputId: 8, input: .Select, style: .init(shape: .Circle, iconType: .SFSymbol, icon: "macwindow.on.rectangle")),
         
         // Share
-        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.2), offset: CGPoint(x: 0, y: DEFAULT_BUTTON_SIZE * 0.6)), scale: 0.6, inputId: 9, input: .Share, style: .init(shape: .Circle, iconType: .SFSymbol, icon: "square.and.arrow.up")),
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.2), offset: CGPoint(x: 0, y: DEFAULT_BUTTON_SIZE * 0.85)), scale: 0.8, inputId: 9, input: .Share, style: .init(shape: .Circle, iconType: .SFSymbol, icon: "square.and.arrow.up")),
         
         // Bumpers
         BumperConfig(type: .bumper, position: .init(scaledPos: CGPoint(x: 0.1, y: 0.1), offset: CGPoint(x: DEFAULT_BUTTON_SIZE / 2, y: DEFAULT_BUTTON_SIZE * 1.5)), scale: 1.5, inputId: 10, input: .LB),
@@ -92,28 +92,28 @@ class DefaultLayouts {
     // MARK: PlayStation Config
     static let PlayStationConfig: LayoutConfig = .init(name: "PlayStation", buttons: [
         // Diamond of buttons
-        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.8, y: 0.6), offset: CGPoint(x: 0, y: -DEFAULT_BUTTON_SIZE)), scale: 0.75, inputId: 0, input: .Y, style: .init(shape: .Circle, iconType: .SFSymbol, icon: "triangle")),
-        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.8, y: 0.6), offset: CGPoint(x: -DEFAULT_BUTTON_SIZE, y: 0)), scale: 0.75, inputId: 1, input: .X, style: .init(shape: .Circle, iconType: .SFSymbol, icon: "square")),
-        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.8, y: 0.6), offset: CGPoint(x: DEFAULT_BUTTON_SIZE, y: 0)), scale: 0.75, inputId: 2, input: .B, style: .init(shape: .Circle, iconType: .SFSymbol, icon: "circle")),
-        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.8, y: 0.6), offset: CGPoint(x: 0, y: DEFAULT_BUTTON_SIZE)), scale: 0.75, inputId: 3, input: .A, style: .init(shape: .Circle, iconType: .SFSymbol, icon: "xmark")),
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.85, y: 0.7), offset: CGPoint(x: 0, y: -DEFAULT_BUTTON_SIZE)), scale: 1.0, inputId: 0, input: .Y, style: .init(shape: .Circle, iconType: .SFSymbol, icon: "triangle")),
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.85, y: 0.7), offset: CGPoint(x: -DEFAULT_BUTTON_SIZE, y: 0)), scale: 1.0, inputId: 1, input: .X, style: .init(shape: .Circle, iconType: .SFSymbol, icon: "square")),
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.85, y: 0.7), offset: CGPoint(x: DEFAULT_BUTTON_SIZE, y: 0)), scale: 1.0, inputId: 2, input: .B, style: .init(shape: .Circle, iconType: .SFSymbol, icon: "circle")),
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.85, y: 0.7), offset: CGPoint(x: 0, y: DEFAULT_BUTTON_SIZE)), scale: 1.0, inputId: 3, input: .A, style: .init(shape: .Circle, iconType: .SFSymbol, icon: "xmark")),
         
         // Right Joystick
-        JoystickConfig(position: .init(scaledPos: CGPoint(x: 0.6, y: 0.8)), scale: 1.5, inputId: 4, input: .RightJoystick),
+        JoystickConfig(position: .init(scaledPos: CGPoint(x: 0.62, y: 0.8)), scale: 2.5, inputId: 4, input: .RightJoystick),
         
         // DPad
         DPadConfig(
-            position: .init(scaledPos: CGPoint(x: 0.2, y: 0.6)), scale: 1.5, inputId: 5,
+            position: .init(scaledPos: CGPoint(x: 0.15, y: 0.65)), scale: 2.25, inputId: 5,
             inputs: [
                 .up: .DPadUp, .right: .DPadRight, .down: .DPadDown, .left: .DPadLeft
             ]
         ),
         
         // Left Joystick
-        JoystickConfig(position: .init(scaledPos: CGPoint(x: 0.4, y: 0.8)), scale: 1.5, inputId: 6, input: .LeftJoystick),
+        JoystickConfig(position: .init(scaledPos: CGPoint(x: 0.38, y: 0.8)), scale: 2.5, inputId: 6, input: .LeftJoystick),
         
         // Menu
-        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.2), offset: CGPoint(x: -DEFAULT_BUTTON_SIZE * 0.6, y: 0)), scale: 0.6, inputId: 7, input: .Start, style: .init(shape: .Circle, iconType: .SFSymbol, icon: "line.3.horizontal")),
-        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.2), offset: CGPoint(x: DEFAULT_BUTTON_SIZE * 0.6, y: 0)), scale: 0.6, inputId: 8, input: .Select, style: .init(shape: .Circle, iconType: .SFSymbol, icon: "light.max")),
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.2), offset: CGPoint(x: -DEFAULT_BUTTON_SIZE * 0.8, y: 0)), scale: 0.8, inputId: 7, input: .Start, style: .init(shape: .Circle, iconType: .SFSymbol, icon: "line.3.horizontal")),
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.2), offset: CGPoint(x: DEFAULT_BUTTON_SIZE * 0.8, y: 0)), scale: 0.8, inputId: 8, input: .Select, style: .init(shape: .Circle, iconType: .SFSymbol, icon: "light.max")),
         
         // Bumpers
         BumperConfig(type: .bumper, position: .init(scaledPos: CGPoint(x: 0.1, y: 0.1), offset: CGPoint(x: DEFAULT_BUTTON_SIZE / 2, y: DEFAULT_BUTTON_SIZE * 1.5)), scale: 1.5, inputId: 10, input: .LB),
@@ -128,64 +128,64 @@ class DefaultLayouts {
     static let WiiConfig: LayoutConfig = .init(name: "Wii", lockToOrientation: .all, buttons: [
         // Diamond of buttons
         RegularButtonConfig(position: .init(
-            scaledPos: CGPoint(x: 0.5, y: 0.8), offset: CGPoint(x: 0, y: -DEFAULT_BUTTON_SIZE * 0.75),
+            scaledPos: CGPoint(x: 0.5, y: 0.8), offset: CGPoint(x: 0, y: -DEFAULT_BUTTON_SIZE),
             defaultIsPortrait: true,
             overrideScaledPos: CGPoint(x: 0.5, y: 0.75), overrideOffset: CGPoint(x: -40, y: 0)
-        ), scale: 0.75, inputId: 0, input: .One),
+        ), scale: 1.0, inputId: 0, input: .One),
         RegularButtonConfig(position: .init(
-            scaledPos: CGPoint(x: 0.5, y: 0.8), offset: CGPoint(x: 0, y: DEFAULT_BUTTON_SIZE * 0.75),
+            scaledPos: CGPoint(x: 0.5, y: 0.8), offset: CGPoint(x: 0, y: DEFAULT_BUTTON_SIZE),
             defaultIsPortrait: true,
             overrideScaledPos: CGPoint(x: 0.5, y: 0.75), overrideOffset: CGPoint(x: 40, y: 0)
-        ), scale: 0.75, inputId: 1, input: .Two),
+        ), scale: 1.0, inputId: 1, input: .Two),
         RegularButtonConfig(position: .init(
             scaledPos: CGPoint(x: 0.5, y: 0.35),
             defaultIsPortrait: true,
             overrideScaledPos: CGPoint(x: 0.75, y: 0.7), overrideOffset: CGPointZero
-        ), scale: 1.5, inputId: 2, input: .A),
+        ), scale: 1.75, inputId: 2, input: .A),
         TriggerConfig(position: .init(
             scaledPos: CGPoint(x: 0.8, y: 0.35),
             defaultIsPortrait: true,
             overrideScaledPos: CGPoint(x: 0.87, y: 0.45), overrideOffset: CGPointZero
-        ), scale: 1.5, inputId: 3, input: .B, side: .middle),
+        ), scale: 1.75, inputId: 3, input: .B, side: .middle),
         
         // DPad
         DPadConfig(
             position: .init(
-                scaledPos: CGPoint(x: 0.5, y: 0.2),
+                scaledPos: CGPoint(x: 0.5, y: 0.13),
                 defaultIsPortrait: true,
                 overrideScaledPos: CGPoint(x: 0.15, y: 0.75), overrideOffset: CGPointZero
-            ), scale: 1.5, inputId: 4,
+            ), scale: 2.5, inputId: 4,
             inputs: [
                 .up: .DPadUp, .right: .DPadRight, .down: .DPadDown, .left: .DPadLeft
             ]
         ),
         
         // Menu
-        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.5), offset: CGPoint(x: -DEFAULT_BUTTON_SIZE, y: 0)), scale: 0.6, inputId: 5, input: .Start, style: .init(shape: .Circle, iconType: .SFSymbol, icon: "plus")),
-        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.5), offset: CGPoint(x: DEFAULT_BUTTON_SIZE, y: 0)), scale: 0.6, inputId: 6, input: .Select, style: .init(shape: .Circle, iconType: .Text, icon: "-")),
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.5), offset: CGPoint(x: -DEFAULT_BUTTON_SIZE * 1.5, y: 0)), scale: 0.8, inputId: 5, input: .Start, style: .init(shape: .Circle, iconType: .SFSymbol, icon: "plus")),
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.5), offset: CGPoint(x: DEFAULT_BUTTON_SIZE * 1.5, y: 0)), scale: 0.8, inputId: 6, input: .Select, style: .init(shape: .Circle, iconType: .Text, icon: "-")),
         
         // Home/Screenshot
-        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.5)), scale: 0.6, inputId: 7, input: .Home, style: .init(shape: .Circle, iconType: .SFSymbol, icon: "house")),
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.5)), scale: 0.8, inputId: 7, input: .Home, style: .init(shape: .Circle, iconType: .SFSymbol, icon: "house")),
     ])
     
     // MARK: GameCube Config
     static let GameCubeConfig: LayoutConfig = .init(name: "GameCube", buttons: [
         // Left Joystick
-        JoystickConfig(position: .init(scaledPos: CGPoint(x: 0.15, y: 0.4)), scale: 1.5, inputId: 0, input: .LeftJoystick),
+        JoystickConfig(position: .init(scaledPos: CGPoint(x: 0.15, y: 0.45)), scale: 2.5, inputId: 0, input: .LeftJoystick),
         
         // DPad
         DPadConfig(
-            position: .init(scaledPos: CGPoint(x: 0.3, y: 0.75)), scale: 1.5, inputId: 1,
+            position: .init(scaledPos: CGPoint(x: 0.3, y: 0.75)), scale: 2.25, inputId: 1,
             inputs: [
                 .up: .DPadUp, .right: .DPadRight, .down: .DPadDown, .left: .DPadLeft
             ]
         ),
         
         // Start
-        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.3)), scale: 0.7, inputId: 2, input: .Start, style: .init(shape: .Circle, iconType: .Text, icon: "+")),
+        RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.5, y: 0.3)), scale: 0.8, inputId: 2, input: .Start, style: .init(shape: .Circle, iconType: .Text, icon: "+")),
         
         // Right Joystick
-        JoystickConfig(position: .init(scaledPos: CGPoint(x: 0.7, y: 0.75)), scale: 1.5, style: .init(color: Color(hex: "F7CE46"), foregroundColor: Color(hex: "8C8629")), inputId: 3, input: .RightJoystick),
+        JoystickConfig(position: .init(scaledPos: CGPoint(x: 0.6, y: 0.8)), scale: 2.5, style: .init(color: Color(hex: "F7CE46"), foregroundColor: Color(hex: "8C8629")), inputId: 3, input: .RightJoystick),
         
         // A and B Buttons
         RegularButtonConfig(position: .init(scaledPos: CGPoint(x: 0.8, y: 0.35)), scale: 1.5, inputId: 4, input: .A, style: .init(shape: .Circle, iconType: .Text, icon: "A", properties: .init(color: Color(hex: "64C466"), pressedColor: Color(hex: "729C44")))),
