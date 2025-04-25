@@ -243,7 +243,6 @@ def reconstruct_timestamp(sent_ms):
     
     return abs(latency)
 
-
 def process_latency_characteristic(characteristic):
     # data comes as little endian {Byte, quadword}
     connection_information = unpack("<Bi", characteristic.value)
@@ -550,7 +549,7 @@ class QBlessServer(QObject):
         await self.server.start(prioritize_local_name=True)
         logger.info("Advertising")
 
-        input_server.start()
+        #input_server.start()
     
     async def stop(self):
         logger.info("Stopping server")
