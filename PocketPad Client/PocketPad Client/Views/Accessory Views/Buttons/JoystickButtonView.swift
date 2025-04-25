@@ -195,9 +195,8 @@ struct JoystickButtonView: View {
                 .foregroundStyle(getFGColor())
                 .frame(width: STICK_SIZE, height: STICK_SIZE)
                 .offset(offset)
-                .highPriorityGesture(joyDrag)
-            
         }
+        .highPriorityGesture(joyDrag)
     }
     
     /* Color Getter Functions */

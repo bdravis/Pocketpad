@@ -50,12 +50,14 @@ class MotionManager: ObservableObject {
                 let zVal = data.userAcceleration.z + data.gravity.z
                 
                 // Update published properties (automatically updates SwiftUI views)
+                /*
                 self?.pitch = pitchVal
                 self?.roll  = rollVal
                 self?.yaw   = yawVal
                 self?.accelerationX = xVal
                 self?.accelerationY = yVal
                 self?.accelerationZ = zVal
+                 */
                 
                 // Print the motion data for debugging
                 print(String(format: "Motion updated → Pitch: %.2f, Roll: %.2f, Yaw: %.2f\nAcceleration -> X: %.2f, Y: %.2f, Z: %.2f",
