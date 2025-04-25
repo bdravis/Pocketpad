@@ -30,6 +30,7 @@ struct SettingsMenuView: View {
 
     @AppStorage("motionControlEnabled") var motionControlEnabled: Bool = false
     @AppStorage("joystickSensitivity") var joystickSensitivity: Double = 1.0
+    @AppStorage("connectionType") private var serverType: Int = 0
 
     @EnvironmentObject var motionManager: MotionManager
     
@@ -168,21 +169,19 @@ struct SettingsMenuView: View {
     // MARK: - Main Settings Content
     private var settingsContent: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Section("Support") {
-                Button {
-                    guard let url = URL(string: helpFAQURL) else { return }
-                        openURL(url)
-                    } label: {
-                        HStack {
-                            Text("Help & FAQs")
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                            .foregroundColor(.secondary)
-                        }
-                    }
-                    .accessibilityIdentifier("HelpFAQsButton")
-                    .padding(.vertical, 8)
+            // Bluetooth VS Network
+            HStack {
+                Text("Connection Type")
+                    .foregroundColor(.primary)
+                Spacer()
+                Picker("Connection Type", selection: $serverType) {
+                    Text("Network").tag(0)
+                    Text("Bluetooth").tag(1)
                 }
+                .pickerStyle(.menu)
+                .accessibilityIdentifier("ConnectionTypePicker")
+            }
+            .disabled(BluetoothManager.shared.connectedDevice != nil || NetworkManager.shared.isConnected)
             // Controller Type Picker
             HStack {
                 Text("Current Layout")
@@ -210,7 +209,11 @@ struct SettingsMenuView: View {
                         macroManager.clearMacrosForController()
                         
                         isCustomLayout = !DefaultLayouts.isDefaultLayout(name: selectedController)
-                        bluetoothManager.updateControllerConfiguration()
+                        if serverType == 1 {
+                            bluetoothManager.updateControllerConfiguration()
+                        } else {
+                            NetworkManager.shared.sendLayout(true)
+                        }
                     } catch {
                         UIApplication.shared.alert(title: "Failed to load layout", body: error.localizedDescription)
                         selectedController = ControllerType.getDefaultName()
@@ -431,7 +434,20 @@ struct SettingsMenuView: View {
                     .accessibilityIdentifier("HapticFeedbackToggle")
             }
             
-            // MARK: Resetting Tutorial
+            // MARK: FAQ + Resetting Tutorial
+            Button {
+            guard let url = URL(string: helpFAQURL) else { return }
+                openURL(url)
+            } label: {
+                HStack {
+                    Text("Help & FAQs")
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                    .foregroundColor(.secondary)
+                }
+            }
+            .accessibilityIdentifier("HelpFAQsButton")
+            .padding(.vertical, 8)
             Button(action: {
                 UserDefaults.standard.set(false, forKey: "finishedTutorial")
                 UserDefaults.standard.set(true, forKey: "resetTips")

@@ -13,10 +13,9 @@ import math
 import random
 from dataclasses import dataclass
 
-
-
 class DSU_Server:
-
+    _instance = None
+    
     class Controller_State:
         def __init__(self, is_null: bool):
 
@@ -55,12 +54,21 @@ class DSU_Server:
             self.roll = 0
 
             self.last_request_time = 0
+            
+    @staticmethod
+    def instance():
+        if DSU_Server._instance is None:
+            DSU_Server._instance = DSU_Server()
+        DSU_Server._instance.start()
+        return DSU_Server._instance
 
     def __init__(self, port=26760):
         self.port = port
         self.running = False
         self.server_id = 5
         self.packet_counter = 0
+        
+        self.inputId_to_inputs = {}
 
         self.addr = ("127.0.0.1",26760)
 
@@ -73,9 +81,14 @@ class DSU_Server:
         self.controller_states.append(self.Controller_State(False))
 
         self.request_timeout = 5 # Seconds after request that inputs stop sending
+        
+        self.started = False
 
     def start(self):
         """Start the UDP server in a background thread."""
+        if self.started:
+            return
+        self.started = True
         self.running = True
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind(("127.0.0.1", self.port))
@@ -230,7 +243,7 @@ class DSU_Server:
 
         if actions_requested == 1:
             slot_requested = int.from_bytes(struct.unpack("<B", data[21:22]))
-            print(f"data requested from slot {slot_requested}")
+            # print(f"data requested from slot {slot_requested}")
             state_requested = self.controller_states[slot_requested]
             self.controller_states[slot_requested].addr = addr
 
@@ -475,7 +488,7 @@ class DSU_Server:
         # If event type is JOYSTICK, value is [Sticks int, angle, magnitude]
         # if event type is MOTION, value is [pitch, yaw, roll]
 
-        print(f"updating state: {player_num}, {event_type}, {value}")
+        # print(f"updating state: {player_num}, {event_type}, {value}")
         """
         print(f"current buttons: {self.controller_states[player_num].button_mask}")
         print(f"current dpad: {self.controller_states[player_num].dpad_mask}")
@@ -653,3 +666,5 @@ class DSU_Server:
         print(f"updated sq: {self.controller_states[player_num].sq}")
         print(f"updated ci: {self.controller_states[player_num].ci}")
         """
+
+DSU_Server.instance() # init and start the server immediately

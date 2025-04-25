@@ -9,13 +9,13 @@ import threading
 import concurrent.futures
 import game_database as gdb
 from typing import Dict, Union
-from inputs import parse_input
+from inputs import parse_input, map_inputID_to_inputs
 from struct import unpack, pack
 from functools import cached_property
-from enums import AllButtons, ControllerUpdateTypes
-from shared_definitions import input_server, inputId_to_inputs
+from enums import ControllerUpdateTypes
 from server_constants import *
 from utils import Paircode
+from dsu_server import DSU_Server
 
 from bless import (  # type: ignore
     BlessServer,
@@ -154,28 +154,50 @@ gatt: Dict = {
 if sys.platform == 'win32':
     import pywinctl
     def get_current_dolphin_game() -> str | None:
-        wins = pywinctl.getWindowsWithTitle('Dolphin')
+        wins = [
+            w for w in pywinctl.getAllWindows()
+            if "dolphin" in w.title.lower()
+        ]
+
         if not wins:
+            print("No Dolphin window found")
             return None
-        parts = wins[0].title.split('|')
-        return parts[-1].strip() if len(parts) >= 2 else None
+
+        for w in wins:
+            if "|" in w.title:
+                parts = w.title.split("|")
+                return parts[-1].strip()
 elif sys.platform == 'darwin':
     from AppKit import NSWorkspace
     from Quartz import CGWindowListCopyWindowInfo, kCGWindowListOptionOnScreenOnly, kCGNullWindowID
     def get_current_dolphin_game() -> str | None:
-        front = NSWorkspace.sharedWorkspace().frontmostApplication().localizedName()
         wins = CGWindowListCopyWindowInfo(kCGWindowListOptionOnScreenOnly, kCGNullWindowID)
         for w in wins:
-            if w.get('kCGWindowOwnerName') == front and 'Dolphin' in w.get('kCGWindowName',''):
-                parts = w['kCGWindowName'].split('|')
-                return parts[-1].strip() if len(parts)>=2 else None
+            owner = w.get('kCGWindowOwnerName')
+            title = w.get('kCGWindowName','')
+            if owner == 'Dolphin' and title:
+                # try pipe or dash separator
+                m = re.search(r'(?:\||–)\s*(.+)$', title)
+                if m:
+                    return m.group(1).strip()
+                # fallback: if title isn’t just “Dolphin”, return it anyway
+                if title.lower() != 'dolphin':
+                    return title
         return None
+    # def get_current_dolphin_game() -> str | None:
+    #     front = NSWorkspace.sharedWorkspace().frontmostApplication().localizedName()
+    #     wins = CGWindowListCopyWindowInfo(kCGWindowListOptionOnScreenOnly, kCGNullWindowID)
+    #     for w in wins:
+    #         if w.get('kCGWindowOwnerName') == front and 'Dolphin' in w.get('kCGWindowName',''):
+    #             parts = w['kCGWindowName'].split('|')
+    #             return parts[-1].strip() if len(parts)>=2 else None
+    #     return None
 else:
     def get_current_dolphin_game() -> str | None:
         return None
 
 def dolphin_is_running() -> bool:
-    name = 'dolphin.exe' if sys.platform=='win32' else 'dolphin-emu'
+    name = 'dolphin.exe' if sys.platform=='win32' else 'dolphin'
     return any(p.name().lower() == name for p in psutil.process_iter(['name']))
 
 def set_latency_callback(send_latency_callback, latency_function_callback):
@@ -221,53 +243,6 @@ def reconstruct_timestamp(sent_ms):
     
     return abs(latency)
 
-def map_inputID_to_inputs(json):
-    for item in json['wrappedButtons']:
-        if not isinstance(item, dict) or 'base' not in item or 'payload' not in item:
-            continue
-            
-        payload = item['payload']
-        input_id = payload.get('inputId')
-        input_val = payload.get('input')
-        
-        if input_id is None:
-            continue
-            
-        # Handle D-Pad (special case - maps to all 4 directions)
-        if item['base'] == 'dPadConfig':
-            inputId_to_inputs[input_id] = {
-                AllButtons.up_dpad,
-                AllButtons.down_dpad,
-                AllButtons.left_dpad,
-                AllButtons.right_dpad
-            }
-            continue
-            
-        # Handle diamond buttons
-        if input_val == 'X':
-            inputId_to_inputs[input_id] = AllButtons.top_diamond
-        elif input_val == 'B':
-            inputId_to_inputs[input_id] = AllButtons.bottom_diamond
-        elif input_val == 'Y':
-            inputId_to_inputs[input_id] = AllButtons.left_diamond
-        elif input_val == 'A':
-            inputId_to_inputs[input_id] = AllButtons.right_diamond
-            
-        # Handle other buttons
-        elif input_val == 'LB':
-            inputId_to_inputs[input_id] = AllButtons.left_bumper
-        elif input_val == 'RB':
-            inputId_to_inputs[input_id] = AllButtons.right_bumper
-        elif input_val == 'LT':
-            inputId_to_inputs[input_id] = AllButtons.left_trigger
-        elif input_val == 'RT':
-            inputId_to_inputs[input_id] = AllButtons.right_trigger
-        elif input_val in ('Start', 'Select', 'Share'):
-            inputId_to_inputs[input_id] = AllButtons.options
-        elif input_val == 'LeftJoystick':
-            inputId_to_inputs[input_id] = AllButtons.left_stick
-        elif input_val == 'RightJoystick':
-            inputId_to_inputs[input_id] = AllButtons.right_stick
 
 def process_latency_characteristic(characteristic):
     # data comes as little endian {Byte, quadword}
@@ -347,9 +322,8 @@ def process_connection_characteristic(characteristic):
             characteristic.value = bytearray(response_data)
 
         if signal == ConnectionMessage.connecting.value:
-
-            print(player_id, ControllerUpdateTypes.CONNECTION.value, [ConnectionMessage.connecting.value])
-            input_server.update_controller_state(player_id, ControllerUpdateTypes.CONNECTION.value, [ConnectionMessage.connecting.value])
+            # print(player_id, ControllerUpdateTypes.CONNECTION.value, [ConnectionMessage.connecting.value])
+            DSU_Server.instance().update_controller_state(player_id, ControllerUpdateTypes.CONNECTION.value, [ConnectionMessage.connecting.value])
 
             logger.debug("I am in here\n")
 
@@ -372,7 +346,7 @@ def process_connection_characteristic(characteristic):
 
         if signal == ConnectionMessage.disconnecting.value:
             # TODO change server to indicate who is leaving
-            input_server.update_controller_state(player_id, ControllerUpdateTypes.CONNECTION.value, [ConnectionMessage.disconnecting.value])
+            DSU_Server.instance().update_controller_state(player_id, ControllerUpdateTypes.CONNECTION.value, [ConnectionMessage.disconnecting.value])
 
             response_data = [0, ConnectionMessage.received.value]
             response = bytearray(response_data)
@@ -553,7 +527,7 @@ class QBlessServer(QObject):
         self._bg_thread = threading.Thread(target=self._start_bg_loop, daemon=True)
         self._bg_thread.start()
 
-        asyncio.run_coroutine_threadsafe(self._dolphin_monitor(), self._bg_loop)
+        asyncio.run_coroutine_threadsafe(self.dolphin_monitor(), self._bg_loop)
 
     def _start_bg_loop(self):
         asyncio.set_event_loop(self._bg_loop)
@@ -575,17 +549,22 @@ class QBlessServer(QObject):
         self.server.get_characteristic(PAIRCODE_CHARACTERISTIC).value = str(Paircode.reset().code).encode()
         await self.server.start(prioritize_local_name=True)
         logger.info("Advertising")
+
+        input_server.start()
     
     async def stop(self):
         logger.info("Stopping server")
-        char = self.server.get_characteristic(CONNECTION_CHARACTERISTIC)
-        char.value = bytearray([0, 0])
-        self.server.update_value(POCKETPAD_SERVICE, CONNECTION_CHARACTERISTIC)
-        
-        await asyncio.sleep(0.5) # small buffer
-        await self.server.stop()
+        try:
+            char = self.server.get_characteristic(CONNECTION_CHARACTERISTIC)
+            char.value = bytearray([0, 0])
+            self.server.update_value(POCKETPAD_SERVICE, CONNECTION_CHARACTERISTIC)
+            
+            await asyncio.sleep(0.5) # small buffer
+            await self.server.stop()
+        except Exception as e:
+            pass # Server was never started in the first place
 
-    async def _dolphin_monitor(self):
+    async def dolphin_monitor(self):
         last_game = None
         while True:
             while not dolphin_is_running():
