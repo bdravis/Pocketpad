@@ -38,7 +38,7 @@ trigger: Union[asyncio.Event, threading.Event] = None
 thread = None
 loop = None
 
-NUM_WORKERS = 24
+NUM_WORKERS = 32
 request_queue: "queue.Queue[tuple[BlessGATTCharacteristic, bytes]]" = queue.Queue(maxsize=5000)
 
 def _thread_worker():
