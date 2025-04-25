@@ -43,6 +43,8 @@ def map_inputID_to_inputs(json):
             DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.left_diamond
         elif input_val == 'A':
             DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.right_diamond
+        elif input_val == 'Z':
+            DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.z
             
         # Handle other buttons
         elif input_val == 'LB':
@@ -53,12 +55,24 @@ def map_inputID_to_inputs(json):
             DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.left_trigger
         elif input_val == 'RT':
             DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.right_trigger
-        elif input_val in ('Start', 'Select', 'Share'):
+
+        elif input_val == 'Start':
             DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.options
+        elif input_val == 'Select':
+            DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.select
+        elif input_val == 'Share':
+            DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.share
+            
         elif input_val == 'LeftJoystick':
             DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.left_stick
         elif input_val == 'RightJoystick':
             DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.right_stick
+        elif input_val == 'Home':
+            DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.home
+        elif input_val == '1':
+            DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.one
+        elif input_val == '2':
+            DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.two
 
 # Parses raw input data bytes
 # Returns player_id, input_id, event
@@ -85,9 +99,9 @@ def parse_input(raw_data):
         x_acceleration = unpack_from('<f', raw_data, offset=14)[0]
         y_acceleration  = unpack_from('<f', raw_data, offset=18)[0]
         z_acceleration   = unpack_from('<f', raw_data, offset=22)[0]
-        
+
         logger.debug(f"Motion Data Received from player {player_id}: pitch = {pitch:.2f}, roll = {roll:.2f}, yaw = {yaw:.2f}\n xAcceleration = {x_acceleration:.2f}, yAcceleration = {y_acceleration:.2f}, zAcceleration = {z_acceleration:.2f}")
-        DSU_Server.instance().update_controller_state(player_id, ControllerUpdateTypes.MOTION.value, [pitch, yaw, roll])
+        DSU_Server.instance().update_controller_state(player_id, ControllerUpdateTypes.MOTION.value, [pitch, yaw, roll, x_acceleration, y_acceleration, z_acceleration])
         return
     else:
         # Check that common fields exist
