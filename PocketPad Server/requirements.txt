@@ -9,4 +9,4 @@ qasync
 psutil
 pywinctl; sys_platform == "win32"
 pyobjc; sys_platform == "darwin"
-
+zeroconf
