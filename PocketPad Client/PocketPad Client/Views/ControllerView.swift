@@ -39,6 +39,11 @@ struct ControllerView: View {
     @ObservedObject private var layoutManager = LayoutManager.shared
     @ObservedObject private var macroManager = MacroManager.shared
     
+    // Showing Keyboard
+    @State private var keyboardInput: String = ""
+    @FocusState private var showKeyboardFocusState: Bool
+    @State private var showKeyboard: Bool = false
+    
     let isEditor: Bool
     let isInMacroEditor: Bool
     
@@ -127,6 +132,21 @@ struct ControllerView: View {
             
             // MARK: Main Layout
             ZStack(alignment: .topLeading) {
+                // For Keyboard
+                TextField("input", text: $keyboardInput)
+                    .opacity(0)
+                    .focused($showKeyboardFocusState)
+                    .onChange(of: showKeyboard, initial: true) {
+                        if showKeyboard != showKeyboardFocusState {
+                            showKeyboardFocusState = showKeyboard
+                        }
+                    }
+                    .onChange(of: showKeyboardFocusState, initial: false) {
+                        if showKeyboard != showKeyboardFocusState {
+                            showKeyboard = showKeyboardFocusState
+                        }
+                    }
+                
                 ForEach($layoutManager.currentController.buttons, id: \.wrappedValue.id) { btn in
                     if selectedBtn.isEmpty || selectedBtn.inputId != btn.wrappedValue.inputId {
                         let tapGesture = TapGesture().onEnded {
@@ -143,7 +163,7 @@ struct ControllerView: View {
                             Group {
                                 switch btn.wrappedValue.type {
                                 case .regular:
-                                    RegularButtonView(config: btn.wrappedValue as! RegularButtonConfig, isInMacroEditor: isInMacroEditor)
+                                    RegularButtonView(config: btn.wrappedValue as! RegularButtonConfig, isInMacroEditor: isInMacroEditor, showKeyboard: $showKeyboard, keyboardInput: $keyboardInput)
                                         .accessibilityAddTraits(.isButton)
                                         .accessibilityIdentifier("ControllerButton")
                                 case .joystick:
@@ -160,6 +180,7 @@ struct ControllerView: View {
                                     TriggerButtonView(config: btn.wrappedValue as! TriggerConfig, isInMacroEditor: isInMacroEditor)
                                         .accessibilityAddTraits(.isButton)
                                         .accessibilityIdentifier("ControllerButton")
+                                    
                                 }
                             }
                         }
@@ -236,7 +257,7 @@ struct ControllerView: View {
                         Group {
                             switch selectedBtn.type {
                             case .regular:
-                                RegularButtonView(config: selectedBtn.asButtonConfig() as! RegularButtonConfig)
+                                RegularButtonView(config: selectedBtn.asButtonConfig() as! RegularButtonConfig, showKeyboard: $showKeyboard, keyboardInput: $keyboardInput)
                             case .joystick:
                                 JoystickButtonView(config: selectedBtn.asButtonConfig() as! JoystickConfig)
                             case .dpad:
