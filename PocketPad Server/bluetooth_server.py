@@ -39,7 +39,7 @@ thread = None
 loop = None
 
 NUM_WORKERS = 24
-request_queue: "queue.Queue[tuple[BlessGATTCharacteristic, bytes]]" = queue.Queue(maxsize=1000)
+request_queue: "queue.Queue[tuple[BlessGATTCharacteristic, bytes]]" = queue.Queue(maxsize=5000)
 
 def _thread_worker():
     """Continuously pull write-requests off the queue and handle them."""
