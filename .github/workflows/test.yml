@@ -43,7 +43,7 @@ jobs:
             - name: Run server tests
               run: pytest server_app_testing.py -vv -s
     client:
-        runs-on: [self-hosted, macOS, ARM64]
+        runs-on: [macOS-latest]
 
         defaults:
             run:
