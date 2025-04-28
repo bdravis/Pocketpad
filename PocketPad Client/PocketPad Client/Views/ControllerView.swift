@@ -371,6 +371,7 @@ struct ControllerView: View {
                 // MARK: Lock Orientation
                 if !ranStartLock {
                     ranStartLock = true
+                    didLockRotation = layoutManager.currentController.rotationLocked
                     lockRotation()
                 }
             }
@@ -610,6 +611,7 @@ struct ControllerView: View {
     func lockRotation() {
         var newOrientation = layoutManager.currentController.lockToOrientation
         if layoutManager.currentController.rotationLocked {
+            print("locking rotation")
             // force current orientation
             let rot = newOrientation
             if isPortait && UIDevice.current.orientation == .portrait && (rot == .all || rot == .allButUpsideDown) {
@@ -625,11 +627,11 @@ struct ControllerView: View {
             } else if isPortait && rot == .landscapeRight {
                 newOrientation = .landscapeRight
             }
-            didLockRotation = true
         }
         AppDelegate.orientationLock = newOrientation
     }
     func unlockRotation() {
+        print("unlocking rotation")
         AppDelegate.orientationLock = .all
     }
 }
