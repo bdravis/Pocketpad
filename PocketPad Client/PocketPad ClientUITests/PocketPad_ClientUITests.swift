@@ -117,6 +117,9 @@ final class PocketPad_ClientUITests: XCTestCase {
             
             // go back to the previous view
             app.navigationBars.buttons.element(boundBy: 0).tap()
+            if app.buttons["ConfirmExit"].waitForExistence(timeout: 3) {
+                app.buttons["ConfirmExit"].tap()
+            }
         }
     }
     
@@ -179,6 +182,9 @@ final class PocketPad_ClientUITests: XCTestCase {
             
             // go back to the previous view
             app.navigationBars.buttons.element(boundBy: 0).tap()
+            if app.buttons["ConfirmExit"].waitForExistence(timeout: 3) {
+                app.buttons["ConfirmExit"].tap()
+            }
         }
     }
     
@@ -383,6 +389,9 @@ final class PocketPad_ClientUITests: XCTestCase {
                 XCTAssertTrue(orien.isPortrait ? editorSize.height > editorSize.width : editorSize.width > editorSize.height, "The orientation did not change to the proper orientation")
                 // go back to the previous view
                 app.navigationBars.buttons.element(boundBy: 0).tap()
+                if app.buttons["ConfirmExit"].waitForExistence(timeout: 3) {
+                    app.buttons["ConfirmExit"].tap()
+                }
                 XCUIDevice.shared.orientation = .portrait
             }
         }

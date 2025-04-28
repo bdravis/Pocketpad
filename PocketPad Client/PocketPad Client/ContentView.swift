@@ -293,7 +293,8 @@ struct ContentView: View {
                             isCustomLayout: $showModifyBtn
                         )
                         .offset(y: isShowingSettings ? 0 : -geometry.size.height)
-                        .transition(.move(edge: .top))
+                        .opacity(isShowingSettings ? 1.0 : 0.0)
+                        .transition(.move(edge: .top).combined(with: .opacity))
                         .animation(.bouncy, value: isShowingSettings)
                     }
                 }

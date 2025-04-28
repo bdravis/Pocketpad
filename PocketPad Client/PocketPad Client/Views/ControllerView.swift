@@ -71,6 +71,7 @@ struct ControllerView: View {
     @State private var newName: String = ""
     @State private var makingNewMacro: Bool = false
     @State private var newMacroName: String = ""
+    @State private var showExitConfirmAlert: Bool = false
     
     // Tips
     var orientationTip = OrientationTip()
@@ -371,6 +372,7 @@ struct ControllerView: View {
                 // MARK: Lock Orientation
                 if !ranStartLock {
                     ranStartLock = true
+                    didLockRotation = layoutManager.currentController.rotationLocked
                     lockRotation()
                 }
             }
@@ -445,7 +447,7 @@ struct ControllerView: View {
                 } else {
                     ToolbarItem(placement: .topBarLeading, content: {
                         Button(action: {
-                            self.presentationMode.wrappedValue.dismiss()
+                            showExitConfirmAlert.toggle()
                         }) {
                             Image(systemName: "xmark")
                         }
@@ -488,6 +490,16 @@ struct ControllerView: View {
                     GlowEffect(color: UserDefaults.standard.value(forKey: "controllerColor") as? Color ?? Color.blue)
                 }
             }
+            .alert("Exit Controller?", isPresented: $showExitConfirmAlert, actions: {
+                Button("Cancel", role: .cancel) {
+                    showExitConfirmAlert = false
+                }
+                Button("Exit") {
+                    showExitConfirmAlert = false
+                    presentationMode.wrappedValue.dismiss()
+                }
+                .accessibilityIdentifier("ConfirmExit")
+            })
             .alert("Delete Layout", isPresented: $showDeleteAlert, actions: {
                 Button("Cancel", role: .cancel) {
                     showDeleteAlert = false
@@ -610,6 +622,7 @@ struct ControllerView: View {
     func lockRotation() {
         var newOrientation = layoutManager.currentController.lockToOrientation
         if layoutManager.currentController.rotationLocked {
+            print("locking rotation")
             // force current orientation
             let rot = newOrientation
             if isPortait && UIDevice.current.orientation == .portrait && (rot == .all || rot == .allButUpsideDown) {
@@ -625,11 +638,11 @@ struct ControllerView: View {
             } else if isPortait && rot == .landscapeRight {
                 newOrientation = .landscapeRight
             }
-            didLockRotation = true
         }
         AppDelegate.orientationLock = newOrientation
     }
     func unlockRotation() {
+        print("unlocking rotation")
         AppDelegate.orientationLock = .all
     }
 }

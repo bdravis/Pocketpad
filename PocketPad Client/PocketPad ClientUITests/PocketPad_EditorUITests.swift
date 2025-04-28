@@ -293,6 +293,9 @@ final class PocketPad_EditorUITests: XCTestCase {
         // make sure the count of the buttons is equal to the specified controller setup
         XCTAssertEqual(app.buttons.matching(identifier: "ControllerButton").count + app.buttons.matching(identifier: "DPadButton").count, counter, "Incorrect number of buttons.")
         app.navigationBars.buttons.element(boundBy: 0).tap()
+        if app.buttons["ConfirmExit"].waitForExistence(timeout: 3) {
+            app.buttons["ConfirmExit"].tap()
+        }
     }
     
     @MainActor
