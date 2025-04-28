@@ -96,7 +96,7 @@ def parse_input(raw_data):
 
     # Unpack the raw data into a tuple
     unpacked_data = unpack(format_str, raw_data)
-    print(unpacked_data)
+    # print(unpacked_data)
 
     NUM_COMMON_FIELDS = 0
     player_id = unpacked_data[0]
@@ -139,7 +139,7 @@ def parse_input(raw_data):
     except:
         if DSU_Server.instance().inputId_to_inputs[input_id] == AllButtons.keyboard:
             keypress = raw_event
-            print(f"Keyboard input received from player {player_id} with keypress {keypress}")
+            # print(f"Keyboard input received from player {player_id} with keypress {keypress}")
             pyautogui.press(chr(keypress))
             return None
         
@@ -174,7 +174,7 @@ def parse_input(raw_data):
             raw_angle = unpacked_data[NUM_COMMON_FIELDS]
             raw_magnitude = unpacked_data[NUM_COMMON_FIELDS + 1]
             if DSU_Server.instance().inputId_to_inputs[input_id] == AllButtons.mouse:
-                print(f"Mouse input received from player {player_id} with angle {raw_angle} and magnitude {raw_magnitude}.")
+                # print(f"Mouse input received from player {player_id} with angle {raw_angle} and magnitude {raw_magnitude}.")
                 radians = math.radians(raw_angle - 90)
                 magnitude = raw_magnitude / 100
 
