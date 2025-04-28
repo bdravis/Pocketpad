@@ -71,6 +71,7 @@ struct ControllerView: View {
     @State private var newName: String = ""
     @State private var makingNewMacro: Bool = false
     @State private var newMacroName: String = ""
+    @State private var showExitConfirmAlert: Bool = false
     
     // Tips
     var orientationTip = OrientationTip()
@@ -446,7 +447,7 @@ struct ControllerView: View {
                 } else {
                     ToolbarItem(placement: .topBarLeading, content: {
                         Button(action: {
-                            self.presentationMode.wrappedValue.dismiss()
+                            showExitConfirmAlert.toggle()
                         }) {
                             Image(systemName: "xmark")
                         }
@@ -489,6 +490,16 @@ struct ControllerView: View {
                     GlowEffect(color: UserDefaults.standard.value(forKey: "controllerColor") as? Color ?? Color.blue)
                 }
             }
+            .alert("Exit Controller?", isPresented: $showExitConfirmAlert, actions: {
+                Button("Cancel", role: .cancel) {
+                    showExitConfirmAlert = false
+                }
+                Button("Exit") {
+                    showExitConfirmAlert = false
+                    presentationMode.wrappedValue.dismiss()
+                }
+                .accessibilityIdentifier("ConfirmExit")
+            })
             .alert("Delete Layout", isPresented: $showDeleteAlert, actions: {
                 Button("Cancel", role: .cancel) {
                     showDeleteAlert = false
