@@ -339,12 +339,10 @@ def process_connection_characteristic(characteristic):
 
             #next_id = len(player_id_str_arr)
 
-            print("looking for spot: ", player_id_str_arr)
 
             next_id = -1
             for i in range(4):
                 if player_id_str_arr[i] == "":
-                    print ("found spot at: ", i)
                     next_id = i
                     break
 

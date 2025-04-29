@@ -242,13 +242,6 @@ class QNetworkServer(QObject):
                             writer.write(json.dumps({ "status": "disconnect", "error": "Player ID taken" }).encode())
                             break
 
-                        print("BEFORE CONNECTION")
-                        for i in range(4):
-                            if i in self.players:
-                                print("yes: ", i)
-                            else:
-                                print("no : ", i)
-
                         self.last_connected_id = self.next_id
                         self.next_id = -1
 
@@ -262,13 +255,6 @@ class QNetworkServer(QObject):
                         self.players[self.next_id] = Player(self.next_id, requested, addr)
 
                         #self.next_id += 1
-
-                        print("AFTER CONNECTION")
-                        for i in range(4):
-                            if i in self.players:
-                                print("yes: ", i)
-                            else:
-                                print("no : ", i)
 
                         DSU_Server.instance().inputId_to_inputs.append({})
                         
@@ -352,7 +338,6 @@ class QNetworkServer(QObject):
                     pops.append(k)
             
             for k in pops:
-                #print("del: ", self.players[k])
                 del self.players[k]
             
             logger.debug(f"Closing connection from {addr}")
