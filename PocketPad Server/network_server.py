@@ -48,6 +48,7 @@ elif sys.platform == 'darwin':
     def get_current_dolphin_game():
         wins = CGWindowListCopyWindowInfo(kCGWindowListOptionOnScreenOnly, kCGNullWindowID)
         for w in wins:
+            game = None
             if w.get('kCGWindowOwnerName') != 'Dolphin':
                 continue
             pid = w.get('kCGWindowOwnerPID')
@@ -73,7 +74,7 @@ def is_allowed_path(path: str) -> bool:
     return extension not in BLACKLIST
 
 def extract_game_name_from_path(full_path: str) -> str:
-    core, *_ = full_path.rsplit*(" ", 1)
+    core, *_ = full_path.rsplit(" ", 1)
     file_name = os.path.basename(core)
     name, _ = os.path.splitext*(file_name)
     cleaned = re.sub(r'\s*[\(\[].*?[\)\]])]\s*$', '', name).strip()
