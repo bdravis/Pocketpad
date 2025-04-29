@@ -170,7 +170,6 @@ gatt: Dict = {
     },
 }
 
-
 # 1) Cross‑platform game‑name extraction from window title (reuse from earlier)
 if sys.platform == 'win32':
     import pywinctl
@@ -482,6 +481,7 @@ def process_controller_characteristic(characteristic):
         response_data = [0, ConnectionMessage.transmitting_layout.value]
         response = bytearray(response_data)
         characteristic.value = response
+        return
     elif size_sent == 0:
         layout_jsons[player_id] = layout_jsons_temp[player_id]
         layout_jsons_temp[player_id] = ""
