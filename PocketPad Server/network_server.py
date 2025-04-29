@@ -245,6 +245,8 @@ class QNetworkServer(QObject):
                             requested = f"Player {self.next_id}"
                         self.players[self.next_id] = Player(self.next_id, requested, addr)
                         self.next_id += 1
+
+                        DSU_Server.instance().inputId_to_inputs.append({})
                         
                         logger.info(f"Player \"{requested}\" connected from {addr} - ID: {self.next_id}")
                         
@@ -256,7 +258,7 @@ class QNetworkServer(QObject):
                         player = self.players[pid]
                         player.layout_json = base64.b64decode(message["layout"]).decode()
                         
-                        map_inputID_to_inputs(json.loads(player.layout_json))
+                        map_inputID_to_inputs(pid, json.loads(player.layout_json))
                         
                         self.connection_function("connect", player.name, controller_type, player.layout_json)
                     elif "new_layout" in message:
@@ -265,7 +267,7 @@ class QNetworkServer(QObject):
                         controller_type = enums.ControllerType(message["controller_type"])
                         player.layout_json = base64.b64decode(message["new_layout"]).decode()
                         
-                        map_inputID_to_inputs(json.loads(player.layout_json))
+                        map_inputID_to_inputs(pid, json.loads(player.layout_json))
                         
                         self.controller_function(player.name, controller_type, player.layout_json)
                     elif "input" in message:

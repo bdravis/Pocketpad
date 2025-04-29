@@ -365,6 +365,8 @@ def process_connection_characteristic(characteristic):
             if controller_type == 3:
                 controller_type = enums.ControllerType.Switch
 
+            print(f"Connection request approved for: {player_id_str_arr[player_id]}")
+
             connection_function("connect", player_id_str_arr[player_id], controller_type, layout_jsons[player_id])
 
         if signal == ConnectionMessage.disconnecting.value:
@@ -400,6 +402,7 @@ def process_connection_characteristic(characteristic):
             if size == 255:
                 layout_jsons_temp.append("")
                 layout_jsons_status.append(1)
+                DSU_Server.instance().inputId_to_inputs.append({})
                 
                 response_data = [0, ConnectionMessage.transmitting_layout.value]
                 response = bytearray(response_data)
@@ -415,7 +418,7 @@ def process_connection_characteristic(characteristic):
 
                 json_for_input_id_workaround = json.loads(layout_jsons[player_id])
 
-                map_inputID_to_inputs(json_for_input_id_workaround)
+                map_inputID_to_inputs(player_id, json_for_input_id_workaround)
 
                 response_data = [0, ConnectionMessage.transmitting_layout.value]
                 response = bytearray(response_data)
@@ -454,7 +457,7 @@ def process_controller_characteristic(characteristic):
 
         json_for_input_id_workaround = json.loads(layout_jsons[player_id])
 
-        map_inputID_to_inputs(json_for_input_id_workaround)
+        map_inputID_to_inputs(player_id, json_for_input_id_workaround)
 
         if controller_type == 0:
             controller_type = enums.ControllerType.Xbox

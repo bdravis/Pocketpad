@@ -72,7 +72,7 @@ class DSU_Server:
         self.server_id = 5
         self.packet_counter = 0
         
-        self.inputId_to_inputs = {}
+        self.inputId_to_inputs = [{}]
 
         self.addr = ("127.0.0.1",26760)
 
