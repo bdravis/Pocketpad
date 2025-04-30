@@ -206,7 +206,7 @@ struct SettingsMenuView: View {
                         leftJoystickDeadzone = LayoutManager.shared.getLeftJoystickDeadzone()
                         rightJoystickDeadzone = LayoutManager.shared.getRightJoystickDeadzone()
                         turboManager.stopAllTurbo()
-                        macroManager.clearMacrosForController()
+                        macroManager.clearAllMacros()
                         
                         isCustomLayout = !DefaultLayouts.isDefaultLayout(name: selectedController)
                         if serverType == 1 {
