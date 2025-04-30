@@ -154,9 +154,7 @@ struct ContentView: View {
                                 .background(.red.opacity(0.9))
                                 .cornerRadius(25)
                             } else {
-                                Button(action: {
-                                    networkManager.findServerAndConnect(port: 3000)
-                                }) {
+                                NavigationLink(destination: NetworkScannerView()) {
                                     Text("Connect")
                                         .font(.system(size: 18))
                                         .padding(.horizontal, 10)

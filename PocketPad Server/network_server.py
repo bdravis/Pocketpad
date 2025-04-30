@@ -1,4 +1,5 @@
 import os
+from random import randint
 import re
 import asyncio
 from dataclasses import dataclass
@@ -117,7 +118,7 @@ class QNetworkServer(QObject):
         super().__init__()
         self.server = None
         self.host = "0.0.0.0"
-        self.port = 12683
+        self.port = randint(3000, 49152)
         self.clients = {}
         self.next_id = 0
         self.last_connected_id = -1
@@ -162,8 +163,8 @@ class QNetworkServer(QObject):
         ]
             
         self.service_info = AsyncServiceInfo(
-            "_http._tcp.local.",
-            f"PocketPadServer._http._tcp.local.",
+            "_pocketpad._tcp.local.",
+            f"{socket.gethostname().replace(".", "-").replace("local", "")}._pocketpad._tcp.local.",
             addresses=all_addresses,
             port=self.port
         )
@@ -291,41 +292,6 @@ class QNetworkServer(QObject):
                             logger.error("INVALID INPUT")
                         else:
                             self.input_function(self.players[pid].name, res[1], res[2])
-                    # elif "request_layout" in message:
-                    #     layout_str = gdb.get_controller_layout(self.current_game)
-
-                        # 2) If none, send an empty header and return
-                        # if layout_str is None:
-                            # writer.write(json.dumps({ "status": "layout" }).encode())
-                            # await prefixed_send(writer, header)
-                            # return
-
-                        # 3) Base64-encode the JSON to keep it ASCII-safe
-                        # layout_b64 = base64.b64encode(layout_str.encode('utf-8'))
-                        # total_len = len(layout_b64)
-                        # chunk_size = 2048
-
-                        # # 4) Send header frame
-                        # header = json.dumps({
-                        #     "status": "layout",
-                        #     "file_size": total_len,
-                        #     "chunk_size": chunk_size
-                        # }).encode('utf-8')
-                        # await prefixed_send(writer, header)  # :contentReference[oaicite:10]{index=10}
-
-                        # # 5) Send each chunk with its offset
-                        # for offset in range(0, total_len, chunk_size):
-                        #     chunk = layout_b64[offset:offset + chunk_size]
-                        #     chunk_msg = json.dumps({
-                        #         "status": "layout_chunk",
-                        #         "offset": offset,
-                        #         "data": chunk.decode('ascii')
-                        #     }).encode('utf-8')
-                        #     await prefixed_send(writer, chunk_msg)  # :contentReference[oaicite:11]{index=11}
-
-                        # # 6) Send completion frame
-                        # complete = json.dumps({"status": "layout_complete"}).encode('utf-8')
-                        # await prefixed_send(writer, complete)
 
         except asyncio.CancelledError:
             pass
@@ -376,12 +342,15 @@ class QNetworkServer(QObject):
                     
             self.clients.clear()
 
+            if self.zeroconf and self.service_info:
+                print(await self.zeroconf.async_unregister_all_services())
+                await self.zeroconf.async_close()
+                logger.info("Shutdown zeroconf")
+                
             self.server.close()
             await self.server.wait_closed()
+            logger.info("Server Shutdown")
             
-            if self.zeroconf and self.service_info:
-                await self.zeroconf.async_unregister_service(self.service_info)
-                await self.zeroconf.async_close()
 
             if hasattr(self, "_monitor_task"):
                 self._monitor_task.cancel()
@@ -389,8 +358,6 @@ class QNetworkServer(QObject):
                     await self._monitor_task
                 except asyncio.CancelledError:
                     pass
-            
-            logger.info("Server stopped.")
 
     async def request_game_data(self, game: str):
         self.current_game = game
