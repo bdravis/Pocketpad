@@ -1610,7 +1610,8 @@ class ControllerWidget(QWidget):
 
         self.setMinimumSize(75, 50)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.bbox = self.compute_bbox()
+        if self.controller_widgets != []:
+            self.bbox = self.compute_bbox()
 
         self.input_held = {}
 
@@ -1623,38 +1624,39 @@ class ControllerWidget(QWidget):
         
         painter = QPainter(self.cached_pixmap)
         painter.setRenderHint(QPainter.Antialiasing)
-        
-        min_x, min_y, max_x, max_y = self.compute_bbox()
-        bbox_width = max_x - min_x
-        bbox_height = max_y - min_y
 
-        widget_width = self.width()
-        widget_height = self.height()
-        
-        painter.setPen(Qt.NoPen)
-        painter.setBrush(QColor(self.color_scheme).darker(140))
-        painter.drawRoundedRect(0, 0, widget_width, widget_height, 10, 10)
+        if self.controller_widgets != []:
+            min_x, min_y, max_x, max_y = self.compute_bbox()
+            bbox_width = max_x - min_x
+            bbox_height = max_y - min_y
 
-        scale_x = (widget_width / bbox_width) if bbox_width else 1
-        scale_y = (widget_height / bbox_height) if bbox_height else 1
-        scale = min(scale_x, scale_y)
+            widget_width = self.width()
+            widget_height = self.height()
+            
+            painter.setPen(Qt.NoPen)
+            painter.setBrush(QColor(self.color_scheme).darker(140))
+            painter.drawRoundedRect(0, 0, widget_width, widget_height, 10, 10)
 
-        offset_x = (widget_width - bbox_width * scale) / 2
-        offset_y = (widget_height - bbox_height * scale) / 2
+            scale_x = (widget_width / bbox_width) if bbox_width else 1
+            scale_y = (widget_height / bbox_height) if bbox_height else 1
+            scale = min(scale_x, scale_y)
 
-        painter.translate(offset_x, offset_y)
-        painter.scale(scale, scale)
-        painter.translate(-min_x, -min_y)
+            offset_x = (widget_width - bbox_width * scale) / 2
+            offset_y = (widget_height - bbox_height * scale) / 2
 
-        # Draw the buttons without additional scaling inside the drawing method
-        for widget in self.controller_widgets:
-            payload = widget.get("payload", {})
-            pos = payload.get("position", {})
-            scaledPos = pos.get("scaledPos", [0, 0])
-            offset = pos.get("offset", [0, 0])
-            x = (scaledPos[0] * self.design_width) + offset[0]
-            y = (scaledPos[1] * self.design_height) + offset[1]
-            self.draw_button(painter, payload, x, y)
+            painter.translate(offset_x, offset_y)
+            painter.scale(scale, scale)
+            painter.translate(-min_x, -min_y)
+
+            # Draw the buttons without additional scaling inside the drawing method
+            for widget in self.controller_widgets:
+                payload = widget.get("payload", {})
+                pos = payload.get("position", {})
+                scaledPos = pos.get("scaledPos", [0, 0])
+                offset = pos.get("offset", [0, 0])
+                x = (scaledPos[0] * self.design_width) + offset[0]
+                y = (scaledPos[1] * self.design_height) + offset[1]
+                self.draw_button(painter, payload, x, y)
 
         painter.end()
 
