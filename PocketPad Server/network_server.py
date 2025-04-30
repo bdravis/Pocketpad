@@ -120,6 +120,7 @@ class QNetworkServer(QObject):
         self.port = 12683
         self.clients = {}
         self.next_id = 0
+        self.last_connected_id = -1
         self.players: dict[Player] = {}
         
         self.layout_jsons = []
@@ -241,23 +242,34 @@ class QNetworkServer(QObject):
                             logger.warning(f"Received duplicate request from {addr}")
                             writer.write(json.dumps({ "status": "disconnect", "error": "Player ID taken" }).encode())
                             break
+
+                        self.last_connected_id = self.next_id
+                        self.next_id = -1
+
+                        for i in range(4):
+                            if not (i in self.players):
+                                self.next_id = i
+                                break
                         
                         if requested == "Player":
                             requested = f"Player {self.next_id}"
                         self.players[self.next_id] = Player(self.next_id, requested, addr)
-                        self.next_id += 1
+
+                        #self.next_id += 1
+
+                        DSU_Server.instance().inputId_to_inputs.append({})
                         
                         logger.info(f"Player \"{requested}\" connected from {addr} - ID: {self.next_id}")
                         
-                        writer.write(json.dumps({ "status": "connect", "pid": self.next_id - 1 }).encode())
-                        DSU_Server.instance().update_controller_state(self.next_id - 1, enums.ControllerUpdateTypes.CONNECTION.value, [1])
+                        writer.write(json.dumps({ "status": "connect", "pid": self.next_id }).encode())
+                        DSU_Server.instance().update_controller_state(self.next_id, enums.ControllerUpdateTypes.CONNECTION.value, [1])
                     elif "layout" in message:
                         pid = message["pid"]
                         controller_type = enums.ControllerType(message["controller_type"])
                         player = self.players[pid]
                         player.layout_json = base64.b64decode(message["layout"]).decode()
                         
-                        map_inputID_to_inputs(json.loads(player.layout_json))
+                        map_inputID_to_inputs(pid, json.loads(player.layout_json))
                         
                         self.connection_function("connect", player.name, controller_type, player.layout_json)
                     elif "new_layout" in message:
@@ -266,7 +278,7 @@ class QNetworkServer(QObject):
                         controller_type = enums.ControllerType(message["controller_type"])
                         player.layout_json = base64.b64decode(message["new_layout"]).decode()
                         
-                        map_inputID_to_inputs(json.loads(player.layout_json))
+                        map_inputID_to_inputs(pid, json.loads(player.layout_json))
                         
                         self.controller_function(player.name, controller_type, player.layout_json)
                     elif "input" in message:
@@ -318,7 +330,7 @@ class QNetworkServer(QObject):
         except asyncio.CancelledError:
             pass
         finally:
-            DSU_Server.instance().update_controller_state(self.next_id - 1, enums.ControllerUpdateTypes.CONNECTION.value, [2])
+            DSU_Server.instance().update_controller_state(self.next_id, enums.ControllerUpdateTypes.CONNECTION.value, [2])
             pops = []
             writer.write(json.dumps( {"status": "disconnect", "error": "Malformed Data Sent"}).encode())
             for k, v in self.players.items():

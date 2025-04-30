@@ -61,16 +61,17 @@ for _ in range(NUM_WORKERS):
 num_players_lock = threading.Lock()
 next_id_lock = threading.Lock()
 
-# This is an array of strings that will contain jsons that are being sent
-layout_jsons_temp = []
+MAX_PLAYERS = 4
 
+# This is an array of strings that will contain jsons that are being sent
+layout_jsons_temp = ["" for _ in range(MAX_PLAYERS)]
 # 0 for not sending, 1 for currently sending, don't use the layout if it is 1
-layout_jsons_status = []
+layout_jsons_status = [0 for _ in range(MAX_PLAYERS)]
 
 # Holds json strings that have finished sending
-layout_jsons = []
+layout_jsons = ["" for _ in range(MAX_PLAYERS)]
 
-player_id_str_arr = []
+player_id_str_arr = ["" for _ in range(MAX_PLAYERS)]
 
 current_game = None
 
@@ -334,12 +335,26 @@ def process_connection_characteristic(characteristic):
                 characteristic.value = bytearray(response_data)
                 return
 
-            next_id = len(player_id_str_arr)
+            #TODO If this is the thing make it right
+
+            #next_id = len(player_id_str_arr)
+
+
+            next_id = -1
+            for i in range(4):
+                if player_id_str_arr[i] == "":
+                    next_id = i
+                    break
+
+            if next_id == -1:
+                logger.error("ERROR: Too many players")
         
             if requested_id == "Player":
-                player_id_str_arr.append(f'Player {next_id}')
+                #player_id_str_arr.append(f'Player {next_id}')
+                player_id_str_arr[next_id] = f"Player {next_id}"
             else:
-                player_id_str_arr.append(requested_id)
+                #player_id_str_arr.append(requested_id)
+                player_id_str_arr[next_id] = requested_id
 
             response_data = pack("<BB", next_id, ConnectionMessage.requesting_id.value)
             characteristic.value = bytearray(response_data)
@@ -350,6 +365,7 @@ def process_connection_characteristic(characteristic):
 
             logger.debug("I am in here\n")
 
+            #TODO If this is the thing make it right
             next_id = len(player_id_str_arr)
 
             response_data = [player_id, ConnectionMessage.connecting.value]
@@ -364,6 +380,8 @@ def process_connection_characteristic(characteristic):
                 controller_type = enums.ControllerType.Wii
             if controller_type == 3:
                 controller_type = enums.ControllerType.Switch
+
+            print(f"Connection request approved for: {player_id_str_arr[player_id]}")
 
             connection_function("connect", player_id_str_arr[player_id], controller_type, layout_jsons[player_id])
 
@@ -387,10 +405,17 @@ def process_connection_characteristic(characteristic):
             characteristic.value = response
             connection_function("disconnect", player_id_str_arr[player_id], None, None)
 
-            player_id_str_arr.pop(player_id)
-            layout_jsons_temp.pop(player_id)
-            layout_jsons.pop(player_id)
-            layout_jsons_status.pop(player_id)
+            #player_id_str_arr.pop(player_id)
+            #layout_jsons_temp.pop(player_id)
+            #layout_jsons.pop(player_id)
+            #layout_jsons_status.pop(player_id)
+            #DSU_Server.instance().inputId_to_inputs.pop(player_id)
+
+            player_id_str_arr[player_id] = ""
+            layout_jsons_temp[player_id] = ""
+            layout_jsons[player_id] = ""
+            layout_jsons_status[player_id] = 0
+            DSU_Server.instance().inputId_to_inputs[player_id] = {}
 
         if signal == ConnectionMessage.transmitting_layout.value:
 
@@ -398,8 +423,13 @@ def process_connection_characteristic(characteristic):
 
             # Start transmission, remove old layout from buffer
             if size == 255:
-                layout_jsons_temp.append("")
-                layout_jsons_status.append(1)
+                #layout_jsons_temp.append("")
+                #layout_jsons_status.append(1)
+                #DSU_Server.instance().inputId_to_inputs.append({})
+
+                layout_jsons_temp[player_id] = ""
+                layout_jsons_status[player_id] = 1
+                DSU_Server.instance().inputId_to_inputs[player_id] = {}
                 
                 response_data = [0, ConnectionMessage.transmitting_layout.value]
                 response = bytearray(response_data)
@@ -409,13 +439,17 @@ def process_connection_characteristic(characteristic):
             # json is done sending
             if size == 0:
 
-                layout_jsons.append(layout_jsons_temp[player_id])
+                #layout_jsons.append(layout_jsons_temp[player_id])
+                #layout_jsons_temp[player_id] = ""
+                #layout_jsons_status[player_id] = 0
+
+                layout_jsons[player_id] = layout_jsons_temp[player_id]
                 layout_jsons_temp[player_id] = ""
                 layout_jsons_status[player_id] = 0
 
                 json_for_input_id_workaround = json.loads(layout_jsons[player_id])
 
-                map_inputID_to_inputs(json_for_input_id_workaround)
+                map_inputID_to_inputs(player_id, json_for_input_id_workaround)
 
                 response_data = [0, ConnectionMessage.transmitting_layout.value]
                 response = bytearray(response_data)
@@ -455,7 +489,7 @@ def process_controller_characteristic(characteristic):
 
         json_for_input_id_workaround = json.loads(layout_jsons[player_id])
 
-        map_inputID_to_inputs(json_for_input_id_workaround)
+        map_inputID_to_inputs(player_id, json_for_input_id_workaround)
 
         if controller_type == 0:
             controller_type = enums.ControllerType.Xbox

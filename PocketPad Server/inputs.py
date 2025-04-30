@@ -14,7 +14,7 @@ import pyautogui
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(name=__name__)
 
-def map_inputID_to_inputs(json):
+def map_inputID_to_inputs(player_id: int, json):
     for item in json['wrappedButtons']:
         if not isinstance(item, dict) or 'base' not in item or 'payload' not in item:
             continue
@@ -28,7 +28,7 @@ def map_inputID_to_inputs(json):
             
         # Handle D-Pad (special case - maps to all 4 directions)
         if item['base'] == 'dPadConfig':
-            DSU_Server.instance().inputId_to_inputs[input_id] = {
+            DSU_Server.instance().inputId_to_inputs[player_id][input_id] = {
                 AllButtons.up_dpad,
                 AllButtons.down_dpad,
                 AllButtons.left_dpad,
@@ -38,52 +38,52 @@ def map_inputID_to_inputs(json):
             
         # Handle diamond buttons
         if input_val == 'X':
-            DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.top_diamond
+            DSU_Server.instance().inputId_to_inputs[player_id][input_id] = AllButtons.top_diamond
         elif input_val == 'B':
-            DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.bottom_diamond
+            DSU_Server.instance().inputId_to_inputs[player_id][input_id] = AllButtons.bottom_diamond
         elif input_val == 'Y':
-            DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.left_diamond
+            DSU_Server.instance().inputId_to_inputs[player_id][input_id] = AllButtons.left_diamond
         elif input_val == 'A':
-            DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.right_diamond
+            DSU_Server.instance().inputId_to_inputs[player_id][input_id] = AllButtons.right_diamond
         elif input_val == 'Z':
-            DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.z
+            DSU_Server.instance().inputId_to_inputs[player_id][input_id] = AllButtons.z
             
         # Handle other buttons
         elif input_val == 'LB':
-            DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.left_bumper
+            DSU_Server.instance().inputId_to_inputs[player_id][input_id] = AllButtons.left_bumper
         elif input_val == 'RB':
-            DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.right_bumper
+            DSU_Server.instance().inputId_to_inputs[player_id][input_id] = AllButtons.right_bumper
         elif input_val == 'LT':
-            DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.left_trigger
+            DSU_Server.instance().inputId_to_inputs[player_id][input_id] = AllButtons.left_trigger
         elif input_val == 'RT':
-            DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.right_trigger
+            DSU_Server.instance().inputId_to_inputs[player_id][input_id] = AllButtons.right_trigger
 
         elif input_val == 'Start':
-            DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.options
+            DSU_Server.instance().inputId_to_inputs[player_id][input_id] = AllButtons.options
         elif input_val == 'Select':
-            DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.select
+            DSU_Server.instance().inputId_to_inputs[player_id][input_id] = AllButtons.select
         elif input_val == 'Share':
-            DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.share
+            DSU_Server.instance().inputId_to_inputs[player_id][input_id] = AllButtons.share
             
         elif input_val == 'LeftJoystick':
-            DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.left_stick
+            DSU_Server.instance().inputId_to_inputs[player_id][input_id] = AllButtons.left_stick
         elif input_val == 'RightJoystick':
-            DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.right_stick
+            DSU_Server.instance().inputId_to_inputs[player_id][input_id] = AllButtons.right_stick
         elif input_val == 'Home':
-            DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.home
+            DSU_Server.instance().inputId_to_inputs[player_id][input_id] = AllButtons.home
         elif input_val == '1':
-            DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.one
+            DSU_Server.instance().inputId_to_inputs[player_id][input_id] = AllButtons.one
         elif input_val == '2':
-            DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.two
+            DSU_Server.instance().inputId_to_inputs[player_id][input_id] = AllButtons.two
             
         elif input_val == 'Mouse':
-            DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.mouse
+            DSU_Server.instance().inputId_to_inputs[player_id][input_id] = AllButtons.mouse
         elif input_val == 'MouseLeft':
-            DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.mouse_left
+            DSU_Server.instance().inputId_to_inputs[player_id][input_id] = AllButtons.mouse_left
         elif input_val == 'MouseRight':
-            DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.mouse_right
+            DSU_Server.instance().inputId_to_inputs[player_id][input_id] = AllButtons.mouse_right
         elif input_val == 'Keyboard':
-            DSU_Server.instance().inputId_to_inputs[input_id] = AllButtons.keyboard
+            DSU_Server.instance().inputId_to_inputs[player_id][input_id] = AllButtons.keyboard
 
 # Parses raw input data bytes
 # Returns player_id, input_id, event
@@ -137,7 +137,7 @@ def parse_input(raw_data):
     try:
         button_event = ButtonEvent(raw_event)
     except:
-        if DSU_Server.instance().inputId_to_inputs[input_id] == AllButtons.keyboard:
+        if DSU_Server.instance().inputId_to_inputs[player_id][input_id] == AllButtons.keyboard:
             keypress = raw_event
             # print(f"Keyboard input received from player {player_id} with keypress {keypress}")
             pyautogui.press(chr(keypress))
@@ -149,7 +149,7 @@ def parse_input(raw_data):
     # Find the input string based on the button typeVjbcijfybekeiwjwj
     if button_type == ButtonType.REGULAR:
         # logger.debug(f"Received input from button {input_id} from player {player_id}")
-        if (m := DSU_Server.instance().inputId_to_inputs[input_id]) in [AllButtons.mouse_left, AllButtons.mouse_right]:
+        if (m := DSU_Server.instance().inputId_to_inputs[player_id][input_id]) in [AllButtons.mouse_left, AllButtons.mouse_right]:
             if button_event == ButtonEvent.PRESSED:
                 pyautogui.mouseDown(button='left' if m == AllButtons.mouse_left else 'right')
             elif button_event == ButtonEvent.RELEASED:
@@ -158,22 +158,22 @@ def parse_input(raw_data):
                 logger.error("Invalid button event for mouse input")
                 return (-1, -1, None)
         else:
-            DSU_Server.instance().update_controller_state(player_id, ControllerUpdateTypes.BUTTON.value, [DSU_Server.instance().inputId_to_inputs[input_id].value, raw_event])
+            DSU_Server.instance().update_controller_state(player_id, ControllerUpdateTypes.BUTTON.value, [DSU_Server.instance().inputId_to_inputs[player_id][input_id].value, raw_event])
 
     elif button_type == ButtonType.BUMPER:
         # logger.debug(f"Received input from bumper {input_id} from player {player_id}")
-        DSU_Server.instance().update_controller_state(player_id, ControllerUpdateTypes.BUTTON.value, [DSU_Server.instance().inputId_to_inputs[input_id].value, raw_event])
+        DSU_Server.instance().update_controller_state(player_id, ControllerUpdateTypes.BUTTON.value, [DSU_Server.instance().inputId_to_inputs[player_id][input_id].value, raw_event])
 
     elif button_type == ButtonType.TRIGGER:
         # logger.debug(f"Received input from trigger {input_id} from player {player_id}")
-        DSU_Server.instance().update_controller_state(player_id, ControllerUpdateTypes.BUTTON.value, [DSU_Server.instance().inputId_to_inputs[input_id].value, raw_event])
+        DSU_Server.instance().update_controller_state(player_id, ControllerUpdateTypes.BUTTON.value, [DSU_Server.instance().inputId_to_inputs[player_id][input_id].value, raw_event])
 
     elif button_type == ButtonType.JOYSTICK:
         # Check if the data contains values for angle and magnitude
         try:
             raw_angle = unpacked_data[NUM_COMMON_FIELDS]
             raw_magnitude = unpacked_data[NUM_COMMON_FIELDS + 1]
-            if DSU_Server.instance().inputId_to_inputs[input_id] == AllButtons.mouse:
+            if DSU_Server.instance().inputId_to_inputs[player_id][input_id] == AllButtons.mouse:
                 # print(f"Mouse input received from player {player_id} with angle {raw_angle} and magnitude {raw_magnitude}.")
                 radians = math.radians(raw_angle - 90)
                 magnitude = raw_magnitude / 100
@@ -185,8 +185,8 @@ def parse_input(raw_data):
                 dy *= scale
                 pyautogui.moveRel(dx, dy, duration=0.1)
             else:
-                logger.debug(f"Updating Joystick: {player_id} -- {ControllerUpdateTypes.JOYSTICK.value} -- {DSU_Server.instance().inputId_to_inputs[input_id].value} -- {raw_angle} -- {raw_magnitude}")
-                DSU_Server.instance().update_controller_state(player_id, ControllerUpdateTypes.JOYSTICK.value, [DSU_Server.instance().inputId_to_inputs[input_id].value, raw_angle, raw_magnitude])
+                logger.debug(f"Updating Joystick: {player_id} -- {ControllerUpdateTypes.JOYSTICK.value} -- {DSU_Server.instance().inputId_to_inputs[player_id][input_id].value} -- {raw_angle} -- {raw_magnitude}")
+                DSU_Server.instance().update_controller_state(player_id, ControllerUpdateTypes.JOYSTICK.value, [DSU_Server.instance().inputId_to_inputs[player_id][input_id].value, raw_angle, raw_magnitude])
         except:
             logger.error("Joystick input format missing fields")
             return (-1, -1, None)
