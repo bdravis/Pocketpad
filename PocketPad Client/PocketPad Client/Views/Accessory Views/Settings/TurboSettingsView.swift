@@ -132,6 +132,7 @@ struct TurboSettingsView : View {
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .padding(.bottom, 10)
+                .accessibilityIdentifier("TurboSettingsRate")
         }
         .padding()
     }

@@ -396,6 +396,77 @@ final class PocketPad_ClientUITests: XCTestCase {
             }
         }
     }
+    
+    @MainActor
+    func testChangeTurboRate() throws {
+        let app = XCUIApplication()
+        app.launch()
+        
+        let settingsBtn = app.buttons["SettingsGearButton"]
+        let settingsCloseBtn = app.buttons["SettingsCloseButton"]
+        let turboRateBtn = app.buttons["TurboRateButton"]
+        
+        let turboRateSlider = app.sliders["TurboRateSlider"]
+        let turboSettingsRateStaticText = app.staticTexts["TurboSettingsRate"]
+        let applyTurboRateBtn = app.buttons["ApplyTurboRateButton"]
+        
+        // Open settings menu
+        guard settingsBtn.waitForExistence(timeout: 3) else {
+            XCTFail("Settings button open not found")
+            return
+        }
+        settingsBtn.tap()
+        
+        // Open turbo rate settings menu
+        guard turboRateBtn.waitForExistence(timeout: 1) else {
+            XCTFail("Turbo rate button not found")
+            return
+        }
+        turboRateBtn.tap()
+        
+        // Moving slider
+        guard turboRateSlider.waitForExistence(timeout: 1) else {
+            XCTFail("Slider not found")
+            return
+        }
+        turboRateSlider.adjust(toNormalizedSliderPosition: Double.random(in: 0.0...1.0)) // random value
+        
+        print(app.debugDescription)
+        
+        // Store the new value that the turbo rate slider was set to
+        guard turboSettingsRateStaticText.waitForExistence(timeout: 5) else {
+            XCTFail("Turbo settings rate static text not found")
+            return
+        }
+        let turboRateExpected: String? = turboSettingsRateStaticText.label.components(separatedBy: " ").first // extract number
+        
+        // Apply changes
+        guard applyTurboRateBtn.waitForExistence(timeout: 1) else {
+            XCTFail("Apply turbo rate button not found")
+            return
+        }
+        applyTurboRateBtn.tap()
+        
+        // Close settings
+        XCTAssertTrue(settingsCloseBtn.exists)
+        settingsCloseBtn.tap()
+        
+        // Reopen settings menu to check new turbo rate value
+        guard settingsBtn.waitForExistence(timeout: 3) else {
+            XCTFail("Settings button open not found")
+            return
+        }
+        settingsBtn.tap()
+        
+        // Check new turbo rate value
+        guard turboRateBtn.waitForExistence(timeout: 1) else {
+            XCTFail("Turbo rate button not found")
+            return
+        }
+        print("DEBUGGING Label is: \(turboRateBtn.label)")
+        let turboRateActual: String? = turboRateBtn.label.components(separatedBy: " ").first // extract number
+        XCTAssertTrue(turboRateActual != nil && turboRateExpected != nil && turboRateActual == turboRateExpected)
+    }
 
 //    @MainActor
 //    func testLaunchPerformance() throws {
