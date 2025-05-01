@@ -49,6 +49,9 @@ struct BumperButtonView: View {
     
     // MARK: Functions to handle bumper inputs
     private func handleButtonPress() {
+        if UserDefaults.standard.bool(forKey: "hapticsEnabled") {
+            HapticsManager.playHaptic(style: .medium)
+        }
         turboManager.handleButtonPressThroughTurbo(
             input: config.input,
             isTurboButton: false,
@@ -59,6 +62,9 @@ struct BumperButtonView: View {
     }
     
     private func handleButtonRelease() {
+        if UserDefaults.standard.bool(forKey: "hapticsEnabled") {
+            HapticsManager.playHaptic(style: .medium)
+        }
         turboManager.handleButtonReleaseThroughTurbo(
             input: config.input,
             isTurboButton: false,
