@@ -79,6 +79,15 @@ class MacroManager : ObservableObject {
         macroNamesByButton = [:]
     }
     
+    // Clears macro-to-button assignments for current controller
+    // Also clears all name-to-macro assignments
+    // Before, server crashes if a macro from a different controller is assigned to a button on new controller because of input ID
+    // Unused as of 4/30/25
+    func clearAllMacros() {
+        macroNamesByButton = [:]
+        macrosByName = [:]
+    }
+    
     // MARK: Functions to assign/unassign macros to buttons
     
     // If the button has a macro already, this will override it with the new macro
