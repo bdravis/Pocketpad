@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'PocketPad.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.8.2
+## Created by: Qt User Interface Compiler version 6.9.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -25,7 +25,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(800, 599)
+        MainWindow.resize(800, 652)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.horizontalLayout = QHBoxLayout(self.centralwidget)
@@ -46,7 +46,7 @@ class Ui_MainWindow(object):
         self.connection_list_area.setSizePolicy(sizePolicy)
         self.connection_list_area.setMinimumSize(QSize(50, 275))
         self.connection_list_area.setMaximumSize(QSize(350, 16777215))
-        self.connection_list_area.setFrameShape(QFrame.Shape.StyledPanel)
+        self.connection_list_area.setFrameShape(QFrame.NoFrame)
         self.connection_list_area.setProperty(u"widgetResizable", True)
         self.verticalLayout_3 = QVBoxLayout(self.connection_list_area)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
@@ -62,14 +62,13 @@ class Ui_MainWindow(object):
         font.setPointSize(14)
         font.setBold(True)
         self.controllers_label.setFont(font)
-        self.controllers_label.setAlignment(Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignTop)
 
         self.verticalLayout_3.addWidget(self.controllers_label)
 
         self.connection_list = QListWidget(self.connection_list_area)
         self.connection_list.setObjectName(u"connection_list")
-        self.connection_list.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-        self.connection_list.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.connection_list.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.connection_list.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         self.verticalLayout_3.addWidget(self.connection_list)
 
@@ -80,14 +79,13 @@ class Ui_MainWindow(object):
         font1 = QFont()
         font1.setPointSize(10)
         self.num_connected_label.setFont(font1)
-        self.num_connected_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_3.addWidget(self.num_connected_label)
 
 
         self.verticalLayout_2.addWidget(self.connection_list_area)
 
-        self.verticalSpacer = QSpacerItem(20, 20, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+        self.verticalSpacer = QSpacerItem(20, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
 
         self.verticalLayout_2.addItem(self.verticalSpacer)
 
@@ -97,23 +95,21 @@ class Ui_MainWindow(object):
         self.settings_area.setSizePolicy(sizePolicy)
         self.settings_area.setMinimumSize(QSize(50, 225))
         self.settings_area.setMaximumSize(QSize(350, 16777215))
-        self.settings_area.setFrameShape(QFrame.Shape.StyledPanel)
+        self.settings_area.setFrameShape(QFrame.NoFrame)
         self.verticalLayout_4 = QVBoxLayout(self.settings_area)
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
         self.settings_label = QLabel(self.settings_area)
         self.settings_label.setObjectName(u"settings_label")
         self.settings_label.setFont(font)
-        self.settings_label.setFrameShape(QFrame.Shape.NoFrame)
-        self.settings_label.setFrameShadow(QFrame.Shadow.Raised)
-        self.settings_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.settings_label.setFrameShape(QFrame.NoFrame)
 
         self.verticalLayout_4.addWidget(self.settings_label)
 
         self.settings_selection = QTabWidget(self.settings_area)
         self.settings_selection.setObjectName(u"settings_selection")
         self.settings_selection.setAutoFillBackground(False)
-        self.settings_selection.setTabPosition(QTabWidget.TabPosition.North)
-        self.settings_selection.setElideMode(Qt.TextElideMode.ElideNone)
+        self.settings_selection.setTabPosition(QTabWidget.North)
+        self.settings_selection.setElideMode(Qt.ElideLeft)
         self.network_tab = QWidget()
         self.network_tab.setObjectName(u"network_tab")
         self.verticalLayout_6 = QVBoxLayout(self.network_tab)
@@ -122,24 +118,26 @@ class Ui_MainWindow(object):
         self.connection_selection.setObjectName(u"connection_selection")
         sizePolicy.setHeightForWidth(self.connection_selection.sizePolicy().hasHeightForWidth())
         self.connection_selection.setSizePolicy(sizePolicy)
-        self.connection_selection.setMinimumSize(QSize(0, 75))
-        self.connection_selection.setFrameShape(QFrame.Shape.StyledPanel)
+        self.connection_selection.setMinimumSize(QSize(0, 90))
+        self.connection_selection.setFrameShape(QFrame.NoFrame)
         self.verticalLayout_7 = QVBoxLayout(self.connection_selection)
         self.verticalLayout_7.setObjectName(u"verticalLayout_7")
         self.label = QLabel(self.connection_selection)
         self.label.setObjectName(u"label")
         sizePolicy.setHeightForWidth(self.label.sizePolicy().hasHeightForWidth())
         self.label.setSizePolicy(sizePolicy)
+        self.label.setMinimumSize(QSize(0, 15))
 
         self.verticalLayout_7.addWidget(self.label)
 
         self.network_button = QPushButton(self.connection_selection)
         self.network_button.setObjectName(u"network_button")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.MinimumExpanding)
         sizePolicy2.setHorizontalStretch(0)
         sizePolicy2.setVerticalStretch(0)
         sizePolicy2.setHeightForWidth(self.network_button.sizePolicy().hasHeightForWidth())
         self.network_button.setSizePolicy(sizePolicy2)
+        self.network_button.setMinimumSize(QSize(0, 25))
         self.network_button.setMaximumSize(QSize(16777215, 50))
 
         self.verticalLayout_7.addWidget(self.network_button)
@@ -148,6 +146,7 @@ class Ui_MainWindow(object):
         self.bluetooth_button.setObjectName(u"bluetooth_button")
         sizePolicy2.setHeightForWidth(self.bluetooth_button.sizePolicy().hasHeightForWidth())
         self.bluetooth_button.setSizePolicy(sizePolicy2)
+        self.bluetooth_button.setMinimumSize(QSize(0, 25))
         self.bluetooth_button.setMaximumSize(QSize(16777215, 50))
 
         self.verticalLayout_7.addWidget(self.bluetooth_button)
@@ -156,6 +155,7 @@ class Ui_MainWindow(object):
         self.server_close_button.setObjectName(u"server_close_button")
         sizePolicy2.setHeightForWidth(self.server_close_button.sizePolicy().hasHeightForWidth())
         self.server_close_button.setSizePolicy(sizePolicy2)
+        self.server_close_button.setMinimumSize(QSize(0, 25))
         self.server_close_button.setMaximumSize(QSize(16777215, 50))
 
         self.verticalLayout_7.addWidget(self.server_close_button)
@@ -163,7 +163,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_6.addWidget(self.connection_selection)
 
-        self.verticalSpacer_3 = QSpacerItem(20, 5, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+        self.verticalSpacer_3 = QSpacerItem(20, 5, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
 
         self.verticalLayout_6.addItem(self.verticalSpacer_3)
 
@@ -186,11 +186,11 @@ class Ui_MainWindow(object):
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
         self.controller_checkboxes = QScrollArea(self.controller_tab)
         self.controller_checkboxes.setObjectName(u"controller_checkboxes")
-        self.controller_checkboxes.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.controller_checkboxes.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.controller_checkboxes.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 98, 28))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 146, 111))
         self.controller_checkboxes.setWidget(self.scrollAreaWidgetContents)
 
         self.verticalLayout_5.addWidget(self.controller_checkboxes)
@@ -211,7 +211,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_11.addWidget(self.game_name)
 
-        self.games_spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.games_spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.verticalLayout_11.addItem(self.games_spacer)
 
@@ -225,7 +225,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_11.addWidget(self.database_button)
 
-        self.verticalSpacer_5 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.verticalSpacer_5 = QSpacerItem(20, 40, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.verticalLayout_11.addItem(self.verticalSpacer_5)
 
@@ -242,7 +242,7 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout.addWidget(self.connection_widgets)
 
-        self.main_layout_spacer_left = QSpacerItem(20, 20, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+        self.main_layout_spacer_left = QSpacerItem(20, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout.addItem(self.main_layout_spacer_left)
 
@@ -256,7 +256,7 @@ class Ui_MainWindow(object):
         self.main_application_area.setMinimumSize(QSize(400, 100))
         self.verticalLayout = QVBoxLayout(self.main_application_area)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.verticalSpacer_4 = QSpacerItem(20, 15, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+        self.verticalSpacer_4 = QSpacerItem(20, 15, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
 
         self.verticalLayout.addItem(self.verticalSpacer_4)
 
@@ -265,11 +265,11 @@ class Ui_MainWindow(object):
         sizePolicy4.setHeightForWidth(self.controller_mockup_area.sizePolicy().hasHeightForWidth())
         self.controller_mockup_area.setSizePolicy(sizePolicy4)
         self.controller_mockup_area.setMinimumSize(QSize(25, 375))
-        self.controller_mockup_area.setFrameShape(QFrame.Shape.StyledPanel)
+        self.controller_mockup_area.setFrameShape(QFrame.NoFrame)
 
         self.verticalLayout.addWidget(self.controller_mockup_area)
 
-        self.code_depression_spacer = QSpacerItem(20, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+        self.code_depression_spacer = QSpacerItem(20, 10, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
 
         self.verticalLayout.addItem(self.code_depression_spacer)
 
@@ -280,7 +280,7 @@ class Ui_MainWindow(object):
         self.connection_code_area.setMinimumSize(QSize(400, 75))
         self.connection_code_area.setMaximumSize(QSize(16777215, 125))
         self.connection_code_area.setAutoFillBackground(False)
-        self.connection_code_area.setFrameShape(QFrame.Shape.NoFrame)
+        self.connection_code_area.setFrameShape(QFrame.NoFrame)
         self.horizontalLayout_2 = QHBoxLayout(self.connection_code_area)
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
@@ -293,21 +293,21 @@ class Ui_MainWindow(object):
         self.connection_code_box.setSizePolicy(sizePolicy)
         self.connection_code_box.setMinimumSize(QSize(300, 75))
         self.connection_code_box.setMaximumSize(QSize(400, 125))
-        self.connection_code_box.setFrameShape(QFrame.Shape.StyledPanel)
-        self.connection_code_box.setFrameShadow(QFrame.Shadow.Sunken)
+        self.connection_code_box.setFrameShape(QFrame.NoFrame)
         self.verticalLayout_8 = QVBoxLayout(self.connection_code_box)
         self.verticalLayout_8.setObjectName(u"verticalLayout_8")
         self.widget = QWidget(self.connection_code_box)
         self.widget.setObjectName(u"widget")
         self.horizontalLayout_3 = QHBoxLayout(self.widget)
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
-        self.horizontalSpacer_4 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        self.horizontalLayout_3.setContentsMargins(-1, 0, -1, -1)
+        self.horizontalSpacer_4 = QSpacerItem(40, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_3.addItem(self.horizontalSpacer_4)
 
         self.label_3 = QLabel(self.widget)
         self.label_3.setObjectName(u"label_3")
-        self.label_3.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.label_3.setMinimumSize(QSize(0, 15))
 
         self.horizontalLayout_3.addWidget(self.label_3)
 
@@ -323,7 +323,7 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_3.addWidget(self.view_code_button)
 
-        self.horizontalSpacer_3 = QSpacerItem(60, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        self.horizontalSpacer_3 = QSpacerItem(60, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_3.addItem(self.horizontalSpacer_3)
 
@@ -332,12 +332,12 @@ class Ui_MainWindow(object):
 
         self.pair_code_label = QLabel(self.connection_code_box)
         self.pair_code_label.setObjectName(u"pair_code_label")
+        self.pair_code_label.setMinimumSize(QSize(0, 30))
         font2 = QFont()
         font2.setPointSize(30)
         font2.setBold(True)
         self.pair_code_label.setFont(font2)
-        self.pair_code_label.setTextFormat(Qt.TextFormat.PlainText)
-        self.pair_code_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.pair_code_label.setTextFormat(Qt.PlainText)
 
         self.verticalLayout_8.addWidget(self.pair_code_label)
 
@@ -351,7 +351,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addWidget(self.connection_code_area)
 
-        self.code_elevation_spacer = QSpacerItem(20, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+        self.code_elevation_spacer = QSpacerItem(20, 10, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
 
         self.verticalLayout.addItem(self.code_elevation_spacer)
 
@@ -384,7 +384,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_9.addWidget(self.customizer_button)
 
-        self.verticalSpacer_2 = QSpacerItem(20, 497, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.verticalSpacer_2 = QSpacerItem(20, 497, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.verticalLayout_9.addItem(self.verticalSpacer_2)
 
@@ -398,7 +398,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 800, 19))
+        self.menubar.setGeometry(QRect(0, 0, 800, 37))
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QStatusBar(MainWindow)
         self.statusbar.setObjectName(u"statusbar")
