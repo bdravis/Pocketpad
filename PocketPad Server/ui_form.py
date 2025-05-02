@@ -378,7 +378,7 @@ class Ui_MainWindow(object):
         self.customizer_button.setStyleSheet(u"background-color: none;\n"
 "border-color: none;")
         icon = QIcon()
-        icon.addFile(u"../../pencil.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        icon.addFile(u"icons/pencil.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.customizer_button.setIcon(icon)
         self.customizer_button.setIconSize(QSize(20, 20))
 

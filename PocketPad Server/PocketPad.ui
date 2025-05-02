@@ -755,7 +755,7 @@ border-color: none;</string>
          </property>
          <property name="icon">
           <iconset>
-           <normaloff>../../pencil.svg</normaloff>../../pencil.svg</iconset>
+           <normaloff>icons/pencil.svg</normaloff>icons/pencil.svg</iconset>
          </property>
          <property name="iconSize">
           <size>
