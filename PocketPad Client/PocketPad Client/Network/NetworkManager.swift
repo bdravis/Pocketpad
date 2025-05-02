@@ -28,8 +28,14 @@ class NetworkManager: ObservableObject {
     
     @Published var connectionError: String?
     
+    @Published var discoveredServers: [NWEndpoint] = []
+    
+    private var browser: NWBrowser?
+    
     private let monitor = NWPathMonitor()
     private let queue = DispatchQueue(label: "NetworkMonitor")
+    
+    @Published var isConnecting: Bool = false
     
     init() {
         monitor.pathUpdateHandler = { path in
@@ -40,13 +46,13 @@ class NetworkManager: ObservableObject {
         monitor.start(queue: queue)
     }
     
-    func findServerAndConnect(port: UInt16) {
+    func browseServers() {
         print("Searching for server...")
         let params = NWParameters.tcp
         params.includePeerToPeer = true
-        let browser = NWBrowser(for: .bonjour(type: "_http._tcp", domain: nil), using: params)
+        browser = NWBrowser(for: .bonjour(type: "_pocketpad._tcp", domain: nil), using: params)
         
-        browser.browseResultsChangedHandler = { results, _ in
+        browser?.browseResultsChangedHandler = { results, _ in
             print("Found results: \(results)")
             for result in results {
                 if case let NWEndpoint.service(name, type_, domain, interface) = result.endpoint {
@@ -56,18 +62,25 @@ class NetworkManager: ObservableObject {
                     let fullServiceName = "\(name).\(type_).\(domain)"
                     print("Full service name: \(fullServiceName), \(result.endpoint)")
                     
-                    self.connect(to: result.endpoint, port: port)
-                    browser.cancel()
-                    break
+                    self.discoveredServers.append(result.endpoint)
                 }
             }
         }
         
-        browser.start(queue: .main)
+        isConnecting = true
+        browser?.start(queue: .main)
     }
     
-    func connect(to endpoint: NWEndpoint, port: UInt16) {
-        print("Connecting to \(endpoint) on port \(port)...")
+    func stopBrowsing() {
+        discoveredServers.removeAll()
+        isConnecting = true
+        if let browser = browser {
+            browser.cancel()
+        }
+    }
+    
+    func connect(to endpoint: NWEndpoint) {
+        print("Connecting to \(endpoint)...")
         
         connection = NWConnection(to: endpoint, using: .tcp)
 //        connection = NWConnection(host: NWEndpoint.Host("xx.xx.xx.xx"), port: NWEndpoint.Port(3000), using: params)
