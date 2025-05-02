@@ -186,7 +186,7 @@ class QNetworkServer(QObject):
         addr = self.server.sockets[0].getsockname()
         logger.info(f"Server running on {addr}")
 
-        self._monitor_task = asyncio.create_task(self.dolphin_monitor())
+        # self._monitor_task = asyncio.create_task(self.dolphin_monitor())
         
         try:
             async with self.server:
