@@ -17,7 +17,7 @@ struct BluetoothScannerView: View {
     
     var body: some View {
         List(bluetoothManager.discoveredDevices, id: \.identifier) { device in
-            BLEDeviceRow(device: device, selectedDevice: $selectedDevice)
+            DeviceRow(device: device, selectedDevice: $selectedDevice)
         }
         .navigationBarTitleDisplayMode(.inline)
         .navigationTitle("Available Devices")
@@ -34,7 +34,7 @@ struct BluetoothScannerView: View {
 }
 
 // MARK: - Device Row
-struct BLEDeviceRow: View {
+struct DeviceRow: View {
     let device: CBPeripheral
     @Binding var selectedDevice: CBPeripheral?
     @StateObject private var bluetoothManager = BluetoothManager.shared

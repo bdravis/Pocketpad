@@ -23,7 +23,7 @@
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_http._tcp</string>
-		<string>_pocketpad._tcp</string>
+		<string>_ssh._tcp</string>
 	</array>
 	<key>UTExportedTypeDeclarations</key>
 	<array>
