@@ -221,7 +221,7 @@ def is_allowed_path(path: str) -> bool:
 def extract_game_name_from_path(full_path: str) -> str:
     core, *_ = full_path.rsplit(" ", 1)
     file_name = os.path.basename(core)
-    name, _ = os.path.splitext*(file_name)
+    name, _ = os.path.splitext(file_name)
     cleaned = re.sub(r'\s*[\(\[].*?[\)\]]\s*$', '', name).strip()
     return cleaned
 
