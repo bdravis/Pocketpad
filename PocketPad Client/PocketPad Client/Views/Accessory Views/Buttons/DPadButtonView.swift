@@ -114,6 +114,9 @@ struct DirectionalArrow: View {
     
     // MARK: Functions to handle D-pad inputs
     private func handleButtonPress() {
+        if UserDefaults.standard.bool(forKey: "hapticsEnabled") {
+            HapticsManager.playHaptic(style: .medium)
+        }
         turboManager.handleButtonPressThroughTurbo(
             input: input,
             isTurboButton: false,
@@ -124,6 +127,9 @@ struct DirectionalArrow: View {
     }
     
     private func handleButtonRelease() {
+        if UserDefaults.standard.bool(forKey: "hapticsEnabled") {
+            HapticsManager.playHaptic(style: .medium)
+        }
         turboManager.handleButtonReleaseThroughTurbo(
             input: input,
             isTurboButton: false,

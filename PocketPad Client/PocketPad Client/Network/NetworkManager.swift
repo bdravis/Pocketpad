@@ -124,14 +124,18 @@ class NetworkManager: ObservableObject {
                             
                             print(message)
                             
-                            if message.status == "disconnect" {
+                            if message.status == "malformed_layout" {
+                                // resend the layout
+                                self.sendLayout(false)
+                            }
+                            else if message.status == "disconnect" {
                                 self.connectionError = message.error
                                 self.disconnect()
                             }
-                            if message.status == "pair_success" {
+                            else if message.status == "pair_success" {
                                 self.sendMessage("{\"request_id\": \"\(LayoutManager.shared.player_id_string)\"}")
                             }
-                            if message.status == "connect" {
+                            else if message.status == "connect" {
                                 guard let pid = message.pid else {
                                     self.connectionError = "Something went wrong"
                                     self.disconnect()
