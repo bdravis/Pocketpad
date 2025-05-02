@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>900</width>
     <height>652</height>
    </rect>
   </property>
@@ -115,6 +115,9 @@
        </item>
        <item>
         <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
          <property name="sizeType">
           <enum>QSizePolicy::Fixed</enum>
          </property>
@@ -203,6 +206,12 @@
                  <enum>QFrame::NoFrame</enum>
                 </property>
                 <layout class="QVBoxLayout" name="verticalLayout_7">
+                 <property name="topMargin">
+                  <number>6</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>6</number>
+                 </property>
                  <item>
                   <widget class="QLabel" name="label">
                    <property name="sizePolicy">
@@ -302,6 +311,9 @@
               </item>
               <item>
                <spacer name="verticalSpacer_3">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
                 <property name="sizeType">
                  <enum>QSizePolicy::Fixed</enum>
                 </property>
@@ -352,8 +364,8 @@
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>146</width>
-                   <height>111</height>
+                   <width>98</width>
+                   <height>28</height>
                   </rect>
                  </property>
                 </widget>
@@ -384,6 +396,9 @@
                  </item>
                  <item>
                   <spacer name="games_spacer">
+                   <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                   </property>
                    <property name="sizeHint" stdset="0">
                     <size>
                      <width>20</width>
@@ -422,6 +437,9 @@
                  </item>
                  <item>
                   <spacer name="verticalSpacer_5">
+                   <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                   </property>
                    <property name="sizeHint" stdset="0">
                     <size>
                      <width>20</width>
@@ -445,6 +463,9 @@
     </item>
     <item>
      <spacer name="main_layout_spacer_left">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
       <property name="sizeType">
        <enum>QSizePolicy::Fixed</enum>
       </property>
@@ -471,8 +492,14 @@
        </size>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
+       <property name="rightMargin">
+        <number>6</number>
+       </property>
        <item>
         <spacer name="verticalSpacer_4">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
          <property name="sizeType">
           <enum>QSizePolicy::Fixed</enum>
          </property>
@@ -505,6 +532,9 @@
        </item>
        <item>
         <spacer name="code_depression_spacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
          <property name="sizeType">
           <enum>QSizePolicy::Fixed</enum>
          </property>
@@ -545,6 +575,9 @@
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
            <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
             <property name="sizeType">
              <enum>QSizePolicy::Fixed</enum>
             </property>
@@ -582,25 +615,43 @@
             <layout class="QVBoxLayout" name="verticalLayout_8">
              <item>
               <widget class="QWidget" name="widget" native="true">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>25</height>
+                </size>
+               </property>
                <layout class="QHBoxLayout" name="horizontalLayout_3">
                 <property name="topMargin">
                  <number>0</number>
                 </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <spacer name="horizontalSpacer_4">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
                   <property name="sizeType">
-                   <enum>QSizePolicy::Fixed</enum>
+                   <enum>QSizePolicy::Expanding</enum>
                   </property>
                   <property name="sizeHint" stdset="0">
                    <size>
-                    <width>40</width>
-                    <height>20</height>
+                    <width>20</width>
+                    <height>40</height>
                    </size>
                   </property>
                  </spacer>
                 </item>
                 <item>
                  <widget class="QLabel" name="label_3">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
                   <property name="minimumSize">
                    <size>
                     <width>0</width>
@@ -615,7 +666,7 @@
                 <item>
                  <widget class="QPushButton" name="view_code_button">
                   <property name="sizePolicy">
-                   <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                     <horstretch>0</horstretch>
                     <verstretch>0</verstretch>
                    </sizepolicy>
@@ -639,13 +690,16 @@
                 </item>
                 <item>
                  <spacer name="horizontalSpacer_3">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
                   <property name="sizeType">
-                   <enum>QSizePolicy::Fixed</enum>
+                   <enum>QSizePolicy::Expanding</enum>
                   </property>
                   <property name="sizeHint" stdset="0">
                    <size>
-                    <width>60</width>
-                    <height>20</height>
+                    <width>20</width>
+                    <height>60</height>
                    </size>
                   </property>
                  </spacer>
@@ -673,6 +727,9 @@
                <property name="textFormat">
                 <enum>Qt::PlainText</enum>
                </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
               </widget>
              </item>
             </layout>
@@ -680,6 +737,9 @@
           </item>
           <item>
            <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
             <property name="sizeType">
              <enum>QSizePolicy::Fixed</enum>
             </property>
@@ -696,6 +756,9 @@
        </item>
        <item>
         <spacer name="code_elevation_spacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
          <property name="sizeType">
           <enum>QSizePolicy::Fixed</enum>
          </property>
@@ -712,6 +775,9 @@
     </item>
     <item>
      <spacer name="main_layout_spacer_right">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
       <property name="sizeType">
        <enum>QSizePolicy::Fixed</enum>
       </property>
@@ -767,6 +833,9 @@ border-color: none;</string>
        </item>
        <item>
         <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
          <property name="sizeHint" stdset="0">
           <size>
            <width>20</width>
@@ -780,6 +849,9 @@ border-color: none;</string>
     </item>
     <item>
      <spacer name="horizontalSpacer_5">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
       <property name="sizeType">
        <enum>QSizePolicy::Fixed</enum>
       </property>
@@ -798,8 +870,8 @@ border-color: none;</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
-     <height>37</height>
+     <width>900</width>
+     <height>24</height>
     </rect>
    </property>
   </widget>
