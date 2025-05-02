@@ -214,7 +214,20 @@ class QNetworkServer(QObject):
                     queue[i] = "{" + queue[i] + "}"
                 #print(queue)
                 for msg in queue:
-                    message = json.loads(msg)
+                    try:
+                        message = json.loads(msg)
+                    except:
+                        if '"layout": ' in msg:
+                            # re-request the layout
+                            writer.write(json.dumps( {"status": "malformed_layout", "error": "Malformed Data Sent"}).encode())
+                            continue
+                        elif '"input": ' in msg:
+                            # just drop the input
+                            print(f"Malformed input: {msg}")
+                            continue
+                        else:
+                            print(f"Malformed packet: {msg}")
+                            raise Exception("Irrecoverable malformed packet")
                     
                     logger.debug(f"Received {message} from {addr}")
                     

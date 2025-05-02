@@ -93,6 +93,7 @@ class MainWindow(QMainWindow):
         self.ui.server_close_button.clicked.connect(self.stop_server)
 
         self.ui.view_code_button.clicked.connect(self.toggle_pair_code)
+        Paircode.code_changed.connect(self.update_paircode)
         self.view_code = True
 
         self.ui.database_button.clicked.connect(self.display_database_viewer)
@@ -204,6 +205,7 @@ class MainWindow(QMainWindow):
     
     @qasync.asyncSlot()
     async def stop_server(self):
+        Paircode.remove()
         if self.bluetooth_server_initiated:
             self.bluetooth_server_initiated=False
             await self._bless_server.stop()
@@ -967,6 +969,16 @@ class MainWindow(QMainWindow):
 
         self.ui.view_code_button.setStyleSheet("QPushButton { background-color: transparent; border: none; }")
         self.toggle_pair_code(None)
+        
+    def update_paircode(self):
+        if self.view_code:
+            code = Paircode.get()
+            if code:
+                self.ui.pair_code_label.setText(str(code))
+            else:
+                self.ui.pair_code_label.setText("--- ---")
+        else:
+            self.ui.pair_code_label.setText("--- ---")
     
     # NEEDS WORK
     def toggle_pair_code(self, event):

@@ -236,11 +236,6 @@ class DSU_Server:
 
     def _handle_controller_data(self, data, addr):
 
-        """
-        print("data req at: ",addr)
-        print("packet: ", struct.unpack("<IHHIIIBB6B", data))
-        """
-
         actions_requested = int.from_bytes(struct.unpack("<B", data[20:21]))
 
         self.addr = addr
@@ -357,61 +352,6 @@ class DSU_Server:
 
                 crc = zlib.crc32(input_packet_no_crc_packed)
 
-                """
-                input_packet = struct.pack(
-                        "<IHHIIIBBBBHHHBBIBBBBBBBBBBBBBBBBBBBBHHHHHHQIIIIII",
-                        0x53555344,
-                        1001, # Protocol version
-                        84, # Len without header
-                        crc, # crc
-                        self.server_id,
-                        0x100002, #event type
-                        index, # slot
-                        slot_state_int, # slot state (connected / not connected)
-                        2, # device model (gyro)
-                        2, # Connection type
-                        0, #MAC
-                        0, #MAC
-                        0, #MAC
-                        0x4, #Battery
-                        connected_int,
-                        packet_number,
-                        state.dpad_mask,
-                        state.button_mask,
-                        state.home,
-                        state.touch_button,
-                        state.left_stick_x,
-                        state.left_stick_y,
-                        state.right_stick_x,
-                        state.right_stick_y,
-                        0, # ana_dpad left
-                        0, # ana_dpad down
-                        0, # ana_dpad right
-                        0, # ana_dpad up
-                        state.sq,
-                        state.cr,
-                        state.ci,
-                        state.tr,
-                        0, # ana_r1
-                        0, # ana_l1
-                        0, # ana_r2
-                        0, # ana_l2
-                        0, # Touch 1
-                        0, # Touch 1
-                        0, # Touch 1
-                        0, # Touch 2
-                        0, # Touch 2
-                        0, # Touch 2
-                        state.motion_timestamp,
-                        0, # Accel x
-                        0, # Accel y
-                        0, # Accel z
-                        state.pitch,
-                        state.yaw,
-                        state.roll
-                        )
-
-                """
                 input_packet_no_crc = struct.unpack("<IHHIIIBBBB6BBBIBBBBBBBBBBBBBBBBBBBBHHHHHHQffffff", input_packet_no_crc_packed)
                 input_packet = struct.pack(
                         "<IHHIIIBBBB6BBBIBBBBBBBBBBBBBBBBBBBBHHHHHHQffffff",
@@ -469,12 +409,6 @@ class DSU_Server:
                         input_packet_no_crc[51],
                         )
 
-                """
-                print("sent motion data")
-                for i in range(46, 52):
-                    print(input_packet_no_crc[i])
-                """
-
                 self.sock.sendto(input_packet, self.controller_states[index].addr)
 
 
@@ -487,19 +421,6 @@ class DSU_Server:
         # If event type is BUTTON, value is [AllButtons int, ButtonEvent enum]
         # If event type is JOYSTICK, value is [Sticks int, angle, magnitude]
         # if event type is MOTION, value is [pitch, yaw, roll]
-
-        # print(f"updating state: {player_num}, {event_type}, {value}")
-        """
-        print(f"current buttons: {self.controller_states[player_num].button_mask}")
-        print(f"current dpad: {self.controller_states[player_num].dpad_mask}")
-        print(f"current connected: {self.controller_states[player_num].connected}")
-        """
-        #print(f"current tr: {self.controller_states[player_num].tr}")
-        #print(f"current cr: {self.controller_states[player_num].cr}")
-        #print(f"current sq: {self.controller_states[player_num].sq}")
-        #print(f"current ci: {self.controller_states[player_num].ci}")
-
-        #state = self.controller_states[player_num]
 
         if event_type == ControllerUpdateTypes.CONNECTION.value:
 
@@ -667,11 +588,6 @@ class DSU_Server:
                 adjusted_x = min(math.floor(((raw_x / 100) * 128) + 128), 255)
                 adjusted_y = min(math.floor(((raw_y / 100) * 128) + 128), 255)
 
-                """
-                print("dx: ", adjusted_x)
-                print("dy: ", adjusted_y)
-                """
-
                 self.controller_states[player_num].left_stick_x = adjusted_x
                 self.controller_states[player_num].left_stick_y = adjusted_y
 
@@ -685,11 +601,6 @@ class DSU_Server:
                 adjusted_x = min(math.floor(((raw_x / 100) * 128) + 128), 255)
                 adjusted_y = min(math.floor(((raw_y / 100) * 128) + 128), 255)
 
-                """
-                print("dx: ", adjusted_x)
-                print("dy: ", adjusted_y)
-                """
-
                 self.controller_states[player_num].right_stick_x = adjusted_x
                 self.controller_states[player_num].right_stick_y = adjusted_y
 
@@ -697,15 +608,6 @@ class DSU_Server:
 
             self.controller_states[player_num].motion_timestamp = int(time.time() * 1_000_000)
 
-
-            """
-            self.controller_states[player_num].pitch = (180 * value[0]) / math.pi
-            self.controller_states[player_num].yaw = (180 * value[1]) / math.pi
-            self.controller_states[player_num].roll = (180 * value[2]) / math.pi
-            self.controller_states[player_num].pitch = value[0]
-            self.controller_states[player_num].yaw = value[1]
-            self.controller_states[player_num].roll = value[2]
-            """
             self.controller_states[player_num].pitch = 1 * math.degrees(value[0])
             self.controller_states[player_num].yaw = -1 * math.degrees(value[1])
             self.controller_states[player_num].roll =  1 * math.degrees(value[2])
@@ -713,31 +615,15 @@ class DSU_Server:
 
 
             # Doing weird stuff 
+            self.controller_states[player_num].x_acceleration = 1 * value[3] if abs(value[3]) > 0.02 else 0
+            self.controller_states[player_num].z_acceleration = -1 * value[4] if abs(value[4]) > 0.02 else 0
+            self.controller_states[player_num].y_acceleration =  1 * value[5] if abs(value[5]) > 0.02 else 0
+
+            """
             self.controller_states[player_num].x_acceleration = -1 * value[3] if abs(value[3]) > 0.02 else 0
             self.controller_states[player_num].z_acceleration = 1 * value[4] if abs(value[4]) > 0.02 else 0
             self.controller_states[player_num].y_acceleration =  1 * value[5] if abs(value[5]) > 0.02 else 0
-
-
-
-            """
-            print("adjusted motion data")
-            print(self.controller_states[player_num].x_acceleration)
-            print(self.controller_states[player_num].y_acceleration)
-            print(self.controller_states[player_num].z_acceleration)
-            print(self.controller_states[player_num].pitch)
-            print(self.controller_states[player_num].yaw)
-            print(self.controller_states[player_num].roll)
             """
 
-
-        """
-        print(f"updated buttons: {self.controller_states[player_num].button_mask}")
-        print(f"updated dpad: {self.controller_states[player_num].dpad_mask}")
-        print(f"updated connected: {self.controller_states[player_num].connected}")
-        print(f"updated tr: {self.controller_states[player_num].tr}")
-        print(f"updated cr: {self.controller_states[player_num].cr}")
-        print(f"updated sq: {self.controller_states[player_num].sq}")
-        print(f"updated ci: {self.controller_states[player_num].ci}")
-        """
 
 DSU_Server.instance() # init and start the server immediately
