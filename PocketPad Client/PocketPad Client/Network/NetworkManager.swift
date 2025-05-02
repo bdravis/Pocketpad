@@ -53,6 +53,7 @@ class NetworkManager: ObservableObject {
         browser = NWBrowser(for: .bonjour(type: "_pocketpad._tcp", domain: nil), using: params)
         
         browser?.browseResultsChangedHandler = { results, _ in
+            self.discoveredServers.removeAll()
             print("Found results: \(results)")
             for result in results {
                 if case let NWEndpoint.service(name, type_, domain, interface) = result.endpoint {
