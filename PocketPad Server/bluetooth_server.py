@@ -222,7 +222,7 @@ def extract_game_name_from_path(full_path: str) -> str:
     core, *_ = full_path.rsplit(" ", 1)
     file_name = os.path.basename(core)
     name, _ = os.path.splitext(file_name)
-    cleaned = re.sub(r'\s*[\(\[].*?[\)\]])]\s*$', '', name).strip()
+    cleaned = re.sub(r'\s*[\(\[].*?[\)\]]\s*$', '', name).strip()
     return cleaned
 
 def set_latency_callback(send_latency_callback, latency_function_callback):
