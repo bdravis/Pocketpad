@@ -7,6 +7,9 @@ class PaircodeManager(QObject):
     def __init__(self):
         super().__init__()
         self._instance = None
+        
+    def __call__(self, code: int):
+        return _Code(code)
 
     def get(self):
         return self._instance
